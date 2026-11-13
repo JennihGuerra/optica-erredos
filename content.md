@@ -2,7 +2,7 @@
 
 > **Para qué sirve este archivo.** Es el contexto teórico, estratégico y de contenido del proyecto. Está escrito para que cualquier persona o IA que tome el proyecto sin haber estado en las conversaciones anteriores pueda continuar sin perder criterio. Su archivo hermano es `design.md` (sistema visual, componentes y comportamiento de interfaz).
 >
-> **Última actualización:** 12-11-2026 (generado tras la fase 7 y los ajustes del hero de Inicio).
+> **Última actualización:** 13-11-2026 (rediseño de Servicios y publicación en Vercel).
 >
 > **Regla de mantenimiento (obligatoria).** Cada vez que Jennih pida un cambio (contenido, estructura, alcance, decisión, pendiente resuelto), se actualiza este archivo en la misma entrega: se corrige la sección afectada y se agrega una línea al "Registro de cambios" del final. Lo mismo se hace con `design.md` cuando el cambio es visual o de interacción. Si un dato queda sin confirmar, se deja marcado como **PROVISIONAL** o **PENDIENTE**; nunca se rellena con información inventada.
 
@@ -76,7 +76,7 @@
 > Los textos que se citan están implementados tal cual. Todo lo marcado PROVISIONAL se debe validar con el negocio.
 
 ### 4.1 Inicio (`/`)
-Orden de secciones: hero carrusel → accesos rápidos → por qué elegir Erredos → categorías → productos destacados → marcas → promociones → servicios → banner de convenios → ubicación y contacto.
+Orden de secciones: hero carrusel → franja "entrega el mismo día" → accesos rápidos → por qué elegir Erredos → categorías → productos destacados → promociones → servicios → banner de convenios → ubicación y contacto.
 
 **Hero carrusel (3 entradas, cada una con foto de fondo):**
 1. *"Encuentra tus próximos anteojos en Óptica Erredos"* — "Descubre alternativas para tu día a día y conoce nuestros servicios de atención óptica." CTA: **Ver productos** (`/productos`) y **Conoce nuestros servicios** (`/servicios`).
@@ -85,15 +85,16 @@ Orden de secciones: hero carrusel → accesos rápidos → por qué elegir Erred
 
 Comportamiento: cambia solo cada 7 s; se pausa con el puntero/foco encima, con cualquier uso manual y si el dispositivo pide reducir movimiento; controles anterior/siguiente/puntos/pausa; solo la diapositiva visible recibe foco; la primera lleva el único `h1`.
 
+**Franja "Entrega el mismo día" (13-11-2026, texto entregado por Jennih):** título "¡Tus anteojos listos el mismo día!"; texto "Trae tu receta durante la mañana y consulta por la entrega el mismo día."; aclaración siempre visible "Aplica a tratamientos estándar. Lentes bifocales y con adelgazado pueden requerir más tiempo." No es una garantía universal de entrega. **PENDIENTE:** el negocio debe confirmar el beneficio, el horario límite de la mañana y qué tratamientos aplican.
+
 **Accesos rápidos (3):** Anteojos ópticos, Anteojos de sol y Solicitar atención (los tres con foto de fondo) → `/productos/anteojos-opticos`, `/productos/anteojos-de-sol` y Solicitar atención → `/servicios#solicitar-atencion`.
 
-**Por qué elegir Erredos** (PROVISIONAL, no agregar garantías ni descuentos; cada tarjeta con descripción de 2–3 líneas): **Atención y asesoría personalizada** — "Te escuchamos y te orientamos según lo que necesitas, para que elijas con confianza."; **Alternativas para distintas necesidades** — "Explora anteojos ópticos y de sol en distintos estilos, formas y colores."; **Orientación para elegir tus anteojos** — "Consulta con nuestro equipo y te ayudamos a encontrar la opción que mejor va contigo."
+**Por qué elegir Erredos** (PROVISIONAL, no agregar garantías ni descuentos; cada tarjeta con descripción de 2–3 líneas): **Atención y asesoría personalizada** — "Te escuchamos y orientamos para que elijas con confianza."; **Alternativas para distintas necesidades** — "Anteojos ópticos y de sol en distintos estilos."; **Orientación para elegir tus anteojos** — "Te ayudamos a encontrar la opción que va contigo."
 
 **Explora por categoría:** Anteojos ópticos (foto de banco provisional) / Anteojos de sol (foto de banco provisional) / Accesorios ópticos (foto de banco provisional con fundas de anteojos; enlaza a `/productos/accesorios`).
 
 **Productos destacados:** 6 modelos de demostración ("Productos de demostración: el catálogo real se cargará más adelante."), enlace "Ver todos".
 
-**Carrusel de marcas** (entre destacados y promociones): franja que desplaza en bucle nombres de marcas de anteojos ópticos y de sol. ⚠️ **PROVISIONAL:** son nombres de marcas de ejemplo (Ray-Ban, Oakley, Carrera, Persol, Police, Vogue, Arnette, Tommy Hilfiger) escritos como texto, no logos oficiales, y **no confirman que Erredos las distribuya**; reemplazar por las marcas reales (y sus logos con autorización) en `src/data/brands.ts`. Orden de secciones: ... destacados → marcas → promociones ...
 
 **Promociones y ofertas:** sin texto visible (el `h2` "Promociones y ofertas" queda solo para lectores de pantalla). Muestra a ancho completo un afiche de banco provisional y el botón **Solicitar promoción** → WhatsApp (`whatsappMessages.promotion`). ⚠️ El afiche (2x1 en gafas graduadas, "válido hasta el 24 de diciembre o hasta agotar existencias") es una pieza de banco/otra marca **sin promoción real de Erredos**: se usa solo como maqueta por pedido de Jennih; debe reemplazarse por una promoción real de Erredos antes de mostrarlo al cliente. **No hay promoción real definida.**
 
@@ -115,7 +116,7 @@ Comportamiento: cambia solo cada 7 s; se pausa con el puntero/foco encima, con c
 - Chips de filtros activos, contador de resultados, carga progresiva (12 + "Ver más productos"), estado sin resultados ("No encontramos anteojos con estas características." + Limpiar filtros / Ver todos los productos).
 - Los filtros viajan en la URL y se conservan al recargar, cambiar de categoría o volver desde el detalle (`sessionStorage` clave `erredos:catalog-url`).
 - Cierre: "¿Necesitas ayuda para elegir tus anteojos? Escríbenos y te orientamos." + WhatsApp.
-- **Tarjeta = un modelo con 1 a 4 colores.** Cambiar el color cambia imagen, nombre del color, mensaje de WhatsApp y enlace al detalle (que conserva `?color=`). Botón en móvil: "Consultar" (el nombre accesible es completo).
+- **Tarjeta = un modelo con 1 a 4 colores.** Cambiar el color cambia imagen, nombre del color, mensaje de WhatsApp y enlace al detalle (que conserva `?color=`). **Precio (13-11-2026):** en anteojos ópticos siempre se muestra "Desde $X" (tarjeta y ficha; función `productPriceLabel`); sol y accesorios muestran el precio simple; el filtro de precio sigue usando el valor base. **Dos botones por tarjeta (13-11-2026):** "Ver producto" (lleva a la ficha, conserva `?color=`) y "Consultar" (abre WhatsApp con un mensaje en lista: modelo, marca, color, código y **precio** (el mismo que muestra la tarjeta, p. ej. "Desde $X" en ópticos; se omite si el producto es "Consultar precio"), más el enlace a la ficha con `?color=` cuando `site.url` esté configurado; el nombre accesible es completo). **Regla general de WhatsApp (13-11-2026):** si el botón corresponde a algo con imagen (un producto, la promoción), el mensaje la identifica y, con `site.url` configurado, incluye el enlace para que WhatsApp la muestre como vista previa; si no hay imagen, el mensaje se refiere al tema de la sección (servicios, atención visual, reparación, convenios, Quiénes somos, etc.). El mensaje de producto usa "este producto" (también sirve para accesorios). **Promoción:** "Hola, quisiera solicitar esta promoción de Óptica Erredos." + enlace a `public/promociones/promocion.jpg` (hay que reemplazar ese archivo al cambiar de promoción; hoy es el afiche provisional de banco). **Foto en WhatsApp (13-11-2026):** un enlace `wa.me` no puede adjuntar imágenes; la foto llega como vista previa del enlace de la ficha (`og:image`), por lo que requiere publicar el sitio y completar `site.url`.
 
 **Modelo de datos** (`src/data/products.ts`), para reemplazar por el catálogo real:
 - `Product`: id, slug, name, code, brand (`null` = sin confirmar, no se muestra), type (`opticos|sol`), shape, style, price (`null` = "Consultar precio"), description, promotion (`null` = sin promoción), featured, addedAt, variants[].
@@ -133,18 +134,25 @@ Orden: Volver al catálogo (respeta filtros) y migas de pan; **galería** (foto 
 - Se quitaron del detalle: tipo en texto pequeño sobre el título.
 
 ### 4.4 Servicios (`/servicios`)
-Hero con foto de fondo (banner `PageBanner`, foto de banco provisional `hero-atencion-visual.jpg`: examen visual con equipo no confirmado por el negocio) "Estamos aquí para ayudarte a cuidar tu visión" + CTAs "Agenda tu hora" (`#agendar-hora`) y "Repara tus anteojos" (abre WhatsApp con el mensaje de reparación); dos tarjetas de servicio (Atención visual con foto de banco provisional de una persona con lentes de prueba; Reparación con foto provisional de manos ajustando unos anteojos y un cartel "Reparamos / Ajustamos / Cambiamos tus lentes", imagen no real de Erredos); **agenda de atención visual** (§6, en una banda azul a ancho completo para que destaque); "¿Cómo solicitar atención?" (3 pasos: Elige el servicio → Contáctanos por WhatsApp → Coordinamos contigo) con botones "Consultar atención visual" y "Consultar reparación"; preguntas frecuentes; ubicación.
+Rediseño del 13-11-2026 (brief de Jennih): la página prioriza la **atención visual y su agenda online**; la reparación es secundaria. Orden: banner → Atención visual → Agenda → Reparación → FAQ → Ubicación.
 
-**Servicios (`src/data/services.ts`):**
-- **Atención visual:** "Recibe atención y orientación visual con nuestra tecnóloga. Consulta por este servicio y conoce cómo podemos ayudarte." Aviso: la realiza una tecnóloga, **no reemplaza una consulta médica oftalmológica**; **no se atiende a menores de 10 años** (necesitan consulta previa con oftalmólogo).
-- **Reparación y ajuste de anteojos:** "¿Tus anteojos necesitan una reparación o ajuste? Contáctanos y cuéntanos qué problema presentan para orientarte." Motivos de consulta: marcos desajustados, tornillos sueltos o faltantes, problemas en las patillas, otros daños en la estructura. Nota: "Revisamos cada caso: no todos los daños tienen reparación."
+- **Encabezado** (banner `PageBanner`, foto de banco provisional `hero-atencion-visual.jpg`): "Tu salud visual merece atención." / "Conoce nuestra atención visual y agenda tu hora de manera fácil y online." Un solo CTA: **"Agenda tu hora"** (`#agendar-hora`, desplazamiento suave; se anula con "reducir movimiento").
+- **Atención visual** (sección protagonista, id `solicitar-atencion` para el enlace de Inicio): foto a la izquierda (arriba en móvil) con etiqueta "Imagen referencial" y contenido a la derecha (sin antetítulo; el protagonismo lo da el tamaño y la posición): "Atención visual", "Nuestra tecnóloga médica evaluará tu visión y te guiará paso a paso para encontrar los lentes ideales para ti." (texto entregado por Jennih el 13-11-2026; ya no menciona la receta; **por confirmar con el negocio** el título "tecnóloga médica" y mantener la aclaración de que no es una consulta oftalmológica), aclaración discreta "Esta atención no corresponde a una consulta oftalmológica." y CTA **"Agenda tu hora"**.
+- **Agenda online** (§6): título "Agenda tu atención visual", "Elige el día y horario que más te acomode y solicita tu atención online." Tres notas: edad mínima (destacada), duración y horarios, y "Tu solicitud queda pendiente: el equipo te contactará para confirmar".
+- **Reparación y ajuste de anteojos** (bloque horizontal compacto, foto provisional de reparación con etiqueta "Imagen referencial"): "¿Tus anteojos necesitan un ajuste o reparación? Contáctanos y cuéntanos qué les sucede para orientarte." + "Revisamos cada caso: no todo tiene reparación." + botón secundario **"Consultar por WhatsApp"** (mensaje de reparación). No hay formulario de reparación.
+- **Se quitó** la sección "¿Cómo solicitar atención?" (3 pasos con botones de WhatsApp) para no competir con la agenda ni alargar la página, y la lista de motivos de reparación (los datos siguen en `services.ts`, sin uso).
+- **Preguntas frecuentes** (acordeón, 4 preguntas): ¿Cómo puedo reservar una atención? (con respuesta), ¿Qué debo llevar a mi atención visual? (**por confirmar**), ¿Cómo sabré si mi solicitud fue confirmada? (el equipo se comunicará; respuesta basada en el brief, **canal y plazo por confirmar**), ¿Cómo puedo consultar por una reparación? (con respuesta, por WhatsApp).
+- **Ayuda junto a las preguntas (13-11-2026):** al costado del título, "¿Tienes otra duda? Escríbenos y te orientamos." + botón "Escribir por WhatsApp" (mensaje general). Texto de interfaz, sin datos comerciales.
+- **Ubicación y contacto:** sin cambios.
+
+**Servicios (`src/data/services.ts`):** Atención visual (descripción y aclaración del brief) y Reparación (descripción del brief). La regla de edad ("No atendemos a menores de 10 años…") vive en la agenda (`site.appointments.ageNotice`).
 
 **Regla clínica importante:** nunca presentar la atención óptica como equivalente a una consulta oftalmológica.
 
-**FAQ:** 8 preguntas en 2 grupos. Con respuesta (basada en info entregada): quién realiza la atención visual; cómo solicitar una atención; cómo saber si mis anteojos tienen reparación. **Con texto neutro y etiqueta "Por confirmar"** (`answer: null`): ¿Necesito agendar previamente?, ¿Qué debo llevar?, ¿Qué tipos de reparaciones realizan?, ¿Puedo consultar por anteojos de otra óptica?, ¿Cuánto demora una reparación?
+**FAQ de Servicios:** 4 preguntas en un solo grupo (ver arriba); 1 queda por confirmar.
 
 ### 4.5 Convenios y operativos (`/empresas`)
-Hero con foto de fondo (banner `PageBanner`, la misma foto de banco `hero-convenios.jpg` del carrusel de Inicio; ⚠️ se lee el pendón de otra óptica, reemplazar) "Soluciones ópticas para empresas y organizaciones"; a quiénes está dirigido (Empresas, Sindicatos, Instituciones, Establecimientos educacionales, Agrupaciones y organizaciones — son públicos objetivo, **no clientes ni convenios vigentes**); alternativas de colaboración (**Convenios**: alianza con la óptica; **Operativos ópticos**: instancia de atención coordinada; se quitó la etiqueta visible "Condiciones por confirmar", pero las condiciones siguen sin definirse); ¿Cómo funciona? (Cuéntanos → Revisamos → Nos ponemos en contacto); formulario; contacto directo por WhatsApp; ubicación.
+Hero con foto de fondo (banner `PageBanner`, la misma foto de banco `hero-convenios.jpg` del carrusel de Inicio; ⚠️ se lee el pendón de otra óptica, reemplazar) "Soluciones ópticas para empresas y organizaciones"; a quiénes está dirigido (Empresas, Sindicatos, Instituciones, Establecimientos educacionales, Agrupaciones y organizaciones — son públicos objetivo, **no clientes ni convenios vigentes**); alternativas de colaboración (cada tarjeta lleva una foto a sangre arriba: `convenios-alianza.jpg` —examen con lámpara de hendidura, 678×452— y `convenios-operativo.jpg` —operativo con lentes de prueba—; ⚠️ son fotos de otras instituciones, con sus logos visibles (Alemania/Esalud y CIS Universidad) y personas reales, entregadas por Jennih como referencia: **reemplazar por fotos propias o con permiso antes de mostrar al cliente o publicar**) (**Convenios**: "Una alianza con Óptica Erredos para acercar nuestros productos y servicios a tus integrantes."; **Operativos ópticos**: "Coordinamos una instancia de atención óptica para tu organización. Consulta las condiciones con nuestro equipo."; se quitó el recuadro "Pensado para" y la bajada de la sección pasó a "Elige la que mejor se adapte a tu organización."; se quitó la etiqueta visible "Condiciones por confirmar", pero las condiciones siguen sin definirse); ¿Cómo funciona? (Cuéntanos → Revisamos → Nos ponemos en contacto); formulario; contacto directo por WhatsApp; ubicación.
 No se mencionan descuentos, beneficios, convenios existentes ni condiciones.
 Los botones "Consultar por convenios/operativos" llevan al formulario con ese tipo preseleccionado.
 Idea del benchmarking aún no usada: CTA "Quiero llevar un operativo óptico a mi organización" y contenido "¿Qué es un operativo óptico?" (requiere validación del negocio).
@@ -166,12 +174,15 @@ Privacidad: marcador; el texto legal debe entregarlo o validarlo el negocio. 404
 | Dirección | Calle Talca 118, Puerto Montt | Confirmado |
 | Horario | Lunes a viernes 09:30 a 18:15 hrs; sábados 10:00 a 13:00 hrs | Confirmado (12-11-2026). Domingo no informado: no se muestra |
 | WhatsApp | `whatsappNumber: ''` | **PENDIENTE**. Mientras esté vacío los botones abren WhatsApp con el mensaje listo pero sin destinatario |
+| Dirección pública del sitio | `site.url: ''` | **PENDIENTE**. Sin ella el mensaje de WhatsApp de un producto no incluye el enlace (ni, por tanto, la foto como vista previa). Configurar también `site` en `astro.config.mjs`. Hoy el sitio está publicado (provisional) en https://optica-erredos.vercel.app |
 | Redes sociales | `social: []` | **PENDIENTE** (vacío = no se muestran) |
 | Dominio | `astro.config.mjs → site` comentado | **PENDIENTE** (canónicas y sitemap) |
 | Logo | `logo.png` 936×679 | Falta vector (SVG), versión horizontal y en negativo |
 | Destino de formularios | `formEndpoint: ''` | **PENDIENTE** |
 | `prototypeMode` | `true` | Maqueta funcional (ver §7) |
 | `catalogIsDemo` | `true` | Cambiar a `false` al cargar el catálogo real |
+
+**Mensajes de WhatsApp por sección (13-11-2026, `src/lib/whatsappContext.ts`):** los botones generales (header "Contáctanos", flotante "Haz aquí tus consultas", Ubicación y Quiénes somos) indican desde dónde se consulta: Inicio → "…una consulta a Óptica Erredos (sección Inicio)."; Productos → "…por los productos…"; Ópticos/Sol → "…por los anteojos ópticos / de sol…"; Accesorios, Servicios y Convenios usan su mensaje propio; Quiénes somos → "(sección Quiénes somos)"; ficha de producto → "…por el modelo X, marca Y (código Z)." Reparación, agenda, promoción y tarjetas de producto ya tenían su mensaje específico. Textos provisionales, a validar con el negocio.
 
 **Mensajes de WhatsApp** (`src/lib/whatsapp.ts`): general ("Hola, quisiera hacer una consulta a Óptica Erredos."); producto (modelo, marca si existe, color en minúscula y código); ayuda para elegir; servicios; atención visual; reparación; convenios/operativos. El formulario de organizaciones y la agenda arman además un mensaje con los datos ingresados.
 El informe de benchmarking sugería este formato para producto: "Hola, vi los anteojos modelo [nombre o código] en la página de Óptica Erredos y quisiera consultar por disponibilidad y precio." El texto implementado es distinto; si se quiere ese tono, ajustarlo en `whatsappMessages.product`.
@@ -180,10 +191,12 @@ El informe de benchmarking sugería este formato para producto: "Hola, vi los an
 
 ## 6. Agenda de atención visual (`/servicios#agendar-hora`)
 
-Pedida por Jennih para reemplazar un formulario simple. Dos pasos:
-1. **Elige día y hora:** vista semanal con mes y año, rango de la semana, siete días (domingo bloqueado, días pasados bloqueados), flechas de semana, horas del día elegido en "Mañana" y "Tarde"; día y hora elegidos quedan marcados.
-2. **Tus datos:** resumen de la hora (con "Cambiar"), nombre y apellido, correo, **confirmación del correo**, número de celular, **rango de edad del paciente**.
-3. **Confirmación** (solo en maqueta): título "¡Tu hora quedó agendada con éxito!", aviso destacado "Te confirmaremos tu atención 24 horas antes. Nos pondremos en contacto contigo por correo electrónico o por teléfono para confirmar tu hora.", dirección del local, resumen, "Agenda otra hora" y "Escribir por WhatsApp". **PENDIENTE:** el negocio debe poder cumplir la confirmación 24 h antes (correo/teléfono); en la maqueta no se envía nada.
+Pedida por Jennih para reemplazar un formulario simple; rediseñada el 13-11-2026 en **tres pasos** con indicador de progreso (círculos numerados, check en los pasos completados, paso actual con `aria-current`):
+1. **Selecciona fecha y hora:** vista semanal con mes y año, rango de la semana, siete días (domingo y días pasados bloqueados), flechas de semana, **leyenda** (con horas / elegido / sin horas, distinguidos por forma y texto), horas del día elegido en "Mañana" y "Tarde"; la elección queda visible.
+2. **Completa tus datos:** resumen de la fecha y hora (con "Cambiar"), nombre y apellido, correo electrónico, teléfono de contacto y **rango de edad del paciente**; etiquetas visibles, ejemplos de formato (placeholder) y mensajes de error. **Se quitó** la confirmación del correo (el paso 3 permite revisarlo). Se conservó el rango de edad por la regla de menores de 10 años; **decisión por confirmar con Jennih/negocio** (el brief pedía solo nombre, correo y teléfono).
+3. **Revisa tu solicitud:** resumen de fecha, hora y datos; "Corregir datos" vuelve al paso 2 sin perder lo escrito; "Enviar solicitud".
+- **Estados:** hora seleccionada; enviando (botón inactivo con indicador y "Enviando…"); error de validación (cuenta de campos y mensaje junto a cada uno); error al enviar (mensaje + envío por WhatsApp); **"Solicitud recibida"** con aviso "Tu hora aún no está confirmada. El equipo de Óptica Erredos se comunicará contigo para confirmarla." (ya no dice "agendada con éxito" ni promete confirmar 24 h antes: compromiso no validado).
+- En la maqueta (`prototypeMode`) no se envía ni se guarda nada.
 
 **Reglas** (en `site.appointments`):
 - Atención de **30 min**. Lunes a viernes 09:30–13:00 y 14:00–17:00 (13 horas/día: 09:30…12:30 y 14:00…16:30). Sábado 10:00–13:00 (6 horas) — **SUPUESTO** (se usó el horario del local; el negocio no indicó el bloque del sábado). Domingo sin atención.
@@ -205,7 +218,7 @@ Con `formEndpoint` configurado se envía un POST con JSON y se muestra confirmac
 
 **Validaciones** (`FormBehavior.astro`): obligatorios con mensaje junto al campo, resumen de errores con foco al primero, correo válido, teléfono con al menos 8 dígitos, participantes > 0 o vacío, confirmación de correo igual al correo, un tipo de solicitud elegido.
 
-**Formulario de convenios — campos:** nombre y apellido*, empresa u organización*, cargo (opcional), correo*, teléfono*, cantidad aproximada de participantes (opcional), tipo de solicitud* (lista desplegable con una sola selección: Convenio óptico / Operativo óptico / Ambos / Necesito más información), mensaje (opcional). Nota de privacidad: "Usaremos estos datos solo para responder tu solicitud. No pedimos información de los participantes."
+**Formulario de convenios — campos:** nombre y apellido*, empresa u organización*, cargo (opcional), correo*, teléfono*, cantidad de participantes (etiqueta "Cantidad de participantes (aprox.)", en una sola línea; campo opcional), tipo de solicitud* (lista desplegable con una sola selección: Convenio óptico / Operativo óptico / Ambos / Necesito más información), mensaje (opcional). Nota de privacidad: "Usaremos estos datos solo para responder tu solicitud. No pedimos información de los participantes."
 (La opción "Necesito más información" se agregó respecto del brief original, que solo pedía convenio, operativo o ambos.)
 
 ---
@@ -239,7 +252,7 @@ Modalidades de promoción a evaluar con el negocio: descuento directo, segunda u
 | 3 Inicio | Todas las secciones, tarjetas, servicios provisionales | — |
 | Entre fases | Barra inferior solo móvil; menú tradicional desde 768 px | Pedido de Jennih |
 | 4 Productos | Catálogo con filtros, detalle, color por variante, 24 modelos demo | Brief sin buscador por nombre/código |
-| 5 Servicios | Hero, 2 servicios, pasos, FAQ | El brief reemplazó el formulario de solicitud por WhatsApp (más tarde se agregó la agenda) |
+| 5 Servicios | Hero, 2 servicios, pasos, FAQ (rediseñada el 13-11-2026: atención visual protagonista, agenda en 3 pasos, reparación secundaria; ver §4.4) | El brief reemplazó el formulario de solicitud por WhatsApp (más tarde se agregó la agenda) |
 | 6 Convenios | Página B2B + formulario | "Empresas" → "Convenios y operativos" |
 | 7 Quiénes somos | Historia provisional, principios, espacio, ubicación | "Nosotros" → "Quiénes somos"; horarios confirmados y cargados |
 | Ajustes Inicio | Hero → carrusel de 3 entradas; acceso "Anteojos ópticos" con foto; "Agendar hora"; agenda semanal; buscador fuera; botón "Contáctanos"; maqueta funcional; hero visual en 3 iteraciones (ver `design.md`) | — |
@@ -269,6 +282,7 @@ Modalidades de promoción a evaluar con el negocio: descuento directo, segunda u
 8. Si se conecta un sistema de agenda real.
 
 ### Imágenes (antes de mostrar al cliente)
+- `convenios-alianza.jpg` y `convenios-operativo.jpg` (Convenios → alternativas): fotos de otras instituciones con logos y personas reales; baja resolución la primera (678×452) → reemplazar.
 - `hero-convenios.jpg`: se lee el pendón de otra óptica ("Olive Dexter") → reemplazar.
 - `espacio-exterior.jpg`, `espacio-equipo.jpg`, `espacio-interior.jpg` (Quiénes somos → Nuestro espacio): ⚠️ son fotos de **otra óptica (se lee el letrero "OpticaPRO" en las tres) y muestran personas reales** que no son del equipo de Erredos. Usarlas solo en la maqueta: reemplazar por fotos propias antes de mostrar al cliente o publicar.
 - `hero-quienes-somos.jpg` (740×493, se ve blanda en pantallas grandes): examen visual con equipo no confirmado → reemplazar por foto real del local/equipo.
@@ -340,3 +354,25 @@ Modalidades de promoción a evaluar con el negocio: descuento directo, segunda u
 | 13-11-2026 | Servicios: pantalla de confirmación indica que la hora se agendó con éxito y que se confirmará por correo o teléfono 24 horas antes (§6, paso 3). Compromiso pendiente de validar con el negocio. |
 | 13-11-2026 | Convenios: "Tipo de solicitud" pasa de 4 botones de opción a un campo desplegable con las mismas 4 opciones; los botones "Consultar por convenios/operativos" siguen preseleccionándolo (§7). |
 | 13-11-2026 | Inicio: nuevo carrusel de marcas de anteojos entre "Productos destacados" y "Promociones" (4.1). Marcas provisionales como texto; datos en `src/data/brands.ts`. |
+| 13-11-2026 | Inicio: se elimina el carrusel de marcas (no gustó). `src/data/brands.ts` queda en el proyecto sin uso (no se eliminó) (4.1). |
+| 13-11-2026 | Inicio: el botón "Solicitar promoción" cambia a blanco con texto azul e icono de flecha sobre el afiche (el coral se perdía sobre el rojo); en móvil es azul bajo el afiche (4.1). |
+| 13-11-2026 | Botón flotante "Haz aquí tus consultas": más presencia visual (sin cambio de texto ni destino) (§3). |
+| 13-11-2026 | Control de accesibilidad: pestaña más grande y mejor comportamiento con texto ampliado (sin cambios de contenido). |
+| 13-11-2026 | Header: botón "Contáctanos" con el estilo gráfico del botón flotante (sin cambio de texto ni destino) (§3). |
+| 13-11-2026 | Tarjetas de producto con dos botones ("Ver producto" y "Consultar") (4.2); los botones de WhatsApp generales incluyen la sección o el producto consultado (§5). |
+| 13-11-2026 | Anteojos ópticos: el precio se muestra como "Desde $X" en tarjetas y ficha (4.2). Tarjeta de producto: "Ver producto" azul sólido y "Consultar" con contorno, como el hero. |
+| 13-11-2026 | Convenios: espacio de imagen en las dos tarjetas de alternativas (4.5). |
+| 13-11-2026 | Convenios: el campo pasa a "Cantidad de participantes (aproximada, opcional)" (§7). |
+| 13-11-2026 | Convenios: las dos tarjetas de alternativas muestran fotos de referencia (examen visual y operativo) en lugar del marcador (4.5, imágenes provisionales). |
+| 13-11-2026 | Convenios: la etiqueta pasa a "Cantidad de participantes (aprox.)" y queda en una sola línea (§7). |
+| 13-11-2026 | Inicio: nueva franja "¡Tus anteojos listos el mismo día!" bajo el hero, con aclaración sobre tratamientos especiales (4.1). Beneficio por confirmar con el negocio. |
+| 13-11-2026 | Textos más breves por pedido de Jennih (menos que leer, mismo sentido): Convenios → alternativas (sin recuadro "Pensado para"), contacto directo y formulario de Convenios; descripciones de los servicios y su aviso; beneficios de Inicio; texto del hero y cierre de Quiénes somos (4.1, 4.4, 4.5, 4.6). |
+| 13-11-2026 | Consulta por WhatsApp de un producto: mensaje con modelo, marca, color y código + enlace a la ficha para que se vea la foto (necesita `site.url`, pendiente) (§5). |
+| 13-11-2026 | WhatsApp: "Solicitar promoción" identifica la promoción y adjunta el enlace a su imagen (necesita `site.url`); mensajes de producto dicen "este producto"; regla general: con imagen se envía, sin imagen la consulta se refiere al tema de la sección (§4.2, §5). |
+| 13-11-2026 | WhatsApp de productos: el mensaje incluye el precio (`priceText`); la ficha de cada producto publica su foto como `og:image` para la vista previa (revisado en el build; requiere `site.url`) (§4.2, §5). |
+| 13-11-2026 | Servicios rediseñada (4.4, §6): encabezado "Tu salud visual merece atención.", Atención visual como sección protagonista con foto, agenda "Agenda tu atención visual" en tres pasos con progreso y revisión, reparación como bloque compacto con "Consultar por WhatsApp", FAQ de 4 preguntas. Se quitó "¿Cómo solicitar atención?" y la confirmación del correo. El final pasa a "Solicitud recibida" (pendiente de confirmación). |
+| 13-11-2026 | Publicación en Vercel: https://optica-erredos.vercel.app (repositorio `JennihGuerra/optica-erredos`). Se corrigió `astro.config.mjs`, que quedó con `base: '/-ptica-erredos'` de un intento con GitHub Pages y dejaba el sitio sin estilos. `.github/workflows/deploy.yml` (Pages) sigue en el repositorio; no se eliminó. `site.url` sigue vacío hasta confirmar el dominio definitivo (§5). |
+| 13-11-2026 | Servicios → Reparación: texto centrado verticalmente junto a la foto (ajuste visual, sin cambio de contenido) (4.4). |
+| 13-11-2026 | Servicios → Atención visual: se quita el antetítulo "Nuestro servicio principal" y el texto pasa a destacar el trabajo de la tecnóloga (evalúa la visión y puede emitir la receta óptica; por confirmar) (4.4). |
+| 13-11-2026 | Servicios → Preguntas frecuentes: en escritorio el título va a la izquierda con una línea de ayuda y botón de WhatsApp, y las preguntas a la derecha (sin vacío a un lado); tablet y móvil sin cambios (4.4). |
+| 13-11-2026 | Servicios → Atención visual: nuevo texto entregado por Jennih ("Nuestra tecnóloga médica evaluará tu visión y te guiará paso a paso…"); se quita la mención a emitir receta (4.4). |

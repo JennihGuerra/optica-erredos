@@ -2,7 +2,7 @@
 
 > **Para qué sirve este archivo.** Reúne todo lo visual y de interacción: paleta, tipografía, tokens, componentes, patrones de página, responsive, accesibilidad y las decisiones de diseño (incluidas las descartadas). Está pensado para que otra persona o IA pueda continuar el diseño sin las conversaciones previas. El contexto de negocio, contenido y alcance está en `content.md`.
 >
-> **Última actualización:** 12-11-2026.
+> **Última actualización:** 13-11-2026.
 >
 > **Regla de mantenimiento (obligatoria).** Cada cambio visual o de interacción que pida Jennih se refleja aquí en la misma entrega (sección afectada + línea en el "Registro de cambios"). Los valores reales viven en el código (`src/styles/tokens.css` y los componentes); si este archivo y el código difieren, **manda el código** y se corrige este archivo.
 
@@ -149,7 +149,7 @@ Base `.btn`: mín. alto táctil, padding `--space-2 × --space-5`, borde 2 px tr
 - `MediaPlaceholder`: caja con ratio configurable, icono al 55 % de opacidad y etiqueta "Imagen provisional" abajo-izquierda sobre blanco al 90 %; tonos `primary` (tinte azul), `accent` (tinte coral), `neutral` (`#f4f4f4`). Ocupa el mismo espacio que tendrá la foto real, para reemplazar sin tocar el layout. Rol `img` con `aria-label` descriptivo.
 
 ### 7.4 Tarjeta de producto (`ProductCard`)
-Imagen (`ProductMedia`: foto de la variante o ilustración SVG por forma y color) con insignia de promoción si existe; muestras de color (`ColorSwatches`, botones `aria-pressed`); tipo; nombre (enlace al detalle); marca; precio (o "Consultar precio"); botón coral "Consultar por WhatsApp" (en versión compacta: "Consultar"). Cada tarjeta es independiente (un listener delegado). Versión `compact` para la grilla de 2 columnas y relacionados.
+Imagen (`ProductMedia`: foto de la variante o ilustración SVG por forma y color) con insignia de promoción si existe; muestras de color (`ColorSwatches`, botones `aria-pressed`); tipo; nombre (enlace al detalle); marca; precio (en **anteojos ópticos siempre "Desde $X"**; sol y accesorios, precio simple; o "Consultar precio"); **dos botones** (desde 13-11-2026): "Ver producto" (azul sólido, abre la ficha; conserva `?color=`) y "Consultar" (contorno azul, abre WhatsApp con el modelo y color), mismo patrón primario + outline que los heros. Van lado a lado y se apilan en columna si no caben (móvil de 320–390 px o texto ≥125 %); `flex: 1 1 7.5rem`, sin desborde. Cada tarjeta es independiente (un listener delegado). Versión `compact` para la grilla de 2 columnas y relacionados.
 - **Fotos de stock (desde 12-11-2026):** las tarjetas y el detalle muestran fotos provisionales de Pexels (`variant.image` acepta `ImageMetadata`, URL `string` o `null`), recortadas con `object-fit: cover` (1/1 en móvil, 4/3 desde 768) y rotuladas "Imagen referencial" abajo a la izquierda. Si `image` es `null` vuelve la ilustración.
 - Ilustraciones `FrameIllustration` (hoy sin uso mientras haya fotos): SVG de 200×120 con contorno de lente según forma (Redondo, Cuadrado, Rectangular, Aviador, Cat Eye, Geométrico), color vía `--frame-color`; los de sol llevan lente oscuro. Siempre con etiqueta "Imagen provisional".
 
@@ -171,11 +171,13 @@ Enlace "Volver a productos" (móvil) y migas de pan (≥768); **dos columnas** d
 - Referencia visual usada: ficha de otra óptica; se adaptó a la paleta, tipografía y componentes de Erredos y se eliminaron elementos de compra online.
 
 ### 7.7 Agenda de atención visual (`AppointmentForm`)
-- Barra de progreso "Paso 1 de 2" / "Paso 2 de 2".
-- Paso 1: encabezado de semana (mes y año, rango) con flechas anterior/siguiente (`icon-btn`), **siete botones de día** (día de semana + número; seleccionado marcado; no disponibles deshabilitados), y debajo "Horas para el {día largo}" con grupos **Mañana** y **Tarde** de botones de hora (`aria-pressed`; no disponibles con `aria-label` "hora no disponible"); botón **Continuar** con `aria-disabled` hasta elegir hora.
-- Paso 2: resumen de la hora con botón **Cambiar**, campos, botón "Agenda tu hora".
-- Paso 3: "¡Tu hora quedó agendada con éxito!" + aviso destacado (icono reloj, fondo coral suave, borde coral, título semibold) sobre la confirmación 24 h antes por correo o teléfono, luego resumen y acciones. Foco programático al encabezado de cada paso (`tabindex="-1"`).
-- La introducción usa tres notas en tarjetas con tinte azul; **la de la edad es la más destacada (fondo blanco, énfasis)**.
+- **Tres pasos** + pantalla final. Indicador de progreso (`ol.progress`): círculo numerado de 2,25 rem; paso actual relleno azul con anillo tinte y etiqueta en negrita (`aria-current="step"`), pasos completados con **check** y borde azul, pendientes en gris; línea de unión entre pasos. El estado se anuncia en texto oculto ("paso actual/completado/pendiente"). Se oculta en la pantalla final.
+- Paso 1 "Selecciona fecha y hora": encabezado de semana con flechas (`icon-btn`), **siete botones de día** (seleccionado: relleno azul + barra coral; sin horas: borde discontinuo y raya), **leyenda** de tres estados (forma + texto), "Horas para el {día}" con grupos Mañana y Tarde (`aria-pressed`), pie con "Elegiste: …" y **Continuar** (`aria-disabled` hasta elegir hora).
+- Paso 2 "Completa tus datos": resumen azul con **Cambiar**, campos con etiqueta visible y ejemplo en placeholder (color `--color-text-muted`), aviso de edad con borde azul; pie con **Volver** (outline) y **Continuar**.
+- Paso 3 "Revisa tu solicitud": lista de datos (`dl`), callout coral "Tu hora quedará pendiente de confirmación", pie con **Corregir datos** y **Enviar solicitud**. Al enviar: botón inactivo con indicador giratorio ("Enviando…"; el giro se anula con "reducir movimiento").
+- Final "Solicitud recibida": icono check, callout coral "Tu hora aún no está confirmada…", resumen y acciones **Solicitar otra hora** / **Escribir por WhatsApp**.
+- Foco programático al encabezado de cada paso (`tabindex="-1"`). Mecánica: el paso 2 envía el `<form>`, `FormBehavior` valida y emite `form:valid` (cancelable) para pasar al paso 3; el paso 3 hace el envío real.
+- La introducción usa tres notas en tarjetas con tinte azul; **la de la edad es la más destacada (fondo blanco)**.
 
 ### 7.8 FAQ (`Faq`)
 Acordeones agrupados por tema (`details/summary`), operables con teclado. Respuestas pendientes muestran texto neutro + "Por confirmar".
@@ -188,7 +190,7 @@ Título, dirección, horarios (de `site.hours`), botones "Cómo llegar" (primari
 ## 8. App Shell
 
 ### 8.1 Header (sticky, borde inferior gris)
-Móvil: logo a la izquierda + botón coral **"Contáctanos"** (icono chat) a la derecha. ≥768: logo | menú | botón. Menú de escritorio: enlaces 500, con **línea inferior de 3 px** como indicador (activo = azul, 600, línea completa; hover = línea al 40 %). Tablet (768–1023): menú más compacto (14 px, padding menor). Con texto ≥125 % (o 112 % en 768–1152 px) el menú **baja a una segunda fila**; en móvil muy angosto el botón queda solo con icono (mantiene `aria-label`).
+Móvil: logo a la izquierda + botón **"Contáctanos"** a la derecha, con el **mismo estilo gráfico del botón flotante** (§8.4b): píldora coral, círculo azul con icono `chat` blanco, texto en 700, anillo blanco y sombra; alto táctil mín. (se reduce a 14/16 px de letra según ancho). ≥768: logo | menú | botón. Menú de escritorio: enlaces 500, con **línea inferior de 3 px** como indicador (activo = azul, 600, línea completa; hover = línea al 40 %). Tablet (768–1023): menú más compacto (14 px, padding menor). Con texto ≥125 % (o 112 % en 768–1152 px) el menú **baja a una segunda fila**; en móvil muy angosto el botón queda solo con icono (mantiene `aria-label`).
 
 ### 8.2 Barra inferior (solo <768 px)
 Fija, 5 columnas iguales, ancho máx. 40 rem, fondo blanco con borde superior gris, respeta `safe-area`. Cada ítem: icono en **píldora** + etiqueta (hasta 2 líneas, centrada, `text-wrap: balance`), alineados arriba para que los iconos queden a la misma altura aunque "Quiénes somos" use dos líneas. **Activo:** icono relleno + píldora coral + etiqueta en 600 + color azul + `aria-current="page"`. Hover: píldora tinte azul.
@@ -197,10 +199,10 @@ Fija, 5 columnas iguales, ancho máx. 40 rem, fondo blanco con borde superior gr
 Fondo azul, texto blanco. Tres columnas desde 768 (marca/descripción · secciones · contacto). Sin botón de WhatsApp (se quitó el 13-11-2026). Franja legal con © y política de privacidad. Horarios desde `site.hours`.
 
 ### 8.4 Control de tamaño de texto (accesibilidad)
-Pestaña fija en el borde derecho (azul, esquinas redondeadas a la izquierda, icono `accessibility_new`). Móvil: **sobre la barra inferior**, sin taparla; ≥768: centrada verticalmente. Al abrir, panel con: aumentar (`text_increase`), valor "NNN %", disminuir, restablecer. 6 niveles: **87,5 / 100 / 112,5 / 125 / 137,5 / 150 %** (por defecto 100). Implementación: `--text-scale` en `<html>` + `html { font-size: calc(100% × var(--text-scale)) }`; persiste en `localStorage` (`erredos:text-scale`); script en línea aplica el valor antes del primer pintado y en cada transición de página. Botones con `aria-disabled` (no `disabled`) para no perder el foco; Escape cierra y devuelve el foco; etiquetas accesibles.
+Pestaña fija en el borde derecho (azul, esquinas redondeadas a la izquierda, icono `accessibility_new`), **más grande que los demás controles: `--toggle: clamp(54px, 3.5rem, 62px)` con icono al 58 % de su tamaño** (antes 44–52 px); el tope en px evita que se deforme al ampliar el texto. Los botones del panel siguen en `--control` (44–52 px). Móvil: **sobre la barra inferior y sobre el botón flotante de WhatsApp** (se reserva `3.75rem` para el alto de la píldora, que con texto ampliado pasa a 2 líneas), sin taparlos; ≥768: centrada verticalmente. Al abrir, panel con: aumentar (`text_increase`), valor "NNN %", disminuir, restablecer. 6 niveles: **87,5 / 100 / 112,5 / 125 / 137,5 / 150 %** (por defecto 100). Implementación: `--text-scale` en `<html>` + `html { font-size: calc(100% × var(--text-scale)) }`; persiste en `localStorage` (`erredos:text-scale`); script en línea aplica el valor antes del primer pintado y en cada transición de página. Botones con `aria-disabled` (no `disabled`) para no perder el foco; Escape cierra y devuelve el foco; etiquetas accesibles.
 
 ### 8.4b Botón flotante de WhatsApp (`FloatingWhatsApp.astro`)
-Píldora coral (`--color-accent`, texto `#212121`, no el verde de WhatsApp) con icono `chat` y el texto "Haz aquí tus consultas", fija en la esquina inferior derecha en todas las páginas; abre WhatsApp con el mensaje general. Móvil: sobre la barra inferior (`right 0.75rem`); el control de tamaño de texto sube para quedar encima de ella. ≥768: `right/bottom 1.5rem`; el control de texto queda centrado a la derecha sin chocar. Capa `--z-float: 95`. Tamaño de letra con tope en px; `max-width` evita desborde en 320 px.
+Píldora coral (`--color-accent`, texto `#212121`, **700**, `--text-base` móvil / `--text-lg` desde 768, alto mín. 3,25–3,5 rem; no el verde de WhatsApp) con **círculo azul `--color-primary` con el icono `chat` en blanco** a la izquierda, **anillo blanco de 3 px + sombra marcada** (se separa del fondo claro y del azul) y el texto "Haz aquí tus consultas"; un **halo coral late 3 veces** al cargar (retraso 1,5 s; sin animación con `prefers-reduced-motion`) y sube 2 px al pasar el mouse, fija en la esquina inferior derecha en todas las páginas; abre WhatsApp con el mensaje general. Móvil: sobre la barra inferior (`right 0.75rem`); el control de tamaño de texto sube para quedar encima de ella. ≥768: `right/bottom 1.5rem`; el control de texto queda centrado a la derecha sin chocar. Capa `--z-float: 95`. Tamaño de letra con tope en px; `max-width` evita desborde en 320 px.
 
 ### 8.5 Transiciones
 `ClientRouter` de Astro (navegación sin recarga) con prefetch al pasar el cursor. Transiciones sutiles; respetan `prefers-reduced-motion`.
@@ -237,6 +239,9 @@ Estructura: `.hero` > `.hero__track` (scroll-snap horizontal, sin barra) > 3 `.h
 - **Fotos:** `hero-productos.jpg` (2048×1367), `hero-atencion-visual.jpg` (1000×667), `hero-convenios.jpg` (1024×683) servidas con `astro:assets` (anchos 640/1024/1600/original).
 - Historial de iteraciones y por qué se descartaron: ver §12.
 
+### 10.2b Franja "Entrega el mismo día" (Inicio)
+Banda azul `--color-primary` a ancho completo, justo bajo el hero (`.same-day`, `on-primary`). Icono `schedule` en círculo coral con el reloj azul (2,75 rem móvil / 3,5 rem desde 768), título 700 (`--text-xl` → `--text-2xl`) y texto debajo. La aclaración va siempre visible: en móvil debajo, separada por una línea blanca al 30 % y en `--text-xs`; desde 768 px en una tercera columna con filete coral de 3 px a la izquierda. Alto aprox.: 182 px (390), 111 px (1440). Texto blanco sobre azul (7,9:1). Sin botón. Con texto al 150 % crece en alto sin desborde.
+
 ### 10.3 Accesos rápidos de Inicio
 Tres tarjetas (borde gris, radio lg, alto mín. 5,5 rem): icono en cuadro coral (azul sobre coral), etiqueta 600, flecha. Rejilla fluida `auto-fit minmax(min(100%,14rem),1fr)`. Las tres llevan **foto de fondo** con el mismo filtro azul 75 % y texto blanco: `acceso-opticos.jpg` (encuadre `center 80%`, predominan los anteojos y no las personas) y `acceso-sol.jpg` (612×408, anteojos de sol rosados sobre arena, encuadre `center 62%`, foto de banco provisional). `acceso-atencion.jpg` (612×386, examen visual con equipo, encuadre `center 38%`, foto de banco provisional; muestra equipos no confirmados por el negocio).
 
@@ -244,19 +249,21 @@ Tres tarjetas (borde gris, radio lg, alto mín. 5,5 rem): icono en cuadro coral 
 - Beneficios: tarjetas con icono + título (600) + descripción corta (`--text-sm`, gris `--color-text-muted`, 2–3 líneas); en móvil icono a la izquierda y texto a la derecha, desde 768 px icono arriba (provisional).
 - Categorías: tarjeta con imagen 16/9 + título con flecha. "Anteojos ópticos" ya lleva foto (`categoria-opticos.jpg`, 612×408, persona probándose anteojos en una óptica, encuadre `center 35%`, banco provisional); "Anteojos de sol" también lleva foto (`categoria-sol.jpg`, 612×408, hombre con anteojos de sol, encuadre `center 12%`, banco provisional). Tercera tarjeta "Accesorios ópticos": foto `categoria-accesorios.jpg` (379×527, fundas acolchadas rosa y negra, encuadre `center 40%`, banco provisional; resolución baja), enlace a WhatsApp (pestaña nueva). Las tres van **en una sola línea desde 600 px** (`auto-fit minmax(min(100%, 11rem), 1fr)`, gap 0,75 rem, título `--text-base`, padding `--space-3`); con texto ampliado o en móvil bajan de a una.
 - Destacados: **carrusel horizontal con scroll-snap en móvil** (tarjetas de min(15rem, 78vw)); rejilla `auto-fill minmax(min(100%, max(14rem, 30%)), 1fr)` desde 768.
-- Promociones: **solo el afiche a ancho completo** (`promocion.jpg`, 1024×539, radio lg, `h2` oculto visualmente) y el botón coral **Solicitar promoción** (WhatsApp, pestaña nueva): desde 768 px **superpuesto abajo a la derecha** sobre la franja roja del afiche (`right 3%`, `bottom 2.5%`); en móvil **debajo** de la imagen, a ancho completo. Sin texto ni etiqueta provisional. El afiche es provisional (no es una promoción de Erredos).
-- Carrusel de marcas (`.brands`, entre destacados y promociones): franja a ancho completo con fondo `--color-primary-tint` y bordes grises arriba y abajo; nombres de marca en Poppins 700 (`min(--text-xl, 22px)`), azul `--color-primary` al 85 %, desplazándose en bucle (lista duplicada, `translateX(-50%)`, 32 s lineal) con bordes difuminados por `mask-image`. Se pausa con el mouse encima; con `prefers-reduced-motion` queda estático, centrado y en varias líneas. La copia duplicada va con `aria-hidden`. Hoy son texto, no logos; al recibir logos reales usar versiones monocromas en azul/gris para mantener la coherencia.
+- Promociones: **solo el afiche a ancho completo** (`promocion.jpg`, 1024×539, radio lg, `h2` oculto visualmente) y el botón coral **Solicitar promoción** (WhatsApp, pestaña nueva): desde 768 px **superpuesto abajo a la derecha** sobre la franja roja del afiche (`right 3%`, `bottom 2.5%`); en móvil **debajo** de la imagen, a ancho completo. El botón ya no es coral: sobre el rojo del afiche es **blanco con texto azul, 700, `--text-lg`, flecha y `--shadow-md`** (hover: azul con texto blanco); en móvil, sobre fondo blanco, es **azul sólido**. Sin texto ni etiqueta provisional. El afiche es provisional (no es una promoción de Erredos).
 - Banner de convenios: franja azul a ancho completo, icono coral, título (máx. 26ch) y botón coral; en fila desde 768.
 
 ### 10.5 Servicios
-**Agenda (`#agendar-hora`):** banda azul (`--color-primary`) a ancho completo con `margin-top` y `padding-block` de `--space-7` (sin margen inferior: queda pegada a la sección "¿Cómo solicitar atención?"); eyebrow coral, título y texto blancos, notas en tarjetas translúcidas (blanco al 10 % con borde blanco al 35 %), la nota de edad en tarjeta blanca; el formulario va en una tarjeta blanca con `--shadow-md` (sin borde). Es el bloque más destacado de la página. La pestaña del control de texto lleva un anillo blanco de 2 px para verse sobre el azul.
-Tarjetas de servicio (radio lg, borde gris, imagen 16/9 sin radio arriba —"Atención visual" con foto `servicio-atencion-visual.jpg` 612×408, encuadre `center 30%`, banco provisional; "Reparación" con `servicio-reparacion.jpg` 1536×1024, encuadre `center 55%`, provisional—, icono en cuadro azul —el segundo en coral—, ejemplos en caja tinte azul, **aviso** con icono info, dos botones). Agenda en dos columnas desde 1024 (intro + notas | formulario). Pasos numerados con círculo.
+Jerarquía (rediseño 13-11-2026): **1)** banner con un solo CTA "Agenda tu hora"; **2)** *Atención visual* protagonista; **3)** *Agenda* en banda azul; **4)** *Reparación* compacta y secundaria; **5)** FAQ; **6)** ubicación.
+- **Atención visual:** tarjeta de dos columnas desde 1024 px (foto `servicio-atencion-visual.jpg` 1.05fr + contenido 1fr, `min-height` 26 rem), fondo `--color-primary-tint`, radio lg; en móvil, foto primero (4/3) y contenido debajo. Sin eyebrow (se quitó el 13-11-2026; el protagonismo lo da el tamaño), título, texto `--text-lg`, aclaración discreta con icono info, botón primario "Agenda tu hora" (ancho completo en <480 px). Etiqueta "Imagen referencial" sobre la foto provisional.
+- **Agenda (`#agendar-hora`):** banda azul (`--color-primary`) a ancho completo, `padding-block` `--space-7` (`--space-8` desde 1024); eyebrow coral, título y texto blancos, notas en tarjetas translúcidas, la de edad en tarjeta blanca; formulario en tarjeta blanca con `--shadow-md`. Dos columnas desde 1024 (0.8fr intro | 1.4fr agenda). Es el bloque más destacado. La pestaña del control de texto lleva un anillo blanco para verse sobre el azul.
+- **Reparación:** bloque horizontal de borde gris (radio lg), foto `servicio-reparacion.jpg` (16/7 en móvil, columna 0.8fr desde 768), título `--text-xl`, texto, nota pequeña y botón **outline** "Consultar por WhatsApp". El contenido va centrado verticalmente junto a la foto. Sin icono grande ni color de acento: no compite con la agenda.
+- **FAQ:** desde 1024 px dos columnas (`.faq-layout`, 0.8fr | 1.6fr): título, línea de ayuda y botón outline de WhatsApp a la izquierda (sticky bajo el header) y acordeón a la derecha en una sola columna; bajo 1024 px todo apilado, ancho completo. El desplazamiento suave a la agenda se activa solo con `prefers-reduced-motion: no-preference`.
 
 ### 10.6 Convenios
-Públicos en rejilla de iconos; dos tarjetas de alternativa (la segunda en variante alterna), pasos con icono en cuadro; sección de formulario con intro + aside de WhatsApp y el formulario en tarjeta.
+Públicos en rejilla de iconos; dos tarjetas de alternativa (la segunda en variante alterna) **con una foto 16/9 a sangre en la parte superior** (`Image`, `object-fit: cover`; `convenios-alianza.jpg` encuadre `center 40%` y `convenios-operativo.jpg` encuadre `center 30%`, fotos provisionales de referencia; mantener la proporción al reemplazar), pasos con icono en cuadro; sección de formulario con intro + aside de WhatsApp y el formulario en tarjeta.
 
 ### 10.7 Quiénes somos
-Historia: foto `historia-local.jpg` (399×501, ratio 4/5, radio lg; incluye logo y texto de la publicación original, resolución baja) + texto + nota con la información pendiente; principios en 4 tarjetas; espacio con **3 fotos** (`espacio-exterior.jpg` grande a la izquierda; `espacio-equipo.jpg` e `espacio-interior.jpg` apiladas a la derecha, filas de 13 rem desde 600 px; en móvil una bajo otra en 4/3, `object-fit: cover`, radio lg) y botón "Cómo llegar"; ubicación con lista (dirección/horarios), botones y mapa bajo demanda; accesos finales en 3 tarjetas con flecha.
+Historia: foto `historia-local.jpg` (399×501, ratio 4/5, radio lg; incluye logo y texto de la publicación original, resolución baja) + texto + nota con la información pendiente; principios en 4 tarjetas; espacio con **3 fotos** (`espacio-exterior.jpg` grande a la izquierda; `espacio-equipo.jpg` e `espacio-interior.jpg` apiladas a la derecha, filas de 13 rem desde 600 px; en móvil una bajo otra en 4/3, `object-fit: cover`, radio lg) y botón "Cómo llegar"; ubicación con lista (dirección/horarios), botones y mapa de Google visible de inmediato; accesos finales en 3 tarjetas con flecha.
 
 ---
 
@@ -285,7 +292,7 @@ Historia: foto `historia-local.jpg` (399×501, ratio 4/5, radio lg; incluye logo
 | Filtros móviles | Bottom sheet en modo borrador | Filtros que se aplican al instante en móvil (provocan saltos de contenido) |
 | Productos | Una tarjeta por modelo con selector de color | Una tarjeta por cada color |
 | Mapa | Incrustado y visible de inmediato (decisión de Jennih, 12-11-2026) | Bajo demanda con botón "Mostrar mapa aquí" |
-| Agenda | Vista semanal en 2 pasos | Formulario simple de solicitud |
+| Agenda | Vista semanal en 3 pasos (fecha y hora → datos → revisión), final "Solicitud recibida" (13-11-2026) | Formulario simple de solicitud; versión de 2 pasos con "agendada con éxito" (prometía una confirmación no validada) |
 | Maqueta | Sin avisos de "modo demostración" (`prototypeMode`) | Avisos y "no se agendó" (Jennih quiere ver el flujo completo) |
 
 Observaciones de diseño aún abiertas:
@@ -357,3 +364,26 @@ Observaciones de diseño aún abiertas:
 | 13-11-2026 | Confirmación de agenda: título de éxito y callout coral con el aviso de confirmación 24 h antes (§7.7, paso 3). |
 | 13-11-2026 | Formulario de Convenios: "Tipo de solicitud" como campo desplegable (`select`) en lugar de tarjetas de radio (§7.2). |
 | 13-11-2026 | Inicio: carrusel infinito de marcas entre destacados y promociones (§10.4). |
+| 13-11-2026 | Inicio: eliminado el carrusel de marcas (§10.4). |
+| 13-11-2026 | Inicio: botón "Solicitar promoción" blanco con texto azul sobre el afiche (azul en móvil) para que destaque sobre el rojo (§10.4). |
+| 13-11-2026 | Botón flotante de WhatsApp con más presencia: más grande y en negrita, círculo azul con el icono, anillo blanco, sombra marcada y halo breve (§8.4b). |
+| 13-11-2026 | Control de accesibilidad: pestaña más grande (54–62 px) con icono proporcional; en móvil se reserva más espacio sobre el botón flotante para que no choquen con el texto al 150 % (§8.4). |
+| 13-11-2026 | Header: el botón "Contáctanos" adopta el estilo del botón flotante (píldora coral con círculo azul, negrita, anillo y sombra) (§8.1). |
+| 13-11-2026 | Tarjeta de producto: dos botones, "Ver producto" (ficha) y "Consultar" (WhatsApp); se apilan cuando no caben (§7.4). |
+| 13-11-2026 | Tarjeta de producto: "Ver producto" pasa a azul sólido y "Consultar" a contorno azul (como los botones del hero); precios de anteojos ópticos como "Desde $X" (§7.4, §7.6). |
+| 13-11-2026 | Convenios: las dos tarjetas de alternativas llevan un espacio de imagen 16/9 arriba para destacarlas (§10.6). |
+| 13-11-2026 | Formularios (≥768 px): los campos de una misma fila alinean sus controles aunque una etiqueta ocupe dos líneas (§7.2). |
+| 13-11-2026 | Convenios: fotos de referencia en las dos tarjetas de alternativas, reemplazan los marcadores (§10.6). |
+| 13-11-2026 | Formulario de Convenios: etiqueta corta "Cantidad de participantes (aprox.)" en una línea (§7.2). |
+| 13-11-2026 | Inicio: nueva franja azul "entrega el mismo día" bajo el hero (§10.2b). |
+| 13-11-2026 | Convenios: las tarjetas de alternativas pierden el recuadro "Pensado para" (queda foto, título, 1 frase y botón). Criterio general: textos de tarjeta de 1–2 líneas (§10.6). |
+| 13-11-2026 | Ubicación (`LocationBlock`): se revierte la reducción del mapa; vuelve a media columna, ratio 4/3 (§7.9). |
+| 13-11-2026 | Consulta por WhatsApp de un producto: el mensaje lista modelo, marca, color y código y, cuando `site.url` esté configurado, el enlace a la ficha (WhatsApp muestra la foto como vista previa gracias a `og:image`) (§7.4, §7.6). |
+| 13-11-2026 | Botón "Solicitar promoción": el mensaje de WhatsApp incluye el enlace a la imagen de la promoción (`public/promociones/promocion.jpg`) cuando `site.url` está configurado (§10.4). Sin cambios visuales. |
+| 13-11-2026 | Consulta por WhatsApp de un producto: se agrega la línea de precio al mensaje. Sin cambios visuales (§7.4, §7.6). |
+| 13-11-2026 | Servicios rediseñada (§10.5, §7.7): jerarquía atención visual → agenda → reparación; agenda en tres pasos con indicador de progreso, leyenda del calendario, paso de revisión y estado "enviando"; reparación como bloque compacto outline; se quita "¿Cómo solicitar atención?". |
+| 13-11-2026 | `FormBehavior`: nuevo evento cancelable `form:valid` para formularios de varios pasos. `astro.config.mjs` vuelve a la configuración sin `base` (publicación en Vercel). |
+| 13-11-2026 | Servicios → Reparación: el texto del bloque queda centrado verticalmente respecto de la foto (§10.5). |
+| 13-11-2026 | Servicios → Atención visual: se elimina el eyebrow "Nuestro servicio principal" (§10.5). |
+| 13-11-2026 | Servicios → FAQ: recomposición en escritorio (título + ayuda a la izquierda, acordeón a la derecha) para eliminar el vacío lateral (§10.5). |
+| 13-11-2026 | Servicios → Atención visual: cambio de texto, sin cambios visuales (§10.5). |

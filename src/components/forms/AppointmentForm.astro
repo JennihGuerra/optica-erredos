@@ -1,14 +1,17 @@
 ---
 /**
- * Agenda de hora para atención visual, en dos pasos:
- *   1. Elegir día y hora en una vista semanal (bloques de 30 minutos).
- *   2. Dejar los datos de contacto y el rango de edad del paciente.
+ * Agenda de hora para atención visual, en tres pasos:
+ *   1. Seleccionar fecha y hora (vista semanal, bloques de 30 minutos).
+ *   2. Completar datos de contacto (nombre, correo, celular y rango de edad del paciente).
+ *   3. Revisar la solicitud y enviarla.
+ * Después del envío se muestra "Solicitud recibida": la hora queda PENDIENTE de confirmación.
  *
  * Las horas se calculan desde `site.appointments` (bloques y duración).
  * LIMITACIÓN: no hay un sistema de agenda conectado, así que el sitio no sabe qué horas
- * ya están tomadas. En modo maqueta (`site.prototypeMode`) el flujo termina en una
- * confirmación, pero no se envía ni se guarda nada.
- * La validación, el envío y el modo demostración viven en FormBehavior.astro.
+ * ya están tomadas. En modo maqueta (`site.prototypeMode`) el flujo termina en la pantalla
+ * final, pero no se envía ni se guarda nada.
+ * La validación, el envío y el modo demostración viven en FormBehavior.astro. El paso 2 envía el
+ * formulario para validar y FormBehavior avisa con `form:valid`; el paso 3 hace el envío real.
  */
 import Icon from '../ui/Icon.astro';
 import FormBehavior from './FormBehavior.astro';
@@ -17,9 +20,10 @@ import { whatsappUrl, whatsappMessages } from '../../lib/whatsapp';
 
 const isDemo = !site.formEndpoint && !site.prototypeMode;
 const { appointments } = site;
+const progress = ['Fecha y hora', 'Tus datos', 'Revisión'];
 ---
 
-<div class="booking" data-booking data-config={JSON.stringify(appointments)}>
+<div class="booking-ui" data-booking data-config={JSON.stringify(appointments)}>
   <noscript>
     <p class="booking-ui__empty">
       Para elegir una hora aquí necesitas tener JavaScript activado. También puedes pedir tu hora por
@@ -27,10 +31,28 @@ const { appointments } = site;
     </p>
   </noscript>
 
-  <!-- PASO 1: día y hora -->
+  <!-- Indicador de progreso: el paso actual lleva aria-current; los completados llevan un check. -->
+  <ol class="progress" data-progress aria-label="Progreso de tu solicitud" hidden>
+    {
+      progress.map((label, index) => (
+        <li class="progress__item" data-progress-step={index + 1}>
+          <span class="progress__dot" aria-hidden="true">
+            <span class="progress__num">{index + 1}</span>
+            <Icon name="check" />
+          </span>
+          <span class="progress__label">
+            <span class="visually-hidden">Paso {index + 1} de 3: </span>
+            {label}
+            <span class="visually-hidden" data-progress-state />
+          </span>
+        </li>
+      ))
+    }
+  </ol>
+
+  <!-- PASO 1: fecha y hora -->
   <section class="booking-ui__step" data-step="1" aria-labelledby="booking-step-1" hidden>
-    <p class="booking-ui__progress">Paso 1 de 2</p>
-    <h3 id="booking-step-1" tabindex="-1">Elige día y hora</h3>
+    <h3 id="booking-step-1" tabindex="-1">Selecciona fecha y hora</h3>
 
     <div class="week">
       <button type="button" class="icon-btn week__nav" data-week-prev aria-label="Semana anterior">
@@ -47,6 +69,12 @@ const { appointments } = site;
 
     <div class="days" role="group" aria-label="Días de la semana" data-days></div>
 
+    <ul class="legend" role="list" aria-label="Cómo leer el calendario">
+      <li><span class="legend__swatch legend__swatch--open" aria-hidden="true"></span>Con horas</li>
+      <li><span class="legend__swatch legend__swatch--picked" aria-hidden="true"></span>Elegido</li>
+      <li><span class="legend__swatch legend__swatch--off" aria-hidden="true">—</span>Sin horas</li>
+    </ul>
+
     <div class="slots" data-slots aria-live="polite"></div>
 
     <div class="booking-ui__footer">
@@ -55,49 +83,48 @@ const { appointments } = site;
     </div>
   </section>
 
-  <!-- PASO 2: datos -->
-  <section class="booking-ui__step" data-step="2" aria-labelledby="booking-step-2" hidden>
-    <p class="booking-ui__progress">Paso 2 de 2</p>
-    <h3 id="booking-step-2" tabindex="-1">Tus datos</h3>
+  <form
+    class="form"
+    id="form-hora"
+    novalidate
+    data-form
+    data-endpoint={site.formEndpoint}
+    data-prototype={String(site.prototypeMode)}
+    data-wa-base={whatsappUrl('')}
+    data-wa-intro="Hola, quisiera solicitar una hora de atención visual en Óptica Erredos."
+    data-demo-title="Tus datos están correctos, pero la solicitud no se envió."
+    data-demo-text="Este formulario está en modo demostración y aún no está conectado con Óptica Erredos, así que no hay ninguna solicitud registrada. Para pedir esta hora ahora, envía los mismos datos por WhatsApp."
+    data-success-title="Solicitud recibida."
+    data-success-text="Tu hora queda pendiente de confirmación: el equipo de Óptica Erredos te contactará."
+  >
+    {
+      isDemo && (
+        <p class="form__demo" role="note">
+          <Icon name="info" />
+          <span>
+            <strong>Agenda en modo demostración.</strong> Todavía no está conectada: puedes probarla, pero tu
+            solicitud no se enviará a Óptica Erredos.
+          </span>
+        </p>
+      )
+    }
 
-    <div class="booking-ui__summary">
-      <Icon name="event_available" />
-      <p>
-        <span>Hora elegida</span>
-        <strong data-summary></strong>
-      </p>
-      <button type="button" class="btn btn--outline" data-change>Cambiar</button>
-    </div>
+    <input type="hidden" name="servicio" value="Atención visual" />
+    <input type="hidden" name="dia" data-field-day data-wa-label="Día" />
+    <input type="hidden" name="hora" data-field-time data-wa-label="Hora" />
 
-    <form
-      class="form"
-      id="form-hora"
-      novalidate
-      data-form
-      data-endpoint={site.formEndpoint}
-      data-prototype={String(site.prototypeMode)}
-      data-wa-base={whatsappUrl('')}
-      data-wa-intro="Hola, quisiera agendar una hora de atención visual en Óptica Erredos."
-      data-demo-title="Tus datos están correctos, pero la solicitud no se envió."
-      data-demo-text="Este formulario está en modo demostración y aún no está conectado con Óptica Erredos, así que no hay ninguna hora agendada. Para pedir esta hora ahora, envía los mismos datos por WhatsApp."
-      data-success-title="¡Tu hora quedó agendada con éxito!"
-      data-success-text="Te confirmaremos tu atención por correo electrónico o por teléfono 24 horas antes."
-    >
-      {
-        isDemo && (
-          <p class="form__demo" role="note">
-            <Icon name="info" />
-            <span>
-              <strong>Agenda en modo demostración.</strong> Todavía no está conectada: puedes probarla,
-              pero tu solicitud no se enviará a Óptica Erredos.
-            </span>
-          </p>
-        )
-      }
+    <!-- PASO 2: datos -->
+    <section class="booking-ui__step" data-step="2" aria-labelledby="booking-step-2" hidden>
+      <h3 id="booking-step-2" tabindex="-1">Completa tus datos</h3>
 
-      <input type="hidden" name="servicio" value="Atención visual" />
-      <input type="hidden" name="dia" data-field-day data-wa-label="Día" />
-      <input type="hidden" name="hora" data-field-time data-wa-label="Hora" />
+      <div class="booking-ui__summary">
+        <Icon name="event_available" />
+        <p>
+          <span>Fecha y hora elegidas</span>
+          <strong data-summary></strong>
+        </p>
+        <button type="button" class="btn btn--outline" data-change>Cambiar</button>
+      </div>
 
       <p class="form__legend">Todos los campos son obligatorios.</p>
 
@@ -110,6 +137,7 @@ const { appointments } = site;
             name="nombre"
             type="text"
             autocomplete="name"
+            placeholder="Ej.: María González"
             required
             data-wa-label="Nombre"
             data-error="Escribe tu nombre y apellido."
@@ -125,6 +153,7 @@ const { appointments } = site;
             type="email"
             autocomplete="email"
             inputmode="email"
+            placeholder="nombre@correo.cl"
             required
             data-wa-label="Correo"
             data-error="Escribe un correo válido, por ejemplo nombre@correo.cl."
@@ -132,23 +161,7 @@ const { appointments } = site;
         </div>
 
         <div class="field">
-          <label class="field__label" for="hora-correo-2">Confirma tu correo electrónico</label>
-          <input
-            class="field__control"
-            id="hora-correo-2"
-            name="correo_confirmacion"
-            type="email"
-            autocomplete="email"
-            inputmode="email"
-            required
-            data-rule="match"
-            data-match="#hora-correo"
-            data-error="Los correos no coinciden. Escribe el mismo correo en ambos campos."
-          />
-        </div>
-
-        <div class="field">
-          <label class="field__label" for="hora-celular">Número de celular</label>
+          <label class="field__label" for="hora-celular">Teléfono de contacto</label>
           <input
             class="field__control"
             id="hora-celular"
@@ -156,13 +169,14 @@ const { appointments } = site;
             type="tel"
             autocomplete="tel"
             inputmode="tel"
+            placeholder="Ej.: 9 1234 5678"
             required
             data-wa-label="Celular"
-            data-error="Escribe un celular con al menos 8 dígitos para poder confirmar tu hora."
+            data-error="Escribe un teléfono con al menos 8 dígitos para poder confirmar tu hora."
           />
         </div>
 
-        <div class="field">
+        <div class="field form__wide">
           <label class="field__label" for="hora-edad">Rango de edad del paciente</label>
           <select
             class="field__control"
@@ -189,29 +203,82 @@ const { appointments } = site;
         <a href="/politica-de-privacidad">política de privacidad</a>.
       </p>
 
-      <button type="submit" class="btn btn--primary form__submit" data-submit>
-        <span data-submit-label>Agenda tu hora</span>
-      </button>
+      <div class="booking-ui__footer booking-ui__footer--end">
+        <button type="button" class="btn btn--outline" data-back-1>
+          <Icon name="arrow_back" />
+          <span>Volver</span>
+        </button>
+        <button type="submit" class="btn btn--primary">Continuar</button>
+      </div>
+    </section>
 
-      <div class="form__status" data-status role="status" aria-live="polite" tabindex="-1" hidden></div>
-    </form>
-  </section>
+    <!-- PASO 3: revisión -->
+    <section class="booking-ui__step" data-step="3" aria-labelledby="booking-step-3" hidden>
+      <h3 id="booking-step-3" tabindex="-1">Revisa tu solicitud</h3>
 
-  <!-- CONFIRMACIÓN -->
-  <section class="booking-ui__step booking-ui__done" data-step="3" aria-labelledby="booking-step-3" hidden>
+      <dl class="booking-ui__details">
+        <div>
+          <dt>Fecha y hora</dt>
+          <dd data-review-when></dd>
+        </div>
+        <div>
+          <dt>Servicio</dt>
+          <dd>Atención visual</dd>
+        </div>
+        <div>
+          <dt>Nombre</dt>
+          <dd data-review-name></dd>
+        </div>
+        <div>
+          <dt>Correo electrónico</dt>
+          <dd data-review-email></dd>
+        </div>
+        <div>
+          <dt>Teléfono</dt>
+          <dd data-review-phone></dd>
+        </div>
+        <div>
+          <dt>Edad del paciente</dt>
+          <dd data-review-age></dd>
+        </div>
+      </dl>
+
+      <p class="booking-ui__notice" role="note">
+        <Icon name="schedule" />
+        <span>
+          <strong>Tu hora quedará pendiente de confirmación.</strong>
+          Al enviar, el equipo de Óptica Erredos revisará tu solicitud y se comunicará contigo.
+        </span>
+      </p>
+
+      <div class="booking-ui__footer booking-ui__footer--end">
+        <button type="button" class="btn btn--outline" data-back-2>
+          <Icon name="arrow_back" />
+          <span>Corregir datos</span>
+        </button>
+        <button type="submit" class="btn btn--primary form__submit" data-submit>
+          <span data-submit-label>Enviar solicitud</span>
+        </button>
+      </div>
+    </section>
+
+    <div class="form__status" data-status role="status" aria-live="polite" tabindex="-1" hidden></div>
+  </form>
+
+  <!-- PASO FINAL: solicitud recibida (pendiente de confirmación) -->
+  <section class="booking-ui__step booking-ui__done" data-step="4" aria-labelledby="booking-step-4" hidden>
     <span class="booking-ui__check"><Icon name="check_circle" /></span>
-    <h3 id="booking-step-3" tabindex="-1">¡Tu hora quedó agendada con éxito!</h3>
+    <h3 id="booking-step-4" tabindex="-1">Solicitud recibida</h3>
     <p class="booking-ui__notice" role="note">
       <Icon name="schedule" />
       <span>
-        <strong>Te confirmaremos tu atención 24 horas antes.</strong>
-        Nos pondremos en contacto contigo por correo electrónico o por teléfono para confirmar tu hora.
+        <strong>Tu hora aún no está confirmada.</strong>
+        El equipo de Óptica Erredos se comunicará contigo para confirmarla.
       </span>
     </p>
-    <p>Te esperamos en Óptica Erredos, {site.address}.</p>
     <dl class="booking-ui__details">
       <div>
-        <dt>Día y hora</dt>
+        <dt>Fecha y hora solicitadas</dt>
         <dd data-done-when></dd>
       </div>
       <div>
@@ -227,11 +294,9 @@ const { appointments } = site;
         <dd data-done-contact></dd>
       </div>
     </dl>
-    <p class="booking-ui__hint">
-      Si necesitas cambiar o anular tu hora, escríbenos por WhatsApp.
-    </p>
+    <p class="booking-ui__hint">Si necesitas cambiar o anular tu solicitud, escríbenos por WhatsApp.</p>
     <div class="booking-ui__done-actions">
-      <button type="button" class="btn btn--primary" data-restart>Agenda otra hora</button>
+      <button type="button" class="btn btn--primary" data-restart>Solicitar otra hora</button>
       <a class="btn btn--outline" href={whatsappUrl(whatsappMessages.visualCare)} target="_blank" rel="noopener">
         <Icon name="chat" />
         <span>Escribir por WhatsApp<span class="visually-hidden"> (se abre en una pestaña nueva)</span></span>
@@ -268,6 +333,12 @@ const { appointments } = site;
     const $ = <T extends HTMLElement>(selector: string) => root.querySelector<T>(selector)!;
     const step1 = $('[data-step="1"]');
     const step2 = $('[data-step="2"]');
+    const step3 = $('[data-step="3"]');
+    const step4 = $('[data-step="4"]');
+    const form = $<HTMLFormElement>('[data-form]');
+    const status = $('[data-status]');
+    const progress = $('[data-progress]');
+    let currentStep = 1;
     const daysBox = $('[data-days]');
     const slotsBox = $('[data-slots]');
     const monthLabel = $('[data-month]');
@@ -394,10 +465,22 @@ const { appointments } = site;
       renderChoice();
     }
 
-    const step3 = $('[data-step="3"]');
-    function showStep(step: 1 | 2 | 3) {
-      const steps = [step1, step2, step3];
+    const progressState = ['Paso completado', 'Paso actual', 'Paso pendiente'];
+    function showStep(step: 1 | 2 | 3 | 4) {
+      currentStep = step;
+      const steps = [step1, step2, step3, step4];
       steps.forEach((section, index) => (section.hidden = index !== step - 1));
+      status.hidden = true;
+      // Indicador de progreso: oculto en la pantalla final.
+      progress.hidden = step === 4;
+      progress.querySelectorAll<HTMLElement>('[data-progress-step]').forEach((item) => {
+        const number = Number(item.dataset.progressStep);
+        const state = number < step ? 'done' : number === step ? 'current' : 'todo';
+        item.dataset.state = state;
+        if (state === 'current') item.setAttribute('aria-current', 'step');
+        else item.removeAttribute('aria-current');
+        item.querySelector('[data-progress-state]')!.textContent = ` (${progressState[state === 'done' ? 0 : state === 'current' ? 1 : 2].toLowerCase()})`;
+      });
       steps[step - 1].querySelector<HTMLElement>('h3')!.focus();
     }
 
@@ -444,8 +527,23 @@ const { appointments } = site;
     });
 
     $('[data-change]').addEventListener('click', () => showStep(1));
+    $('[data-back-1]').addEventListener('click', () => showStep(1));
+    $('[data-back-2]').addEventListener('click', () => showStep(2));
 
-    // Al terminar el envío se muestra la confirmación con el resumen de la hora.
+    // Paso 2 → 3: los datos ya pasaron la validación; se muestra el resumen para revisar.
+    form.addEventListener('form:valid', (event) => {
+      if (currentStep !== 2) return;
+      event.preventDefault();
+      const data = (event as CustomEvent<Record<string, string>>).detail;
+      $('[data-review-when]').textContent = summary.textContent;
+      $('[data-review-name]').textContent = data.nombre;
+      $('[data-review-email]').textContent = data.correo;
+      $('[data-review-phone]').textContent = data.celular;
+      $('[data-review-age]').textContent = data.edad;
+      showStep(3);
+    });
+
+    // Al terminar el envío se muestra "Solicitud recibida" (pendiente de confirmación).
     root.addEventListener('form:success', (event) => {
       event.preventDefault();
       const data = (event as CustomEvent<Record<string, string>>).detail;
@@ -460,7 +558,7 @@ const { appointments } = site;
           /* sin almacenamiento disponible */
         }
       }
-      showStep(3);
+      showStep(4);
     });
 
     $('[data-restart]').addEventListener('click', () => {
@@ -470,6 +568,17 @@ const { appointments } = site;
       renderChoice();
       showStep(1);
     });
+
+    function showStepInitial() {
+      progress.hidden = false;
+      step1.hidden = false;
+      progress.querySelectorAll<HTMLElement>('[data-progress-step]').forEach((item) => {
+        const number = Number(item.dataset.progressStep);
+        item.dataset.state = number === 1 ? 'current' : 'todo';
+        if (number === 1) item.setAttribute('aria-current', 'step');
+        item.querySelector('[data-progress-state]')!.textContent = number === 1 ? ' (paso actual)' : ' (paso pendiente)';
+      });
+    }
 
     /* --- Estado inicial: primera semana con horas, con su primer día marcado --- */
 
@@ -483,7 +592,7 @@ const { appointments } = site;
         }
       }
     }
-    step1.hidden = false;
+    showStepInitial();
     renderWeek();
     renderSlots();
     renderChoice();
@@ -493,6 +602,7 @@ const { appointments } = site;
   document.addEventListener('astro:page-load', initBooking);
 </script>
 
+
 <style>
   .booking-ui__step {
     display: grid;
@@ -500,17 +610,150 @@ const { appointments } = site;
     gap: var(--space-4);
   }
 
-  .booking-ui__progress {
+  .booking-ui {
+    display: grid;
+    gap: var(--space-5);
+  }
+
+  /* --- Indicador de progreso (número + etiqueta; los pasos hechos llevan un check) --- */
+
+  .progress {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .progress__item {
+    position: relative;
+    display: grid;
+    justify-items: center;
+    gap: var(--space-2);
+    text-align: center;
+  }
+
+  /* Línea que une cada paso con el anterior. */
+  .progress__item:not(:first-child)::before {
+    content: '';
+    position: absolute;
+    top: 1.125rem;
+    right: 50%;
+    left: calc(-50% + 1.25rem);
+    height: 2px;
+    background: var(--color-border);
+  }
+
+  .progress__item[data-state='done']:not(:first-child)::before,
+  .progress__item[data-state='current']:not(:first-child)::before {
+    background: var(--color-primary);
+  }
+
+  .progress__dot {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border: 2px solid var(--color-border-strong);
+    border-radius: var(--radius-pill);
+    background: var(--color-bg);
+    color: var(--color-text-muted);
+    font-weight: var(--font-bold);
+  }
+
+  .progress__dot :global(.icon) {
+    display: none;
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  .progress__item[data-state='current'] .progress__dot {
+    border-color: var(--color-primary);
+    background: var(--color-primary);
+    color: var(--color-on-primary);
+    box-shadow: 0 0 0 4px var(--color-primary-tint);
+  }
+
+  .progress__item[data-state='done'] .progress__dot {
+    border-color: var(--color-primary);
+    background: var(--color-primary-tint);
     color: var(--color-primary);
+  }
+
+  .progress__item[data-state='done'] .progress__num {
+    display: none;
+  }
+
+  .progress__item[data-state='done'] .progress__dot :global(.icon) {
+    display: block;
+  }
+
+  .progress__label {
+    color: var(--color-text-muted);
     font-size: var(--text-sm);
-    font-weight: var(--font-semibold);
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
+    font-weight: var(--font-medium);
+    line-height: 1.3;
+  }
+
+  .progress__item[data-state='current'] .progress__label {
+    color: var(--color-primary);
+    font-weight: var(--font-bold);
+  }
+
+  .progress__item[data-state='done'] .progress__label {
+    color: var(--color-text);
   }
 
   h3 {
-    margin-top: calc(var(--space-3) * -1);
     font-size: var(--text-xl);
+  }
+
+  /* Leyenda del calendario: cada estado se distingue por forma y texto, no solo por color. */
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-4);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+  }
+
+  .legend li {
+    display: flex;
+    gap: var(--space-2);
+    align-items: center;
+  }
+
+  .legend__swatch {
+    display: grid;
+    place-items: center;
+    width: 1.25rem;
+    height: 1.25rem;
+    border: 1px solid var(--color-border-strong);
+    border-radius: 4px;
+    background: var(--color-bg);
+    font-size: var(--text-xs);
+    line-height: 1;
+  }
+
+  .legend__swatch--picked {
+    border-color: var(--color-primary);
+    background: var(--color-primary);
+    box-shadow: inset 0 -3px 0 var(--color-accent);
+  }
+
+  .legend__swatch--off {
+    border-style: dashed;
+    border-color: var(--color-border);
+    color: var(--color-border-strong);
+  }
+
+  .field__control::placeholder {
+    color: var(--color-text-muted);
+    opacity: 1;
   }
 
   h3:focus-visible {
@@ -694,6 +937,32 @@ const { appointments } = site;
     border-top: 1px solid var(--color-border);
   }
 
+  .booking-ui__footer--end {
+    justify-content: space-between;
+  }
+
+  .booking-ui__footer .btn :global(.icon) {
+    flex: none;
+  }
+
+  /* Estado "enviando": el botón queda inactivo y muestra un indicador giratorio. */
+  .form__submit:disabled::before {
+    content: '';
+    width: 1rem;
+    height: 1rem;
+    margin-right: var(--space-2);
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: booking-spin 0.8s linear infinite;
+  }
+
+  @keyframes booking-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
   .booking-ui__footer .btn[aria-disabled='true'] {
     background: var(--color-border);
     color: var(--color-text);
@@ -844,7 +1113,7 @@ const { appointments } = site;
   @media (max-width: 29.99em) {
     .booking-ui__footer .btn,
     .booking-ui__done-actions .btn {
-      width: 100%;
+      flex: 1 1 100%;
     }
   }
 </style>

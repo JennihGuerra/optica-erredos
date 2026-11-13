@@ -16,6 +16,7 @@
  *   reglas:   data-rule="workday" (fecha de lunes a sábado, desde mañana)
  *             data-rule="slot" + data-date-field="#id" (los sábados solo en la mañana)
  *             data-rule="match" + data-match="#id" (debe repetir el valor de otro campo)
+ *   eventos:  `form:valid` (cancelable; datos válidos, antes de enviar) y `form:success` (cancelable)
  */
 import Icon from '../ui/Icon.astro';
 ---
@@ -175,6 +176,14 @@ import Icon from '../ui/Icon.astro';
         (controlOf(first) ?? first.querySelector<HTMLElement>('input'))?.focus();
         return;
       }
+
+      // Formularios en varios pasos (agenda): quien escucha `form:valid` puede detener el envío
+      // (preventDefault) para pasar al siguiente paso. Sin oyentes, el envío continúa normal.
+      status.hidden = true;
+      const proceed = form.dispatchEvent(
+        new CustomEvent('form:valid', { detail: Object.fromEntries(new FormData(form)), cancelable: true, bubbles: true }),
+      );
+      if (!proceed) return;
 
       const endpoint = form.dataset.endpoint;
       const link = whatsappLink();

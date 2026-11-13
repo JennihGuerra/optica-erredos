@@ -32,22 +32,21 @@ export const services: Service[] = [
     slug: 'atencion-visual',
     name: 'Atención visual',
     description:
-      'Orientación visual con nuestra tecnóloga.',
+      'Nuestra tecnóloga médica evaluará tu visión y te guiará paso a paso para encontrar los lentes ideales para ti.',
     icon: 'visibility',
-    cta: 'Consultar atención',
+    cta: 'Consultar por WhatsApp',
     whatsappMessage: whatsappMessages.visualCare,
     imageLabel: 'atención visual en la óptica',
     primaryAction: { label: 'Agenda tu hora', href: '#agendar-hora' },
-    notice:
-      'No reemplaza una consulta oftalmológica. No atendemos a menores de 10 años: necesitan antes un oftalmólogo.',
+    notice: 'Esta atención no corresponde a una consulta oftalmológica.',
   },
   {
     slug: 'reparacion-y-ajuste',
     name: 'Reparación y ajuste de anteojos',
     description:
-      'Cuéntanos qué problema tienen tus anteojos y te orientamos.',
+      '¿Tus anteojos necesitan un ajuste o reparación? Contáctanos y cuéntanos qué les sucede para orientarte.',
     icon: 'build',
-    cta: 'Consultar reparación',
+    cta: 'Consultar por WhatsApp',
     whatsappMessage: whatsappMessages.repair,
     imageLabel: 'persona ajustando o reparando unos anteojos',
     examples: {
@@ -75,33 +74,24 @@ export interface FaqItem {
 
 export const servicesFaq: { title: string; items: FaqItem[] }[] = [
   {
-    title: 'Sobre la atención visual',
+    title: 'Lo más consultado',
     items: [
       {
-        question: '¿Quién realiza la atención visual?',
+        question: '¿Cómo puedo reservar una atención?',
         answer:
-          'La atención visual la realiza una tecnóloga. No corresponde a una consulta médica oftalmológica.',
+          'En "Agenda tu atención visual", en esta misma página, elige el día y la hora que prefieras, completa tus datos y revisa tu solicitud antes de enviarla.',
+      },
+      { question: '¿Qué debo llevar a mi atención visual?', answer: null },
+      {
+        question: '¿Cómo sabré si mi solicitud fue confirmada?',
+        answer:
+          'Al enviar tu solicitud, esta queda pendiente. El equipo de Óptica Erredos se comunicará contigo para confirmar tu hora.',
       },
       {
-        question: '¿Cómo puedo solicitar una atención?',
-        answer:
-          'En "Agenda tu hora de atención visual", en esta misma página, elige el día y la hora que prefieras y déjanos tus datos. También puedes escribirnos por WhatsApp.',
-      },
-      { question: '¿Necesito agendar previamente?', answer: null },
-      { question: '¿Qué debo llevar el día de mi atención?', answer: null },
-    ],
-  },
-  {
-    title: 'Sobre la reparación de anteojos',
-    items: [
-      { question: '¿Qué tipos de reparaciones realizan?', answer: null },
-      { question: '¿Puedo consultar por anteojos comprados en otra óptica?', answer: null },
-      {
-        question: '¿Cómo puedo saber si mis anteojos tienen reparación?',
+        question: '¿Cómo puedo consultar por una reparación?',
         answer:
           'Escríbenos por WhatsApp y cuéntanos qué problema presentan tus anteojos. Con esa información podremos orientarte.',
       },
-      { question: '¿Cuánto demora una reparación?', answer: null },
     ],
   },
 ];
