@@ -1,0 +1,562 @@
+---
+/**
+ * DETALLE DE PRODUCTO — /productos/:slug
+ * La conversión principal es la consulta por WhatsApp (sin carrito ni pago).
+ */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Icon from '../../components/ui/Icon.astro';
+import MeasureDiagram from '../../components/product/MeasureDiagram.astro';
+import { getImage } from 'astro:assets';
+import ProductMedia from '../../components/product/ProductMedia.astro';
+import ColorSwatches from '../../components/product/ColorSwatches.astro';
+import ProductCard from '../../components/product/ProductCard.astro';
+import {
+  products,
+  formatPrice,
+  productPriceLabel,
+  productTypeLabels,
+  productTypeRoutes,
+  type Product,
+} from '../../data/products';
+import { site } from '../../config/site';
+import { whatsappUrl, whatsappMessages, productLink, priceText } from '../../lib/whatsapp';
+
+export function getStaticPaths() {
+  return products.map((product) => ({ params: { slug: product.slug }, props: { product } }));
+}
+
+interface Props {
+  product: Product;
+}
+
+const { product } = Astro.props;
+const first = product.variants[0];
+const typeLabel = productTypeLabels[product.type];
+
+const features = [
+  { label: 'Marca', value: product.brand },
+  { label: 'Categoría', value: typeLabel },
+  { label: 'Forma del marco', value: product.shape },
+  { label: 'Estilo', value: product.style },
+  { label: 'Colores disponibles', value: product.variants.map((v) => v.color).join(', ') },
+].filter((feature) => feature.value);
+
+const m = product.measurements;
+const measures = m
+  ? [
+      { kind: 'height' as const, label: 'Altura del marco', value: m.frameHeight },
+      { kind: 'width' as const, label: 'Ancho del marco', value: m.frameWidth },
+      { kind: 'bridge' as const, label: 'Ancho del puente', value: m.bridgeWidth },
+      { kind: 'temple' as const, label: 'Largo de la varilla', value: m.templeLength },
+    ]
+  : [];
+
+// Miniaturas de la galería: la foto de la variante inicial + las fotos adicionales del producto.
+async function resolve(image: unknown): Promise<string | null> {
+  if (!image) return null;
+  if (typeof image === 'string') return image;
+  return (await getImage({ src: image as never, width: 960, format: 'webp' })).src;
+}
+const thumbs = (await Promise.all([first.image, ...product.gallery].map(resolve))).filter(
+  (src): src is string => Boolean(src),
+);
+
+// Relacionados: tres de la misma categoría, primero los de la misma forma.
+const related = products
+  .filter((other) => other.id !== product.id && other.type === product.type)
+  .sort((a, b) => Number(Boolean(b.shape) && b.shape === product.shape) - Number(Boolean(a.shape) && a.shape === product.shape))
+  .slice(0, 3);
+---
+
+<BaseLayout
+  title={`${product.name} — ${typeLabel}`}
+  image={thumbs[0]}
+  description={`${product.name}: ${typeLabel.toLowerCase()}${product.shape ? ` de forma ${product.shape.toLowerCase()}` : ''} en Óptica Erredos, Puerto Montt. Consulta por WhatsApp.`}
+>
+  <div class="container detail">
+    <a class="detail__back" href={productTypeRoutes[product.type]} data-back-to-catalog>
+      <Icon name="arrow_back" />
+      Volver a productos
+    </a>
+
+    <nav class="detail__crumbs" aria-label="Ruta de navegación">
+      <ol role="list">
+        <li><a href="/">Inicio</a></li>
+        <li><a href="/productos">Productos</a></li>
+        <li><a href={productTypeRoutes[product.type]}>{typeLabel}</a></li>
+        <li aria-current="page">{product.name}</li>
+      </ol>
+    </nav>
+
+    <article class="detail__main" data-product-card data-use-url-color>
+      <div class="detail__media">
+        <div class="detail__frame">
+          <ProductMedia product={product} width={960} />
+        </div>
+        {
+          thumbs.length > 1 && (
+            <ul role="list" class="detail__thumbs" aria-label="Fotos del producto">
+              {thumbs.map((src, i) => (
+                <li>
+                  <button
+                    type="button"
+                    class="detail__thumb"
+                    data-thumb
+                    data-src={src}
+                    aria-pressed={String(i === 0)}
+                    aria-label={`Ver foto ${i + 1} de ${thumbs.length}`}
+                  >
+                    <img src={src} alt="" loading="lazy" decoding="async" />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )
+        }
+      </div>
+
+      <div class="detail__info">
+        {product.brand && <p class="detail__brand">Marca: <strong>{product.brand}</strong></p>}
+        <h1>{product.name}</h1>
+        <p class="detail__code">Código: {product.code}</p>
+        {product.promotion && <p class="detail__promo">{product.promotion}</p>}
+        <p class="detail__price">{productPriceLabel(product)}</p>
+        {
+          site.catalogIsDemo && (
+            <p class="detail__demo">Producto de demostración: nombre, marca, precio y medidas son ficticios.</p>
+          )
+        }
+
+        <p class="detail__warranty">
+          <Icon name="verified_user" />
+          <span>Garantía de 6 meses</span>
+        </p>
+
+        <div class="detail__colors">
+          <ColorSwatches product={product} />
+        </div>
+
+        <a
+          class="btn btn--accent detail__cta"
+          href={whatsappUrl(whatsappMessages.product(product.name, product.brand, first.color, product.code, productLink(product.slug, first.color), priceText(product)))}
+          target="_blank"
+          rel="noopener"
+          data-card-cta
+        >
+          <Icon name="chat" />
+          <span>Consultar por WhatsApp<span class="visually-hidden"> (se abre en una pestaña nueva)</span></span>
+        </a>
+        <p class="detail__cta-note">
+          Este producto no se compra por la web: escríbenos y te atendemos. Tu mensaje incluirá el modelo y el color{' '}
+          <strong data-card-color-name>{first.color}</strong>.
+        </p>
+
+        <section aria-labelledby="features-title" class="detail__features">
+          <h2 id="features-title">Características</h2>
+          <dl>
+            {
+              features.map((feature) => (
+                <div>
+                  <dt>{feature.label}</dt>
+                  <dd>{feature.value}</dd>
+                </div>
+              ))
+            }
+          </dl>
+        </section>
+
+        <section aria-labelledby="description-title" class="detail__description">
+          <h2 id="description-title">Descripción</h2>
+          <p>{product.description}</p>
+        </section>
+      </div>
+    </article>
+
+    <div class="detail__guarantee" role="note">
+      <Icon name="verified_user" />
+      <p>
+        <strong>Garantía de 6 meses.</strong> Consulta las condiciones por WhatsApp o visítanos en {site.address}.
+      </p>
+    </div>
+
+    {
+      measures.length > 0 && (
+        <section class="detail__measures" aria-labelledby="measures-title">
+          <h2 id="measures-title">Guía de medidas</h2>
+          <ul role="list">
+            {measures.map((measure) => (
+              <li>
+                <MeasureDiagram kind={measure.kind} />
+                <p>
+                  {measure.label}: <strong>{measure.value} mm</strong>
+                </p>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )
+    }
+
+    {
+      related.length > 0 && (
+        <section class="detail__related" aria-labelledby="related-title">
+          <h2 id="related-title">Productos relacionados</h2>
+          <ul role="list">
+            {related.map((item) => (
+              <li>
+                <ProductCard product={item} />
+              </li>
+            ))}
+          </ul>
+        </section>
+      )
+    }
+  </div>
+</BaseLayout>
+
+<script>
+  // "Volver" regresa al catálogo tal como lo dejó la persona (categoría, filtros y orden).
+  function initBackLink() {
+    const link = document.querySelector<HTMLAnchorElement>('[data-back-to-catalog]');
+    if (!link) return;
+    try {
+      const url = sessionStorage.getItem('erredos:catalog-url');
+      if (url && url.startsWith('/productos')) link.href = url;
+    } catch {
+      /* sin almacenamiento disponible: se usa la categoría del producto */
+    }
+  }
+
+  // Galería: las miniaturas cambian la foto principal.
+  function initGallery() {
+    document.querySelectorAll<HTMLElement>('.detail__media').forEach((media) => {
+      const img = media.querySelector<HTMLImageElement>('[data-card-image]');
+      const thumbs = media.querySelectorAll<HTMLButtonElement>('[data-thumb]');
+      if (!img || thumbs.length === 0) return;
+      thumbs.forEach((thumb) => {
+        thumb.addEventListener('click', () => {
+          img.hidden = false;
+          img.src = thumb.dataset.src ?? img.src;
+          thumbs.forEach((other) => other.setAttribute('aria-pressed', String(other === thumb)));
+        });
+      });
+    });
+    // Al cambiar de color se vuelve a la foto de esa variante: la primera miniatura.
+    document.querySelectorAll<HTMLButtonElement>('[data-swatch]').forEach((swatch) => {
+      swatch.addEventListener('click', () => {
+        document.querySelectorAll<HTMLButtonElement>('[data-thumb]').forEach((thumb, i) => {
+          thumb.setAttribute('aria-pressed', String(i === 0));
+        });
+      });
+    });
+  }
+
+  initBackLink();
+  initGallery();
+  document.addEventListener('astro:page-load', () => {
+    initBackLink();
+    initGallery();
+  });
+</script>
+
+<style>
+  .detail {
+    padding-top: var(--space-4);
+  }
+
+  .detail__back {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: var(--touch-target);
+    font-weight: var(--font-semibold);
+    text-decoration: none;
+  }
+
+  .detail__crumbs {
+    display: none;
+    margin-top: var(--space-2);
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+  }
+
+  .detail__crumbs ol {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  .detail__crumbs li + li::before {
+    content: '/';
+    margin-right: var(--space-2);
+  }
+
+  .detail__crumbs a {
+    color: inherit;
+  }
+
+  .detail__main {
+    display: grid;
+    gap: var(--space-5);
+    margin-top: var(--space-3);
+  }
+
+  .detail__frame {
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+  }
+
+  .detail__thumbs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    margin-top: var(--space-3);
+  }
+
+  .detail__thumb {
+    display: block;
+    width: 4.5rem;
+    height: 4.5rem;
+    padding: 0;
+    overflow: hidden;
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: #f4f4f4;
+    cursor: pointer;
+  }
+
+  .detail__thumb[aria-pressed='true'] {
+    border-color: var(--color-primary);
+  }
+
+  .detail__thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .detail__code {
+    margin-top: var(--space-1);
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+  }
+
+  .detail__warranty {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin-top: var(--space-4);
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-sm);
+    background: var(--color-primary-tint);
+    color: var(--color-primary);
+    font-weight: var(--font-semibold);
+  }
+
+  .detail__guarantee {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-3);
+    margin-top: var(--space-7);
+    padding: var(--space-4);
+    border-top: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .detail__guarantee :global(.icon) {
+    flex: none;
+    color: var(--color-primary);
+  }
+
+  .detail__measures {
+    margin-top: var(--space-7);
+    padding: var(--space-6) var(--space-4);
+    border-radius: var(--radius-lg);
+    background: var(--color-primary-tint);
+  }
+
+  .detail__measures h2 {
+    text-align: center;
+    color: var(--color-primary);
+  }
+
+  .detail__measures ul {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 9rem), 1fr));
+    gap: var(--space-5) var(--space-4);
+    margin-top: var(--space-5);
+  }
+
+  .detail__measures li {
+    display: grid;
+    justify-items: center;
+    gap: var(--space-3);
+    text-align: center;
+  }
+
+  h1 {
+    font-size: var(--text-2xl);
+    margin-top: var(--space-1);
+  }
+
+  .detail__brand {
+    color: var(--color-text-muted);
+  }
+
+  .detail__brand strong {
+    color: var(--color-text);
+    font-weight: var(--font-medium);
+  }
+
+  .detail__promo {
+    display: inline-block;
+    margin-top: var(--space-3);
+    padding: 0.125rem var(--space-3);
+    border-radius: var(--radius-sm);
+    background: var(--color-primary);
+    color: var(--color-on-primary);
+    font-weight: var(--font-semibold);
+  }
+
+  .detail__price {
+    margin-top: var(--space-3);
+    font-size: var(--text-xl);
+    font-weight: var(--font-bold);
+  }
+
+  .detail__demo,
+  .detail__cta-note {
+    margin-top: var(--space-2);
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+  }
+
+  .detail__colors {
+    margin-top: var(--space-4);
+  }
+
+  .detail__colors :global(.swatches__name) {
+    font-size: var(--text-base);
+  }
+
+  .detail__colors :global(.swatches__btn) {
+    width: 44px;
+    height: 44px;
+  }
+
+  .detail__colors :global(.swatches__btn::before) {
+    width: 28px;
+    height: 28px;
+  }
+
+  .detail__cta {
+    width: 100%;
+    margin-top: var(--space-4);
+  }
+
+  .detail__features,
+  .detail__description {
+    margin-top: var(--space-6);
+  }
+
+  .detail__features h2,
+  .detail__description h2 {
+    font-size: var(--text-lg);
+  }
+
+  dl {
+    margin: var(--space-2) 0 0;
+  }
+
+  dl div {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--space-1) var(--space-4);
+    padding-block: var(--space-3);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  dt {
+    color: var(--color-text-muted);
+  }
+
+  dd {
+    margin: 0;
+    font-weight: var(--font-medium);
+    text-align: right;
+  }
+
+  .detail__description p {
+    margin-block: var(--space-2);
+  }
+
+  .detail__description :global(.provisional-badge) {
+    color: var(--color-text-muted);
+  }
+
+  .detail__related {
+    margin-top: var(--space-7);
+  }
+
+  /* Móvil: carrusel horizontal con ajuste; tablet y escritorio: tres columnas. */
+  .detail__related ul {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: min(15rem, 78vw);
+    gap: var(--space-3);
+    margin: var(--space-4) calc(var(--gutter) * -1) 0;
+    padding: 0 var(--gutter) var(--space-2);
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-padding-inline: var(--gutter);
+    scroll-snap-type: x mandatory;
+    scrollbar-width: thin;
+  }
+
+  .detail__related li {
+    scroll-snap-align: start;
+  }
+
+  @media (min-width: 48em) {
+    .detail__back {
+      display: none;
+    }
+
+    .detail__crumbs {
+      display: block;
+    }
+
+    .detail__main {
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+      gap: var(--space-7);
+      align-items: start;
+      margin-top: var(--space-5);
+    }
+
+    .detail__media {
+      position: sticky;
+      top: calc(var(--header-h) + var(--space-5));
+    }
+
+    .detail__cta {
+      width: auto;
+    }
+
+    .detail__related ul {
+      grid-auto-flow: row;
+      grid-auto-columns: auto;
+      grid-template-columns: repeat(auto-fill, minmax(min(100%, max(13rem, 30%)), 1fr));
+      gap: var(--space-4);
+      margin-inline: 0;
+      padding-inline: 0;
+      overflow: visible;
+    }
+
+    .detail__measures {
+      padding: var(--space-7) var(--space-6);
+    }
+  }
+</style>

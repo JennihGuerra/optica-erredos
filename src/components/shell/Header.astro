@@ -1,0 +1,288 @@
+---
+/**
+ * Header del sitio.
+ * Móvil: logotipo + botón "Contáctanos", que abre WhatsApp.
+ * Tablet y escritorio (≥ 768 px): suma la navegación horizontal de las cinco secciones.
+ */
+import { Image } from 'astro:assets';
+import logo from '../../assets/logo.png';
+import Icon from '../ui/Icon.astro';
+import { mainNav, isActive } from '../../config/navigation';
+import { site } from '../../config/site';
+import { whatsappUrl } from '../../lib/whatsapp';
+import { contextMessage } from '../../lib/whatsappContext';
+
+const { pathname } = Astro.url;
+---
+
+<header class="site-header">
+  <div class="container site-header__inner">
+    <a class="site-header__logo" href="/" aria-label={`${site.name}, ir al inicio`}>
+      <Image src={logo} alt="" height={104} densities={[1, 2]} loading="eager" />
+    </a>
+
+    <nav class="desktop-nav" aria-label="Navegación principal">
+      <ul role="list">
+        {
+          mainNav.map((item) => (
+            <li>
+              <a href={item.href} aria-current={isActive(item.href, pathname) ? 'page' : undefined}>
+                {item.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <div class="site-header__actions">
+      <a
+        class="site-header__whatsapp"
+        href={whatsappUrl(contextMessage(pathname))}
+        target="_blank"
+        rel="noopener"
+        aria-label="Contáctanos por WhatsApp (se abre en una pestaña nueva)"
+      >
+        <span class="site-header__whatsapp-icon"><Icon name="chat" /></span>
+        <span class="site-header__whatsapp-label">Contáctanos</span>
+      </a>
+    </div>
+  </div>
+
+</header>
+
+<style>
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: var(--z-header);
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-bg);
+  }
+
+  .site-header__inner {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-template-areas: 'logo actions';
+    align-items: center;
+    gap: var(--space-3);
+    min-height: var(--header-h);
+  }
+
+  .site-header__logo {
+    grid-area: logo;
+    display: block;
+    padding-block: var(--space-1);
+  }
+
+  .site-header__logo img {
+    width: auto;
+    height: calc(var(--header-h) - var(--space-4));
+  }
+
+  .site-header__actions {
+    grid-area: actions;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--space-2);
+  }
+
+  /* Mismo estilo que el botón flotante "Haz aquí tus consultas": píldora coral, círculo azul con icono,
+     texto en negrita y sombra marcada. */
+  .site-header__whatsapp {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: var(--touch-target);
+    padding: var(--space-1) var(--space-4) var(--space-1) var(--space-1);
+    border-radius: var(--radius-pill);
+    background: var(--color-accent);
+    color: var(--color-on-accent);
+    box-shadow: 0 0 0 2px var(--color-bg), 0 4px 14px rgb(33 33 33 / 0.25);
+    font-size: var(--text-sm);
+    font-weight: var(--font-bold);
+    line-height: 1.2;
+    text-decoration: none;
+    transition:
+      background-color var(--duration-fast) var(--easing),
+      transform var(--duration-fast) var(--easing);
+  }
+
+  .site-header__whatsapp:hover {
+    background: var(--color-accent-hover);
+    transform: translateY(-1px);
+  }
+
+  .site-header__whatsapp-icon {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 50%;
+    background: var(--color-primary);
+    color: var(--color-on-primary);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .site-header__whatsapp:hover {
+      transform: none;
+    }
+  }
+
+  @media (min-width: 48em) {
+    .site-header__whatsapp {
+      font-size: var(--text-base);
+    }
+  }
+
+  /* --- Navegación de escritorio ---------------------------------------- */
+
+  .desktop-nav {
+    grid-area: nav;
+    display: none;
+  }
+
+  .desktop-nav ul {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-1);
+  }
+
+  .desktop-nav a {
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-height: var(--touch-target);
+    padding-inline: var(--space-4);
+    border-radius: var(--radius-sm);
+    color: var(--color-text);
+    font-size: var(--text-base);
+    font-weight: var(--font-medium);
+    text-decoration: none;
+    white-space: nowrap;
+    transition: color var(--duration-fast) var(--easing);
+  }
+
+  /* Indicador de sección: una línea, no solo un cambio de color. */
+  .desktop-nav a::after {
+    content: '';
+    position: absolute;
+    inset: auto var(--space-4) 0.25rem;
+    height: 3px;
+    border-radius: var(--radius-pill);
+    background: var(--color-primary);
+    transform: scaleX(0);
+    transition: transform var(--duration-base) var(--easing);
+  }
+
+  .desktop-nav a:hover {
+    color: var(--color-primary);
+  }
+
+  .desktop-nav a:hover::after {
+    transform: scaleX(0.4);
+  }
+
+  .desktop-nav a[aria-current='page'] {
+    color: var(--color-primary);
+    font-weight: var(--font-semibold);
+  }
+
+  .desktop-nav a[aria-current='page']::after {
+    transform: scaleX(1);
+  }
+
+  @media (min-width: 48em) {
+    .site-header__inner {
+      grid-template-columns: auto 1fr auto;
+      grid-template-areas: 'logo nav actions';
+    }
+
+    .desktop-nav {
+      display: block;
+    }
+  }
+
+  /* Tablet (768–1023 px): menú y botón más compactos para que todo quepa en una fila. */
+  @media (min-width: 48em) and (max-width: 63.99em) {
+    .desktop-nav ul {
+      gap: 0;
+    }
+
+    .desktop-nav a {
+      padding-inline: var(--space-3);
+      font-size: var(--text-sm);
+    }
+
+    .desktop-nav a::after {
+      inset-inline: var(--space-3);
+    }
+
+    .site-header__whatsapp {
+      font-size: var(--text-sm);
+    }
+  }
+
+  @media (min-width: 64em) {
+    .site-header__inner {
+      gap: var(--space-5);
+    }
+  }
+
+  /* --- Texto ampliado ---------------------------------------------------
+     Con el texto en 125 % o más, el header se reorganiza en vez de desbordar. */
+
+  /* Móvil angosto: WhatsApp queda solo con icono (conserva su aria-label). */
+  @media (max-width: 26em) {
+    :global(html:is([data-text-scale='125'], [data-text-scale='137'], [data-text-scale='150']))
+      .site-header__whatsapp-label {
+      display: none;
+    }
+
+    :global(html:is([data-text-scale='125'], [data-text-scale='137'], [data-text-scale='150']))
+      .site-header__whatsapp {
+      padding-inline: var(--space-1);
+    }
+  }
+
+  /* Tablet y notebook: el menú baja a una segunda fila. */
+  @media (min-width: 48em) and (max-width: 100em) {
+    :global(html:is([data-text-scale='125'], [data-text-scale='137'], [data-text-scale='150']))
+      .site-header__inner {
+      grid-template-columns: auto 1fr;
+      grid-template-areas:
+        'logo actions'
+        'nav nav';
+      row-gap: 0;
+    }
+
+    :global(html:is([data-text-scale='125'], [data-text-scale='137'], [data-text-scale='150']))
+      .desktop-nav
+      ul {
+      justify-content: flex-start;
+      margin-inline: calc(var(--space-4) * -1);
+    }
+  }
+
+  /* Tablet y notebook angosto: la segunda fila se activa ya desde 112 %. */
+  @media (min-width: 48em) and (max-width: 72em) {
+    :global(html:is([data-text-scale='112']))
+      .site-header__inner {
+      grid-template-columns: auto 1fr;
+      grid-template-areas:
+        'logo actions'
+        'nav nav';
+      row-gap: 0;
+    }
+
+    :global(html:is([data-text-scale='112']))
+      .desktop-nav
+      ul {
+      justify-content: flex-start;
+      margin-inline: calc(var(--space-4) * -1);
+    }
+  }
+</style>

@@ -1,0 +1,54 @@
+/* Efecto al pasar el mouse sobre las tarjetas: SOLO en web (pantalla ≥ 768 px con puntero
+   preciso y capacidad de hover). En móvil/táctil no se aplica. `:not(#_)` sube la especificidad
+   para imponerse a los estilos propios de cada página sin usar !important. */
+@media (hover: hover) and (pointer: fine) and (min-width: 48em) {
+  :is(
+      .audiences li,
+      .alternative,
+      .benefits li,
+      .categories a,
+      .services li,
+      .service,
+      .connect a,
+      .quick a,
+      .product-card
+    ):not(#_) {
+    transition:
+      transform var(--duration-base) var(--easing),
+      box-shadow var(--duration-base) var(--easing),
+      border-color var(--duration-base) var(--easing),
+      background-color var(--duration-fast) var(--easing);
+  }
+
+  :is(
+      .audiences li,
+      .alternative,
+      .benefits li,
+      .categories a,
+      .services li,
+      .service,
+      .connect a,
+      .quick a,
+      .product-card
+    ):not(#_):hover {
+    transform: translateY(-4px);
+    border-color: var(--color-primary);
+    box-shadow: var(--shadow-md);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :is(
+      .audiences li,
+      .alternative,
+      .benefits li,
+      .categories a,
+      .services li,
+      .service,
+      .connect a,
+      .quick a,
+      .product-card
+    ):not(#_):hover {
+    transform: none;
+  }
+}

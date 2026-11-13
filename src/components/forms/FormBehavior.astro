@@ -1,0 +1,243 @@
+---
+/**
+ * Comportamiento común de los formularios del sitio (`<form data-form>`):
+ * validación, mensajes de error accesibles, estado de envío y resultado.
+ *
+ * - Con `data-endpoint`: envía los datos por POST (JSON) al servicio configurado.
+ * - Sin `data-endpoint` y con `data-prototype="true"` (estado actual): MAQUETA FUNCIONAL.
+ *   Recorre el flujo completo y muestra la confirmación, sin enviar ni guardar nada.
+ * - Sin `data-endpoint` y sin maqueta: MODO DEMOSTRACIÓN. Valida, no envía nada,
+ *   lo informa con claridad y ofrece mandar la misma información por WhatsApp.
+ *
+ * Cada formulario declara su comportamiento con atributos:
+ *   form:     data-wa-base, data-wa-intro, data-demo-title, data-demo-text,
+ *             data-success-title, data-success-text
+ *   campos:   .field + .field__control, `required`, data-error, data-wa-label
+ *   reglas:   data-rule="workday" (fecha de lunes a sábado, desde mañana)
+ *             data-rule="slot" + data-date-field="#id" (los sábados solo en la mañana)
+ *             data-rule="match" + data-match="#id" (debe repetir el valor de otro campo)
+ */
+import Icon from '../ui/Icon.astro';
+---
+
+<template data-icon-error><Icon name="error" /></template>
+
+<script>
+  type Control = HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
+
+  const isoDate = (date: Date) =>
+    `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+  const parseDate = (value: string) => (value ? new Date(`${value}T12:00:00`) : null);
+
+  function initForm(form: HTMLFormElement) {
+    if (form.dataset.ready) return;
+    form.dataset.ready = 'true';
+
+    const status = form.querySelector<HTMLElement>('[data-status]')!;
+    const submit = form.querySelector<HTMLButtonElement>('[data-submit]')!;
+    const submitLabel = form.querySelector<HTMLElement>('[data-submit-label]')!;
+    const idleLabel = submitLabel.textContent ?? '';
+    const errorIcon = document.querySelector<HTMLTemplateElement>('[data-icon-error]');
+    const fields = [...form.querySelectorAll<HTMLElement>('.field')];
+    const controlOf = (field: HTMLElement) => field.querySelector<Control>('.field__control');
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    // Fechas: no se puede elegir hoy ni días pasados.
+    form.querySelectorAll<HTMLInputElement>('[data-rule="workday"]').forEach((input) => {
+      input.min = isoDate(tomorrow);
+    });
+
+    // Bloque horario: los sábados solo se atiende en la mañana.
+    form.querySelectorAll<HTMLSelectElement>('[data-rule="slot"]').forEach((select) => {
+      const dateInput = form.querySelector<HTMLInputElement>(select.dataset.dateField ?? '');
+      dateInput?.addEventListener('change', () => {
+        const saturday = parseDate(dateInput.value)?.getDay() === 6;
+        [...select.options].forEach((option) => {
+          if (option.dataset.weekdaysOnly !== undefined) option.disabled = saturday;
+        });
+        if (select.selectedOptions[0]?.disabled) select.value = '';
+      });
+    });
+
+    function problem(field: HTMLElement): string | null {
+      if (field.matches('fieldset')) {
+        const radios = [...field.querySelectorAll<HTMLInputElement>('input[type="radio"]')];
+        const needed = radios.some((radio) => radio.required);
+        return needed && !radios.some((radio) => radio.checked) ? (field.dataset.error ?? null) : null;
+      }
+      const control = controlOf(field);
+      if (!control) return null;
+      const value = control.value.trim();
+      const message = control.dataset.error ?? 'Revisa este campo.';
+      if (control.required && !value) return message;
+      if (!value) return null;
+      if (control.type === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(value)) return message;
+      if (control.type === 'tel' && value.replace(/\D/g, '').length < 8) return message;
+      if (control.type === 'number' && !(Number(value) >= 1)) return message;
+      if (control.dataset.rule === 'match') {
+        const other = form.querySelector<HTMLInputElement>(control.dataset.match ?? '');
+        if (other && other.value.trim().toLowerCase() !== value.toLowerCase()) return message;
+      }
+      if (control.dataset.rule === 'workday') {
+        const date = parseDate(value);
+        if (!date || value < isoDate(tomorrow) || date.getDay() === 0) return message;
+      }
+      if (control.dataset.rule === 'slot') {
+        const dateInput = form.querySelector<HTMLInputElement>(control.dataset.dateField ?? '');
+        const option = (control as HTMLSelectElement).selectedOptions[0];
+        if (parseDate(dateInput?.value ?? '')?.getDay() === 6 && option?.dataset.weekdaysOnly !== undefined) {
+          return control.dataset.errorSaturday ?? message;
+        }
+      }
+      return null;
+    }
+
+    function showError(field: HTMLElement, message: string | null) {
+      const control = controlOf(field);
+      const target = control ?? field;
+      const id = `${control?.id ?? `${form.id}-grupo-${fields.indexOf(field)}`}-error`;
+      field.querySelector('.field__error')?.remove();
+      if (!message) {
+        target.removeAttribute('aria-invalid');
+        target.removeAttribute('aria-describedby');
+        return;
+      }
+      const error = document.createElement('p');
+      error.className = 'field__error';
+      error.id = id;
+      if (errorIcon) error.append(errorIcon.content.cloneNode(true));
+      error.append(document.createTextNode(message));
+      field.append(error);
+      if (control) control.setAttribute('aria-invalid', 'true');
+      target.setAttribute('aria-describedby', id);
+    }
+
+    // Tras el primer intento de envío, cada campo se revalida en vivo. El error desaparece
+    // mientras la persona corrige (no al salir del campo: así el contenido no salta justo
+    // cuando va a tocar el siguiente control).
+    let attempted = false;
+    fields.forEach((field) => {
+      const clearIfFixed = () => attempted && !problem(field) && showError(field, null);
+      const flagIfWrong = () => {
+        const message = attempted ? problem(field) : null;
+        if (message) showError(field, message);
+      };
+      field.addEventListener('input', clearIfFixed);
+      field.addEventListener('change', clearIfFixed);
+      field.addEventListener('focusout', flagIfWrong);
+    });
+
+    function setStatus(kind: 'error' | 'demo' | 'success', html: string) {
+      status.className = `form__status form__status--${kind}`;
+      status.innerHTML = html;
+      status.hidden = false;
+    }
+
+    /** Arma el mensaje de WhatsApp con los datos escritos, en el orden del formulario. */
+    function whatsappLink() {
+      const lines = [form.dataset.waIntro ?? ''];
+      form.querySelectorAll<Control>('[data-wa-label]').forEach((control) => {
+        let value = control.value.trim();
+        if (control instanceof HTMLInputElement && control.type === 'radio') {
+          if (!control.checked) return;
+          value = control.dataset.label ?? value;
+        } else if (control instanceof HTMLSelectElement) {
+          value = control.value ? (control.selectedOptions[0]?.textContent?.trim() ?? value) : '';
+        } else if (control.type === 'date') {
+          const date = parseDate(value);
+          value = date
+            ? date.toLocaleDateString('es-CL', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+            : '';
+        }
+        if (value) lines.push(`${control.dataset.waLabel}: ${value}`);
+      });
+      return form.dataset.waBase + encodeURIComponent(lines.filter(Boolean).join('\n'));
+    }
+
+    const newTab = '<span class="visually-hidden"> (se abre en una pestaña nueva)</span>';
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      attempted = true;
+      const invalid = fields.filter((field) => {
+        const message = problem(field);
+        showError(field, message);
+        return Boolean(message);
+      });
+
+      if (invalid.length) {
+        setStatus(
+          'error',
+          `<strong>Falta corregir ${invalid.length === 1 ? '1 campo' : `${invalid.length} campos`}.</strong> Revisa los mensajes junto a cada uno.`,
+        );
+        const first = invalid[0];
+        (controlOf(first) ?? first.querySelector<HTMLElement>('input'))?.focus();
+        return;
+      }
+
+      const endpoint = form.dataset.endpoint;
+      const link = whatsappLink();
+      submit.disabled = true;
+      submitLabel.textContent = 'Enviando…';
+
+      try {
+        const data = Object.fromEntries(new FormData(form));
+        const succeed = () => {
+          // Los componentes que tienen pantalla de confirmación propia escuchan este evento.
+          const handled = !form.dispatchEvent(
+            new CustomEvent('form:success', { detail: data, cancelable: true, bubbles: true }),
+          );
+          form.reset();
+          attempted = false;
+          if (handled) {
+            status.hidden = true;
+            return;
+          }
+          setStatus(
+            'success',
+            `<strong>${form.dataset.successTitle}</strong> <span>${form.dataset.successText}</span>`,
+          );
+        };
+
+        if (!endpoint && form.dataset.prototype === 'true') {
+          // MAQUETA FUNCIONAL: muestra el flujo completo sin enviar ni guardar nada.
+          await new Promise((resolve) => setTimeout(resolve, 700));
+          succeed();
+        } else if (!endpoint) {
+          // MODO DEMOSTRACIÓN: no hay servicio de recepción, así que no se envía nada.
+          await new Promise((resolve) => setTimeout(resolve, 600));
+          setStatus(
+            'demo',
+            `<strong>${form.dataset.demoTitle}</strong>
+             <span>${form.dataset.demoText}</span>
+             <a class="btn btn--accent" href="${link}" target="_blank" rel="noopener">Enviar estos datos por WhatsApp${newTab}</a>`,
+          );
+        } else {
+          const response = await fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+            body: JSON.stringify(data),
+          });
+          if (!response.ok) throw new Error(String(response.status));
+          succeed();
+        }
+      } catch {
+        setStatus(
+          'error',
+          `<strong>No pudimos enviar tu solicitud.</strong> <span>Inténtalo nuevamente o escríbenos por WhatsApp.</span>
+           <a class="btn btn--accent" href="${link}" target="_blank" rel="noopener">Enviar por WhatsApp${newTab}</a>`,
+        );
+      } finally {
+        submit.disabled = false;
+        submitLabel.textContent = idleLabel;
+        if (!status.hidden) status.focus();
+      }
+    });
+  }
+
+  const initForms = () => document.querySelectorAll<HTMLFormElement>('[data-form]').forEach(initForm);
+
+  initForms();
+  document.addEventListener('astro:page-load', initForms);
+</script>

@@ -1,0 +1,850 @@
+---
+/**
+ * Agenda de hora para atención visual, en dos pasos:
+ *   1. Elegir día y hora en una vista semanal (bloques de 30 minutos).
+ *   2. Dejar los datos de contacto y el rango de edad del paciente.
+ *
+ * Las horas se calculan desde `site.appointments` (bloques y duración).
+ * LIMITACIÓN: no hay un sistema de agenda conectado, así que el sitio no sabe qué horas
+ * ya están tomadas. En modo maqueta (`site.prototypeMode`) el flujo termina en una
+ * confirmación, pero no se envía ni se guarda nada.
+ * La validación, el envío y el modo demostración viven en FormBehavior.astro.
+ */
+import Icon from '../ui/Icon.astro';
+import FormBehavior from './FormBehavior.astro';
+import { site } from '../../config/site';
+import { whatsappUrl, whatsappMessages } from '../../lib/whatsapp';
+
+const isDemo = !site.formEndpoint && !site.prototypeMode;
+const { appointments } = site;
+---
+
+<div class="booking" data-booking data-config={JSON.stringify(appointments)}>
+  <noscript>
+    <p class="booking-ui__empty">
+      Para elegir una hora aquí necesitas tener JavaScript activado. También puedes pedir tu hora por
+      <a href={whatsappUrl(whatsappMessages.visualCare)}>WhatsApp</a>.
+    </p>
+  </noscript>
+
+  <!-- PASO 1: día y hora -->
+  <section class="booking-ui__step" data-step="1" aria-labelledby="booking-step-1" hidden>
+    <p class="booking-ui__progress">Paso 1 de 2</p>
+    <h3 id="booking-step-1" tabindex="-1">Elige día y hora</h3>
+
+    <div class="week">
+      <button type="button" class="icon-btn week__nav" data-week-prev aria-label="Semana anterior">
+        <Icon name="chevron_left" />
+      </button>
+      <div class="week__label" aria-live="polite">
+        <p class="week__month" data-month></p>
+        <p class="week__range" data-range></p>
+      </div>
+      <button type="button" class="icon-btn week__nav" data-week-next aria-label="Semana siguiente">
+        <Icon name="chevron_right" />
+      </button>
+    </div>
+
+    <div class="days" role="group" aria-label="Días de la semana" data-days></div>
+
+    <div class="slots" data-slots aria-live="polite"></div>
+
+    <div class="booking-ui__footer">
+      <p class="booking-ui__choice" data-choice>Todavía no eliges una hora.</p>
+      <button type="button" class="btn btn--primary" data-continue aria-disabled="true">Continuar</button>
+    </div>
+  </section>
+
+  <!-- PASO 2: datos -->
+  <section class="booking-ui__step" data-step="2" aria-labelledby="booking-step-2" hidden>
+    <p class="booking-ui__progress">Paso 2 de 2</p>
+    <h3 id="booking-step-2" tabindex="-1">Tus datos</h3>
+
+    <div class="booking-ui__summary">
+      <Icon name="event_available" />
+      <p>
+        <span>Hora elegida</span>
+        <strong data-summary></strong>
+      </p>
+      <button type="button" class="btn btn--outline" data-change>Cambiar</button>
+    </div>
+
+    <form
+      class="form"
+      id="form-hora"
+      novalidate
+      data-form
+      data-endpoint={site.formEndpoint}
+      data-prototype={String(site.prototypeMode)}
+      data-wa-base={whatsappUrl('')}
+      data-wa-intro="Hola, quisiera agendar una hora de atención visual en Óptica Erredos."
+      data-demo-title="Tus datos están correctos, pero la solicitud no se envió."
+      data-demo-text="Este formulario está en modo demostración y aún no está conectado con Óptica Erredos, así que no hay ninguna hora agendada. Para pedir esta hora ahora, envía los mismos datos por WhatsApp."
+      data-success-title="¡Tu hora quedó agendada con éxito!"
+      data-success-text="Te confirmaremos tu atención por correo electrónico o por teléfono 24 horas antes."
+    >
+      {
+        isDemo && (
+          <p class="form__demo" role="note">
+            <Icon name="info" />
+            <span>
+              <strong>Agenda en modo demostración.</strong> Todavía no está conectada: puedes probarla,
+              pero tu solicitud no se enviará a Óptica Erredos.
+            </span>
+          </p>
+        )
+      }
+
+      <input type="hidden" name="servicio" value="Atención visual" />
+      <input type="hidden" name="dia" data-field-day data-wa-label="Día" />
+      <input type="hidden" name="hora" data-field-time data-wa-label="Hora" />
+
+      <p class="form__legend">Todos los campos son obligatorios.</p>
+
+      <div class="form__grid">
+        <div class="field form__wide">
+          <label class="field__label" for="hora-nombre">Nombre y apellido</label>
+          <input
+            class="field__control"
+            id="hora-nombre"
+            name="nombre"
+            type="text"
+            autocomplete="name"
+            required
+            data-wa-label="Nombre"
+            data-error="Escribe tu nombre y apellido."
+          />
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="hora-correo">Correo electrónico</label>
+          <input
+            class="field__control"
+            id="hora-correo"
+            name="correo"
+            type="email"
+            autocomplete="email"
+            inputmode="email"
+            required
+            data-wa-label="Correo"
+            data-error="Escribe un correo válido, por ejemplo nombre@correo.cl."
+          />
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="hora-correo-2">Confirma tu correo electrónico</label>
+          <input
+            class="field__control"
+            id="hora-correo-2"
+            name="correo_confirmacion"
+            type="email"
+            autocomplete="email"
+            inputmode="email"
+            required
+            data-rule="match"
+            data-match="#hora-correo"
+            data-error="Los correos no coinciden. Escribe el mismo correo en ambos campos."
+          />
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="hora-celular">Número de celular</label>
+          <input
+            class="field__control"
+            id="hora-celular"
+            name="celular"
+            type="tel"
+            autocomplete="tel"
+            inputmode="tel"
+            required
+            data-wa-label="Celular"
+            data-error="Escribe un celular con al menos 8 dígitos para poder confirmar tu hora."
+          />
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="hora-edad">Rango de edad del paciente</label>
+          <select
+            class="field__control"
+            id="hora-edad"
+            name="edad"
+            required
+            aria-describedby="hora-edad-nota"
+            data-wa-label="Edad del paciente"
+            data-error="Elige el rango de edad de la persona que se atenderá."
+          >
+            <option value="">Elige una opción</option>
+            {appointments.ageRanges.map((range) => <option value={range}>{range}</option>)}
+          </select>
+        </div>
+
+        <p class="booking-ui__age form__wide" id="hora-edad-nota">
+          <Icon name="info" />
+          <span>{appointments.ageNotice}</span>
+        </p>
+      </div>
+
+      <p class="form__privacy">
+        Usaremos estos datos solo para coordinar tu atención. Revisa la{' '}
+        <a href="/politica-de-privacidad">política de privacidad</a>.
+      </p>
+
+      <button type="submit" class="btn btn--primary form__submit" data-submit>
+        <span data-submit-label>Agenda tu hora</span>
+      </button>
+
+      <div class="form__status" data-status role="status" aria-live="polite" tabindex="-1" hidden></div>
+    </form>
+  </section>
+
+  <!-- CONFIRMACIÓN -->
+  <section class="booking-ui__step booking-ui__done" data-step="3" aria-labelledby="booking-step-3" hidden>
+    <span class="booking-ui__check"><Icon name="check_circle" /></span>
+    <h3 id="booking-step-3" tabindex="-1">¡Tu hora quedó agendada con éxito!</h3>
+    <p class="booking-ui__notice" role="note">
+      <Icon name="schedule" />
+      <span>
+        <strong>Te confirmaremos tu atención 24 horas antes.</strong>
+        Nos pondremos en contacto contigo por correo electrónico o por teléfono para confirmar tu hora.
+      </span>
+    </p>
+    <p>Te esperamos en Óptica Erredos, {site.address}.</p>
+    <dl class="booking-ui__details">
+      <div>
+        <dt>Día y hora</dt>
+        <dd data-done-when></dd>
+      </div>
+      <div>
+        <dt>Servicio</dt>
+        <dd>Atención visual</dd>
+      </div>
+      <div>
+        <dt>A nombre de</dt>
+        <dd data-done-name></dd>
+      </div>
+      <div>
+        <dt>Contacto</dt>
+        <dd data-done-contact></dd>
+      </div>
+    </dl>
+    <p class="booking-ui__hint">
+      Si necesitas cambiar o anular tu hora, escríbenos por WhatsApp.
+    </p>
+    <div class="booking-ui__done-actions">
+      <button type="button" class="btn btn--primary" data-restart>Agenda otra hora</button>
+      <a class="btn btn--outline" href={whatsappUrl(whatsappMessages.visualCare)} target="_blank" rel="noopener">
+        <Icon name="chat" />
+        <span>Escribir por WhatsApp<span class="visually-hidden"> (se abre en una pestaña nueva)</span></span>
+      </a>
+    </div>
+  </section>
+</div>
+
+<FormBehavior />
+
+<script>
+  interface Config {
+    slotMinutes: number;
+    weeksAhead: number;
+    weekdays: [string, string][];
+    saturday: [string, string][];
+  }
+
+  const startOfDay = (date: Date) => new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const addDays = (date: Date, days: number) => new Date(date.getFullYear(), date.getMonth(), date.getDate() + days);
+  const iso = (date: Date) =>
+    `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+  const capitalize = (text: string) => text.charAt(0).toUpperCase() + text.slice(1);
+  const format = (date: Date, options: Intl.DateTimeFormatOptions) => date.toLocaleDateString('es-CL', options);
+  const minutes = (time: string) => Number(time.slice(0, 2)) * 60 + Number(time.slice(3));
+  const clock = (total: number) => `${String(Math.floor(total / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`;
+
+  function initBooking() {
+    const root = document.querySelector<HTMLElement>('[data-booking]');
+    if (!root || root.dataset.ready) return;
+    root.dataset.ready = 'true';
+
+    const config = JSON.parse(root.dataset.config ?? '{}') as Config;
+    const $ = <T extends HTMLElement>(selector: string) => root.querySelector<T>(selector)!;
+    const step1 = $('[data-step="1"]');
+    const step2 = $('[data-step="2"]');
+    const daysBox = $('[data-days]');
+    const slotsBox = $('[data-slots]');
+    const monthLabel = $('[data-month]');
+    const rangeLabel = $('[data-range]');
+    const prev = $<HTMLButtonElement>('[data-week-prev]');
+    const next = $<HTMLButtonElement>('[data-week-next]');
+    const choice = $('[data-choice]');
+    const proceed = $<HTMLButtonElement>('[data-continue]');
+    const summary = $('[data-summary]');
+    const dayField = $<HTMLInputElement>('[data-field-day]');
+    const timeField = $<HTMLInputElement>('[data-field-time]');
+
+    const today = startOfDay(new Date());
+    // Se puede pedir hora desde mañana y hasta `weeksAhead` semanas.
+    const firstDay = addDays(today, 1);
+    const firstMonday = addDays(today, -((today.getDay() + 6) % 7));
+    const lastDay = addDays(firstMonday, config.weeksAhead * 7 - 1);
+
+    let weekOffset = 0;
+    let selectedDay: Date | null = null;
+    let selectedTime: string | null = null;
+
+    // Horas agendadas durante esta visita: dejan de ofrecerse (solo en este navegador).
+    const TAKEN_KEY = 'erredos:horas-agendadas';
+    const taken = new Set<string>();
+    try {
+      (JSON.parse(sessionStorage.getItem(TAKEN_KEY) ?? '[]') as string[]).forEach((key) => taken.add(key));
+    } catch {
+      /* sin almacenamiento disponible */
+    }
+
+    /** Bloques de atención del día (vacío = no se atiende). */
+    function blocksFor(date: Date) {
+      if (date < firstDay || date > lastDay) return [];
+      const weekday = date.getDay();
+      if (weekday === 0) return [];
+      return weekday === 6 ? config.saturday : config.weekdays;
+    }
+
+    function slotsFor(date: Date) {
+      return blocksFor(date).map(([from, to]) => {
+        const times: string[] = [];
+        for (let t = minutes(from); t + config.slotMinutes <= minutes(to); t += config.slotMinutes) times.push(clock(t));
+        return times;
+      });
+    }
+
+    const weekStart = () => addDays(firstMonday, weekOffset * 7);
+    const longDay = (date: Date) => format(date, { weekday: 'long', day: 'numeric', month: 'long' });
+
+    function setDisabled(button: HTMLButtonElement, disabled: boolean) {
+      button.setAttribute('aria-disabled', String(disabled));
+    }
+
+    function renderWeek() {
+      const start = weekStart();
+      const end = addDays(start, 6);
+      const sameMonth = start.getMonth() === end.getMonth();
+      // Mes y año siempre visibles; si la semana cruza de mes, se muestran ambos.
+      monthLabel.textContent = sameMonth
+        ? capitalize(format(start, { month: 'long', year: 'numeric' }))
+        : `${capitalize(format(start, { month: 'long' }))} – ${format(end, { month: 'long', year: 'numeric' })}`;
+      rangeLabel.textContent = `Semana del ${start.getDate()}${sameMonth ? '' : ` de ${format(start, { month: 'long' })}`} al ${end.getDate()} de ${format(end, { month: 'long' })}`;
+      setDisabled(prev, weekOffset === 0);
+      setDisabled(next, weekOffset >= config.weeksAhead - 1);
+
+      daysBox.replaceChildren(
+        ...Array.from({ length: 7 }, (_, index) => {
+          const date = addDays(start, index);
+          const available = slotsFor(date).length > 0;
+          const selected = selectedDay !== null && iso(selectedDay) === iso(date);
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'days__btn';
+          button.dataset.date = iso(date);
+          button.disabled = !available;
+          button.setAttribute('aria-pressed', String(selected));
+          button.setAttribute(
+            'aria-label',
+            `${longDay(date)}${available ? '' : ', sin horas disponibles'}${iso(date) === iso(today) ? ' (hoy)' : ''}`,
+          );
+          const weekday = capitalize(format(date, { weekday: 'short' }).replace('.', ''));
+          button.innerHTML = `<span class="days__weekday">${weekday}</span><span class="days__number">${date.getDate()}</span><span class="days__state">${available ? '' : '—'}</span>`;
+          return button;
+        }),
+      );
+    }
+
+    function renderSlots() {
+      if (!selectedDay) {
+        slotsBox.innerHTML = '<p class="booking-ui__empty">Elige un día para ver sus horas.</p>';
+        return;
+      }
+      const [morning = [], afternoon = []] = slotsFor(selectedDay);
+      const group = (title: string, times: string[]) =>
+        times.length
+          ? `<div class="slots__group" role="group" aria-label="${title}"><p class="slots__title">${title}</p><div class="slots__grid">${times
+              .map(
+                (time) =>
+                  taken.has(`${iso(selectedDay!)} ${time}`)
+                    ? `<button type="button" class="slots__btn" disabled aria-label="${time}, hora no disponible">${time}</button>`
+                    : `<button type="button" class="slots__btn" data-time="${time}" aria-pressed="${time === selectedTime}">${time}</button>`,
+              )
+              .join('')}</div></div>`
+          : '';
+      slotsBox.innerHTML = `<p class="slots__heading">Horas para el <strong>${longDay(selectedDay)}</strong></p>${group('Mañana', morning)}${group('Tarde', afternoon)}`;
+    }
+
+    function renderChoice() {
+      const ready = Boolean(selectedDay && selectedTime);
+      choice.innerHTML = ready
+        ? `Elegiste: <strong>${longDay(selectedDay!)}, ${selectedTime} hrs</strong>`
+        : selectedDay
+          ? 'Ahora elige una hora.'
+          : 'Todavía no eliges una hora.';
+      setDisabled(proceed, !ready);
+    }
+
+    function selectDay(date: Date) {
+      selectedDay = date;
+      selectedTime = null;
+      renderWeek();
+      renderSlots();
+      renderChoice();
+    }
+
+    const step3 = $('[data-step="3"]');
+    function showStep(step: 1 | 2 | 3) {
+      const steps = [step1, step2, step3];
+      steps.forEach((section, index) => (section.hidden = index !== step - 1));
+      steps[step - 1].querySelector<HTMLElement>('h3')!.focus();
+    }
+
+    /* --- Eventos ----------------------------------------------------------- */
+
+    const move = (delta: number) => {
+      const target = weekOffset + delta;
+      if (target < 0 || target > config.weeksAhead - 1) return;
+      weekOffset = target;
+      renderWeek();
+    };
+    prev.addEventListener('click', () => move(-1));
+    next.addEventListener('click', () => move(1));
+
+    daysBox.addEventListener('click', (event) => {
+      const button = (event.target as HTMLElement).closest<HTMLButtonElement>('[data-date]');
+      if (!button || button.disabled) return;
+      const [year, month, day] = button.dataset.date!.split('-').map(Number);
+      selectDay(new Date(year, month - 1, day));
+      // El foco sigue en el día recién elegido (los botones se vuelven a dibujar).
+      daysBox.querySelector<HTMLButtonElement>(`[data-date="${button.dataset.date}"]`)?.focus();
+    });
+
+    slotsBox.addEventListener('click', (event) => {
+      const button = (event.target as HTMLElement).closest<HTMLButtonElement>('[data-time]');
+      if (!button) return;
+      selectedTime = button.dataset.time!;
+      slotsBox.querySelectorAll('[data-time]').forEach((slot) => {
+        slot.setAttribute('aria-pressed', String(slot === button));
+      });
+      renderChoice();
+    });
+
+    proceed.addEventListener('click', () => {
+      if (!selectedDay || !selectedTime) {
+        choice.textContent = 'Primero elige un día y una hora.';
+        return;
+      }
+      const text = `${capitalize(longDay(selectedDay))} de ${selectedDay.getFullYear()}, ${selectedTime} hrs`;
+      summary.textContent = text;
+      dayField.value = `${longDay(selectedDay)} de ${selectedDay.getFullYear()}`;
+      timeField.value = `${selectedTime} hrs`;
+      showStep(2);
+    });
+
+    $('[data-change]').addEventListener('click', () => showStep(1));
+
+    // Al terminar el envío se muestra la confirmación con el resumen de la hora.
+    root.addEventListener('form:success', (event) => {
+      event.preventDefault();
+      const data = (event as CustomEvent<Record<string, string>>).detail;
+      $('[data-done-when]').textContent = summary.textContent;
+      $('[data-done-name]').textContent = data.nombre;
+      $('[data-done-contact]').textContent = `${data.celular} · ${data.correo}`;
+      if (selectedDay && selectedTime) {
+        taken.add(`${iso(selectedDay)} ${selectedTime}`);
+        try {
+          sessionStorage.setItem(TAKEN_KEY, JSON.stringify([...taken]));
+        } catch {
+          /* sin almacenamiento disponible */
+        }
+      }
+      showStep(3);
+    });
+
+    $('[data-restart]').addEventListener('click', () => {
+      selectedTime = null;
+      renderWeek();
+      renderSlots();
+      renderChoice();
+      showStep(1);
+    });
+
+    /* --- Estado inicial: primera semana con horas, con su primer día marcado --- */
+
+    for (let offset = 0; offset < config.weeksAhead && !selectedDay; offset += 1) {
+      for (let index = 0; index < 7; index += 1) {
+        const date = addDays(firstMonday, offset * 7 + index);
+        if (slotsFor(date).length) {
+          weekOffset = offset;
+          selectedDay = date;
+          break;
+        }
+      }
+    }
+    step1.hidden = false;
+    renderWeek();
+    renderSlots();
+    renderChoice();
+  }
+
+  initBooking();
+  document.addEventListener('astro:page-load', initBooking);
+</script>
+
+<style>
+  .booking-ui__step {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-4);
+  }
+
+  .booking-ui__progress {
+    color: var(--color-primary);
+    font-size: var(--text-sm);
+    font-weight: var(--font-semibold);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  h3 {
+    margin-top: calc(var(--space-3) * -1);
+    font-size: var(--text-xl);
+  }
+
+  h3:focus-visible {
+    outline-offset: 4px;
+  }
+
+  .booking-ui__empty {
+    color: var(--color-text-muted);
+  }
+
+  /* --- Semana ------------------------------------------------------------ */
+
+  .week {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  .week__label {
+    flex: 1;
+    min-width: 0;
+    text-align: center;
+  }
+
+  .week__month {
+    /* Con tope según el ancho: el nombre del mes no se parte en pantallas angostas. */
+    font-size: min(var(--text-lg), 5.5vw);
+    font-weight: var(--font-bold);
+  }
+
+  .week__range {
+    color: var(--color-text-muted);
+    font-size: min(var(--text-sm), 4.2vw);
+  }
+
+  .week__nav {
+    flex: none;
+    /* Tamaño fijo: con el texto ampliado no le quita espacio al nombre del mes. */
+    width: 44px;
+    height: 44px;
+    border: 1px solid var(--color-border-strong);
+    color: var(--color-primary);
+  }
+
+  .week__nav[aria-disabled='true'] {
+    border-color: var(--color-border);
+    color: var(--color-border);
+    cursor: not-allowed;
+  }
+
+  .week__nav[aria-disabled='true']:hover {
+    background: transparent;
+  }
+
+  /* --- Días --------------------------------------------------------------- */
+
+  .days {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: clamp(2px, 1vw, var(--space-2));
+  }
+
+  .days :global(.days__btn) {
+    display: grid;
+    gap: 0.125rem;
+    justify-items: center;
+    min-height: 4.25rem;
+    padding: var(--space-2) 0;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-md);
+    background: var(--color-bg);
+    color: var(--color-text);
+    transition:
+      background-color var(--duration-fast) var(--easing),
+      border-color var(--duration-fast) var(--easing);
+  }
+
+  .days :global(.days__weekday) {
+    font-size: min(var(--text-xs), 3.4vw);
+    font-weight: var(--font-medium);
+  }
+
+  .days :global(.days__number) {
+    font-size: var(--text-lg);
+    font-weight: var(--font-bold);
+    line-height: 1.1;
+  }
+
+  .days :global(.days__state) {
+    min-height: 0.5rem;
+    font-size: var(--text-xs);
+    line-height: 0.5rem;
+  }
+
+  .days :global(.days__btn:hover:not(:disabled)) {
+    border-color: var(--color-primary);
+    background: var(--color-primary-tint);
+  }
+
+  /* Día elegido: relleno azul y texto blanco, más una barra inferior (no solo color). */
+  .days :global(.days__btn[aria-pressed='true']),
+  .days :global(.days__btn[aria-pressed='true']:hover) {
+    border-color: var(--color-primary);
+    background: var(--color-primary);
+    color: var(--color-on-primary);
+    box-shadow: inset 0 -4px 0 var(--color-accent);
+  }
+
+  /* Día sin horas: atenuado y con una raya en vez de punto. */
+  .days :global(.days__btn:disabled) {
+    border-style: dashed;
+    border-color: var(--color-border);
+    color: var(--color-border-strong);
+    cursor: not-allowed;
+  }
+
+  /* --- Horas -------------------------------------------------------------- */
+
+  .slots {
+    display: grid;
+    gap: var(--space-4);
+  }
+
+  .slots :global(.slots__heading) {
+    font-size: var(--text-base);
+  }
+
+  .slots :global(.slots__title) {
+    margin-bottom: var(--space-2);
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+    font-weight: var(--font-semibold);
+  }
+
+  .slots :global(.slots__grid) {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 4.75rem), 1fr));
+    gap: var(--space-2);
+  }
+
+  .slots :global(.slots__btn) {
+    min-height: var(--touch-target);
+    padding: var(--space-2);
+    border: 1px solid var(--color-primary);
+    border-radius: var(--radius-md);
+    background: var(--color-bg);
+    color: var(--color-primary);
+    font-weight: var(--font-semibold);
+    transition: background-color var(--duration-fast) var(--easing);
+  }
+
+  .slots :global(.slots__btn:hover:not(:disabled)) {
+    background: var(--color-primary-tint);
+  }
+
+  /* Hora ya tomada: tachada y atenuada (no solo color). */
+  .slots :global(.slots__btn:disabled) {
+    border-style: dashed;
+    border-color: var(--color-border);
+    color: var(--color-border-strong);
+    text-decoration: line-through;
+    cursor: not-allowed;
+  }
+
+  .slots :global(.slots__btn[aria-pressed='true']),
+  .slots :global(.slots__btn[aria-pressed='true']:hover) {
+    background: var(--color-primary);
+    color: var(--color-on-primary);
+    box-shadow: inset 0 -4px 0 var(--color-accent);
+  }
+
+  /* --- Pie del paso 1 y resumen del paso 2 -------------------------------- */
+
+  .booking-ui__footer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .booking-ui__footer .btn[aria-disabled='true'] {
+    background: var(--color-border);
+    color: var(--color-text);
+    cursor: not-allowed;
+  }
+
+  .booking-ui__summary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-4);
+    border-radius: var(--radius-md);
+    background: var(--color-primary);
+    color: var(--color-on-primary);
+  }
+
+  .booking-ui__summary p {
+    display: grid;
+    flex: 1 1 12rem;
+  }
+
+  .booking-ui__summary p span {
+    font-size: var(--text-sm);
+  }
+
+  .booking-ui__summary .btn {
+    border-color: var(--color-on-primary);
+    color: var(--color-on-primary);
+  }
+
+  .booking-ui__summary .btn:hover {
+    background: rgb(255 255 255 / 0.14);
+  }
+
+  .booking-ui__summary .btn:focus-visible {
+    outline-color: var(--color-on-primary);
+  }
+
+  .booking-ui__age {
+    display: flex;
+    gap: var(--space-2);
+    padding: var(--space-3);
+    border: 2px solid var(--color-primary);
+    border-radius: var(--radius-md);
+    font-weight: var(--font-medium);
+  }
+
+  .booking-ui__age :global(.icon) {
+    width: 1.25rem;
+    height: 1.25rem;
+    margin-top: 0.125rem;
+    color: var(--color-primary);
+  }
+
+  /* --- Confirmación ------------------------------------------------------ */
+
+  .booking-ui__done {
+    justify-items: start;
+  }
+
+  .booking-ui__done h3 {
+    margin-top: 0;
+    font-size: var(--text-2xl);
+  }
+
+  .booking-ui__check {
+    display: grid;
+    place-items: center;
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: var(--radius-pill);
+    background: var(--color-primary);
+    color: var(--color-on-primary);
+  }
+
+  .booking-ui__check :global(.icon) {
+    width: 2rem;
+    height: 2rem;
+  }
+
+  .booking-ui__details {
+    width: 100%;
+    margin: 0;
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius-md);
+    background: var(--color-primary-tint);
+  }
+
+  .booking-ui__details div {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--space-1) var(--space-4);
+    padding-block: var(--space-3);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .booking-ui__details div:last-child {
+    border-bottom: 0;
+  }
+
+  .booking-ui__details dt {
+    color: var(--color-text-muted);
+  }
+
+  .booking-ui__details dd {
+    margin: 0;
+    font-weight: var(--font-semibold);
+    overflow-wrap: anywhere;
+  }
+
+  .booking-ui__notice {
+    display: flex;
+    gap: var(--space-3);
+    align-items: flex-start;
+    text-align: left;
+    padding: var(--space-4);
+    border-radius: var(--radius-lg);
+    background: color-mix(in srgb, var(--color-accent) 40%, var(--color-bg));
+    border: 1px solid var(--color-accent);
+    color: var(--color-text);
+  }
+
+  .booking-ui__notice :global(svg) {
+    flex: none;
+    width: 1.5rem;
+    height: 1.5rem;
+    color: var(--color-primary);
+  }
+
+  .booking-ui__notice strong {
+    display: block;
+    font-weight: 600;
+  }
+
+  .booking-ui__hint {
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+  }
+
+  .booking-ui__done-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
+
+  @media (max-width: 29.99em) {
+    .booking-ui__footer .btn,
+    .booking-ui__done-actions .btn {
+      width: 100%;
+    }
+  }
+</style>

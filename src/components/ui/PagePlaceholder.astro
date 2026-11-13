@@ -1,0 +1,53 @@
+---
+import Icon from './Icon.astro';
+
+interface Props {
+  title: string;
+  description?: string;
+  phase: string;
+}
+const { title, description, phase } = Astro.props;
+---
+
+<section class="container page-placeholder">
+  <h1>{title}</h1>
+  {description && <p class="page-placeholder__lead">{description}</p>}
+  <div class="page-placeholder__notice" role="note">
+    <Icon name="construction" />
+    <p>
+      Esta página se diseña e implementa en la {phase}.
+      Por ahora solo sirve para validar el App Shell.
+    </p>
+  </div>
+  <slot />
+</section>
+
+<style>
+  .page-placeholder {
+    padding-block: var(--space-6) var(--space-8);
+  }
+  h1 {
+    max-width: 22ch;
+  }
+  .page-placeholder__lead {
+    max-width: 60ch;
+    margin-top: var(--space-3);
+    color: var(--color-text-muted);
+    font-size: var(--text-lg);
+  }
+  .page-placeholder__notice {
+    display: flex;
+    gap: var(--space-3);
+    align-items: flex-start;
+    max-width: 40rem;
+    margin-top: var(--space-6);
+    padding: var(--space-4);
+    border: 1px dashed var(--color-border-strong);
+    border-radius: var(--radius-md);
+    background: var(--color-primary-tint);
+  }
+  .page-placeholder__notice :global(.icon) {
+    flex: none;
+    color: var(--color-primary);
+  }
+</style>

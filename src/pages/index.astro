@@ -1,0 +1,1251 @@
+---
+/**
+ * INICIO — presenta la óptica y dirige a productos, servicios y contacto.
+ * Los textos marcados como provisionales deben validarse con el negocio.
+ */
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import heroProductos from '../assets/hero-productos.jpg';
+import heroAtencionVisual from '../assets/hero-atencion-visual.jpg';
+import heroConvenios from '../assets/hero-convenios.jpg';
+import accesoOpticos from '../assets/acceso-opticos.jpg';
+import accesoSol from '../assets/acceso-sol.jpg';
+import accesoAtencion from '../assets/acceso-atencion.jpg';
+import categoriaOpticos from '../assets/categoria-opticos.jpg';
+import categoriaAccesorios from '../assets/categoria-accesorios.jpg';
+import promocion from '../assets/promocion.jpg';
+import categoriaSol from '../assets/categoria-sol.jpg';
+import Icon from '../components/ui/Icon.astro';
+import MediaPlaceholder from '../components/ui/MediaPlaceholder.astro';
+import SectionHeader from '../components/ui/SectionHeader.astro';
+import ProvisionalBadge from '../components/ui/ProvisionalBadge.astro';
+import LocationBlock from '../components/ui/LocationBlock.astro';
+import ProductCard from '../components/product/ProductCard.astro';
+import { featuredProducts, productTypeRoutes } from '../data/products';
+import { services } from '../data/services';
+import { whatsappUrl, whatsappMessages, promotionImageLink } from '../lib/whatsapp';
+import type { IconName } from '../components/ui/icons';
+
+// Banner principal: carrusel de tres entradas.
+const slides: {
+  kicker?: string;
+  title: string;
+  text: string;
+  actions: { label: string; href: string }[];
+  icon: IconName;
+  imageLabel: string;
+  /** Fotografía de fondo a todo el ancho. Sin ella, la diapositiva muestra la imagen lateral provisional. */
+  background?: ImageMetadata;
+  /** Encuadre de la fotografía de fondo (CSS object-position). */
+  backgroundPosition?: string;
+}[] = [
+  {
+    title: 'Encuentra tus próximos anteojos en Óptica Erredos',
+    text: 'Descubre alternativas para tu día a día y conoce nuestros servicios de atención óptica.',
+    actions: [
+      { label: 'Ver productos', href: '/productos' },
+      { label: 'Conoce nuestros servicios', href: '/servicios' },
+    ],
+    icon: 'eyeglasses',
+    imageLabel: 'persona usando anteojos ópticos',
+    background: heroProductos,
+  },
+  {
+    kicker: 'Atención visual',
+    title: 'Tu salud visual es importante.',
+    text: 'Conoce nuestra atención visual y recibe orientación de nuestra tecnóloga.',
+    actions: [{ label: 'Agenda tu hora', href: '/servicios#agendar-hora' }],
+    icon: 'visibility',
+    imageLabel: 'atención visual en la óptica',
+    // PROVISIONAL: imagen genérica. Muestra equipos y un procedimiento que el negocio no ha confirmado.
+    background: heroAtencionVisual,
+    // Encuadre alto: las personas (parte superior de la foto) quedan dentro del banner.
+    backgroundPosition: '62% 18%',
+  },
+  {
+    kicker: 'Convenios y operativos',
+    title: 'Soluciones ópticas para tu organización.',
+    text: 'Acercamos alternativas ópticas a empresas, sindicatos e instituciones.',
+    actions: [{ label: 'Conocer convenios', href: '/empresas' }],
+    icon: 'handshake',
+    imageLabel: 'atención óptica a un grupo de personas',
+    // PROVISIONAL: imagen genérica. Se ve publicidad de otra marca; reemplazar antes de publicar.
+    background: heroConvenios,
+  },
+];
+
+const quickLinks: {
+  href: string;
+  label: string;
+  icon: IconName;
+  /** Fotografía de fondo opcional y su encuadre (CSS object-position). */
+  background?: ImageMetadata;
+  backgroundPosition?: string;
+}[] = [
+  {
+    href: productTypeRoutes.opticos,
+    label: 'Anteojos ópticos',
+    icon: 'eyeglasses',
+    // PROVISIONAL: imagen de banco con marca de agua. Encuadre bajo: se ven los anteojos, no las personas.
+    background: accesoOpticos,
+    backgroundPosition: 'center 80%',
+  },
+  {
+    href: productTypeRoutes.sol,
+    label: 'Anteojos de sol',
+    icon: 'sunny',
+    // PROVISIONAL: imagen de banco. Encuadre medio-bajo: se ven los anteojos rosados sobre la arena.
+    background: accesoSol,
+    backgroundPosition: 'center 62%',
+  },
+  {
+    href: '/servicios#solicitar-atencion',
+    label: 'Solicitar atención',
+    icon: 'event_available',
+    // PROVISIONAL: imagen de banco de un examen visual con equipo; el negocio no ha confirmado sus equipos.
+    background: accesoAtencion,
+    backgroundPosition: 'center 38%',
+  },
+];
+
+// PROVISIONAL: beneficios de ejemplo. No agregar garantías ni descuentos sin confirmación.
+const benefits: { title: string; description: string; icon: IconName }[] = [
+  {
+    title: 'Atención y asesoría personalizada',
+    description: 'Te escuchamos y orientamos para que elijas con confianza.',
+    icon: 'handshake',
+  },
+  {
+    title: 'Alternativas para distintas necesidades',
+    description: 'Anteojos ópticos y de sol en distintos estilos.',
+    icon: 'widgets',
+  },
+  {
+    title: 'Orientación para elegir tus anteojos',
+    description: 'Te ayudamos a encontrar la opción que va contigo.',
+    icon: 'explore',
+  },
+];
+
+const categories = [
+  {
+    href: productTypeRoutes.opticos,
+    title: 'Anteojos ópticos',
+    icon: 'eyeglasses' as IconName,
+    tone: 'primary' as const,
+    // PROVISIONAL: imagen de banco (persona probándose anteojos en una óptica).
+    image: categoriaOpticos as ImageMetadata | undefined,
+    imagePosition: 'center 35%',
+  },
+  {
+    href: productTypeRoutes.sol,
+    title: 'Anteojos de sol',
+    icon: 'sunny' as IconName,
+    tone: 'accent' as const,
+    // PROVISIONAL: imagen de banco (persona con anteojos de sol).
+    image: categoriaSol as ImageMetadata | undefined,
+    imagePosition: 'center 12%',
+  },
+  {
+    // PROVISIONAL: imagen de banco (fundas de anteojos).
+    href: productTypeRoutes.accesorios,
+    title: 'Accesorios ópticos',
+    icon: 'cleaning_services' as IconName,
+    tone: 'neutral' as const,
+    image: categoriaAccesorios as ImageMetadata | undefined,
+    imagePosition: 'center 40%' as string | undefined,
+  },
+];
+---
+
+<BaseLayout
+  title="Óptica en Puerto Montt"
+  description="Óptica Erredos en Puerto Montt: anteojos ópticos, anteojos de sol y atención óptica. Consulta por WhatsApp o visítanos en Calle Talca 118."
+>
+  <!-- 2. Hero: banner tipo carrusel -->
+  <section class="hero" aria-roledescription="carrusel" aria-label="Destacados de Óptica Erredos" data-carousel>
+    <div class="hero__track" data-track>
+      {
+        slides.map((slide, index) => {
+          const Heading = index === 0 ? 'h1' : 'h2';
+          return (
+            <div
+              class:list={['hero__slide', { 'hero__slide--photo': slide.background }]}
+              role="group"
+              aria-roledescription="diapositiva"
+              aria-label={`${index + 1} de ${slides.length}`}
+              data-slide
+            >
+              {slide.background && (
+                <Image
+                  class="hero__bg"
+                  src={slide.background}
+                  alt=""
+                  widths={[...new Set([640, 1024, 1600, slide.background.width].filter((w) => w <= slide.background!.width))]}
+                  sizes="100vw"
+                  style={slide.backgroundPosition ? `object-position: ${slide.backgroundPosition}` : undefined}
+                  loading={index === 0 ? 'eager' : 'lazy'}
+                  fetchpriority={index === 0 ? 'high' : undefined}
+                />
+              )}
+              <div class="container hero__inner">
+                <div class="hero__content">
+                  {slide.kicker && <p class="hero__kicker">{slide.kicker}</p>}
+                  <Heading class="hero__title">{slide.title}</Heading>
+                  <p class="hero__text">{slide.text}</p>
+                  <div class="hero__actions">
+                    {slide.actions.map((action, i) => (
+                      <a class:list={['btn', i === 0 ? 'btn--primary' : 'btn--outline']} href={action.href}>
+                        {action.label}
+                      </a>
+                    ))}
+                  </div>
+                </div>
+                {!slide.background && (
+                  <MediaPlaceholder
+                    class="hero__media"
+                    icon={slide.icon}
+                    ratio="4 / 3"
+                    tone="accent"
+                    label={slide.imageLabel}
+                  />
+                )}
+              </div>
+            </div>
+          );
+        })
+      }
+    </div>
+
+    <!-- Controles: solo aparecen cuando el carrusel está activo (con JavaScript). -->
+    <div class="container hero__controls" data-controls hidden>
+      <div class="hero__pill on-primary">
+      <button type="button" class="hero__control" data-prev aria-label="Diapositiva anterior">
+        <Icon name="chevron_left" />
+      </button>
+      <div class="hero__dots" role="group" aria-label="Elegir diapositiva">
+        {
+          slides.map((slide, index) => (
+            <button
+              type="button"
+              class="hero__dot"
+              data-dot
+              aria-label={`Diapositiva ${index + 1} de ${slides.length}: ${slide.kicker ?? 'Productos'}`}
+              aria-current={index === 0 ? 'true' : undefined}
+            />
+          ))
+        }
+      </div>
+      <button type="button" class="hero__control" data-next aria-label="Diapositiva siguiente">
+        <Icon name="chevron_right" />
+      </button>
+      <button type="button" class="hero__control hero__play" data-play aria-label="Pausar el cambio automático">
+        <Icon name="pause" class="hero__icon-pause" />
+        <Icon name="play_arrow" class="hero__icon-play" />
+      </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2b. Beneficio: entrega el mismo día -->
+  <section class="same-day on-primary" aria-labelledby="mismo-dia-title">
+    <div class="container same-day__inner">
+      <span class="same-day__icon" aria-hidden="true"><Icon name="schedule" /></span>
+      <div class="same-day__main">
+        <h2 id="mismo-dia-title" class="same-day__title">¡Tus anteojos listos el mismo día!</h2>
+        <p class="same-day__text">Trae tu receta durante la mañana y consulta por la entrega el mismo día.</p>
+      </div>
+      <p class="same-day__note">Aplica a tratamientos estándar. Lentes bifocales y con adelgazado pueden requerir más tiempo.</p>
+    </div>
+  </section>
+
+  <!-- 3. Accesos rápidos -->
+  <section class="container quick" aria-label="Accesos rápidos">
+    <ul role="list">
+      {
+        quickLinks.map((item) => (
+          <li>
+            <a href={item.href} class:list={{ 'quick__link--photo': item.background }}>
+              {item.background && (
+                <Image
+                  class="quick__bg"
+                  src={item.background}
+                  alt=""
+                  widths={[480, item.background.width]}
+                  sizes="(min-width: 48em) 33vw, 100vw"
+                  style={item.backgroundPosition ? `object-position: ${item.backgroundPosition}` : undefined}
+                />
+              )}
+              <span class="quick__icon">
+                <Icon name={item.icon} />
+              </span>
+              <span class="quick__label">{item.label}</span>
+              <Icon name="chevron_right" class="quick__arrow" />
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <!-- 4. Beneficios -->
+  <section class="container section" aria-labelledby="beneficios-title">
+    <SectionHeader id="beneficios-title" title="Por qué elegir Erredos" provisional />
+    <ul role="list" class="benefits">
+      {
+        benefits.map((benefit) => (
+          <li>
+            <Icon name={benefit.icon} />
+            <div>
+              <h3>{benefit.title}</h3>
+              <p>{benefit.description}</p>
+            </div>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <!-- 5. Categorías -->
+  <section class="container section" aria-labelledby="categorias-title">
+    <SectionHeader id="categorias-title" title="Explora por categoría" />
+    <ul role="list" class="categories">
+      {
+        categories.map((category) => (
+          <li>
+            <a
+              href={category.href}
+            >
+              {category.image ? (
+                <Image
+                  class="categories__photo"
+                  src={category.image}
+                  alt=""
+                  widths={[480, 640]}
+                  sizes="(min-width: 48em) 50vw, 100vw"
+                  style={category.imagePosition ? `object-position: ${category.imagePosition}` : undefined}
+                  loading="lazy"
+                />
+              ) : (
+                <MediaPlaceholder
+                  icon={category.icon}
+                  ratio="16 / 9"
+                  tone={category.tone}
+                  label={category.title.toLowerCase()}
+                />
+              )}
+              <span class="categories__title">
+                <span>
+                  {category.title}
+                </span>
+                <Icon name="arrow_forward" />
+              </span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <!-- 6. Productos destacados -->
+  <section class="section" aria-labelledby="destacados-title">
+    <div class="container">
+      <SectionHeader
+        id="destacados-title"
+        title="Productos destacados"
+        description="Productos de demostración: el catálogo real se cargará más adelante."
+        link={{ href: '/productos', label: 'Ver todos' }}
+      />
+    </div>
+    <ul role="list" class="featured">
+      {
+        featuredProducts.map((product) => (
+          <li>
+            <ProductCard product={product} />
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <!-- 7. Promociones -->
+  <section class="container section" aria-labelledby="promos-title">
+    <h2 id="promos-title" class="visually-hidden">Promociones y ofertas</h2>
+    <div class="promo">
+      <Image class="promo__photo" src={promocion} alt="Afiche promocional provisional" widths={[640, 1024]} sizes="(min-width: 75em) 1200px, 100vw" loading="lazy" />
+      <a
+        class="btn promo__cta"
+        href={whatsappUrl(whatsappMessages.promotion(promotionImageLink()))}
+        target="_blank"
+        rel="noopener"
+      >
+        Solicitar promoción<span class="visually-hidden"> por WhatsApp (se abre en una pestaña nueva)</span>
+        <Icon name="arrow_forward" />
+      </a>
+    </div>
+  </section>
+
+  <!-- 8. Servicios -->
+  <section class="container section" aria-labelledby="servicios-title">
+    <SectionHeader
+      id="servicios-title"
+      title="Nuestros servicios"
+      description="Atención visual y reparación de anteojos en Puerto Montt."
+    />
+    <ul role="list" class="services">
+      {
+        services.map((service) => (
+          <li>
+            <Icon name={service.icon} />
+            <h3>{service.name}</h3>
+            <p>{service.description}</p>
+          </li>
+        ))
+      }
+    </ul>
+    <a class="btn btn--outline services__cta" href="/servicios">Conocer servicios</a>
+  </section>
+
+  <!-- 9. Convenios y operativos -->
+  <section class="b2b on-primary" aria-labelledby="empresas-title">
+    <div class="container b2b__inner">
+      <span class="b2b__icon"><Icon name="handshake" /></span>
+      <div>
+        <h2 id="empresas-title">Acercamos soluciones ópticas a empresas y organizaciones</h2>
+        <p>Consulta por convenios y operativos ópticos para tu organización.</p>
+      </div>
+      <a class="btn btn--accent" href="/empresas">Conoce nuestros convenios</a>
+    </div>
+  </section>
+
+  <!-- 10. Ubicación y contacto -->
+  <section class="container section" aria-labelledby="ubicacion-title">
+    <LocationBlock headingId="ubicacion-title" />
+  </section>
+</BaseLayout>
+
+<script>
+  const AUTOPLAY_MS = 7000;
+
+  function initCarousel() {
+    const root = document.querySelector<HTMLElement>('[data-carousel]');
+    if (!root || root.dataset.ready) return;
+    root.dataset.ready = 'true';
+
+    const track = root.querySelector<HTMLElement>('[data-track]')!;
+    const slides = [...root.querySelectorAll<HTMLElement>('[data-slide]')];
+    const dots = [...root.querySelectorAll<HTMLButtonElement>('[data-dot]')];
+    const play = root.querySelector<HTMLButtonElement>('[data-play]')!;
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let current = 0;
+    let timer: number | undefined;
+    // Con "reducir movimiento" activado, el banner parte en pausa.
+    let paused = reduceMotion.matches;
+
+    root.querySelector<HTMLElement>('[data-controls]')!.hidden = false;
+
+    function render() {
+      slides.forEach((slide, index) => {
+        // Las diapositivas ocultas no reciben foco ni se leen.
+        slide.inert = index !== current;
+      });
+      dots.forEach((dot, index) => {
+        if (index === current) dot.setAttribute('aria-current', 'true');
+        else dot.removeAttribute('aria-current');
+      });
+    }
+
+    function goTo(index: number) {
+      current = (index + slides.length) % slides.length;
+      track.scrollTo({
+        left: slides[current].offsetLeft - track.offsetLeft,
+        behavior: reduceMotion.matches ? 'auto' : 'smooth',
+      });
+      render();
+    }
+
+    function stop() {
+      window.clearInterval(timer);
+      timer = undefined;
+    }
+
+    function start() {
+      stop();
+      if (!paused) timer = window.setInterval(() => goTo(current + 1), AUTOPLAY_MS);
+    }
+
+    function setPaused(value: boolean) {
+      paused = value;
+      play.setAttribute('aria-pressed', String(paused));
+      play.setAttribute(
+        'aria-label',
+        paused ? 'Reanudar el cambio automático' : 'Pausar el cambio automático',
+      );
+      // En pausa, los cambios de diapositiva se anuncian a lectores de pantalla.
+      track.setAttribute('aria-live', paused ? 'polite' : 'off');
+      start();
+    }
+
+    // Al deslizar con el dedo, el estado sigue a la diapositiva visible.
+    let frame = 0;
+    track.addEventListener('scroll', () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        const index = Math.round(track.scrollLeft / track.clientWidth);
+        if (index !== current && slides[index]) {
+          current = index;
+          render();
+        }
+      });
+    });
+
+    // Cualquier uso manual detiene el cambio automático: la persona toma el control.
+    root.querySelector('[data-prev]')!.addEventListener('click', () => (setPaused(true), goTo(current - 1)));
+    root.querySelector('[data-next]')!.addEventListener('click', () => (setPaused(true), goTo(current + 1)));
+    dots.forEach((dot, index) => dot.addEventListener('click', () => (setPaused(true), goTo(index))));
+    track.addEventListener('pointerdown', () => setPaused(true));
+    play.addEventListener('click', () => setPaused(!paused));
+
+    // Se detiene mientras el puntero o el foco están sobre el banner, y si la pestaña no está visible.
+    root.addEventListener('mouseenter', stop);
+    root.addEventListener('mouseleave', start);
+    root.addEventListener('focusin', stop);
+    root.addEventListener('focusout', start);
+    document.addEventListener('visibilitychange', () => (document.hidden ? stop() : start()));
+    document.addEventListener('astro:before-swap', stop, { once: true });
+
+    render();
+    setPaused(paused);
+  }
+
+  initCarousel();
+  document.addEventListener('astro:page-load', initCarousel);
+</script>
+
+<style>
+  .section {
+    padding-top: var(--space-7);
+  }
+
+  @media (min-width: 64em) {
+    .section {
+      padding-top: var(--space-8);
+    }
+  }
+
+  /* --- Hero: carrusel ---------------------------------------------------
+     La fotografía se muestra a todo color. Solo la zona del texto lleva un degradado
+     blanco que se desvanece hacia la imagen; el texto es negro carbón.
+     - Móvil: foto arriba; su borde inferior se funde a blanco y el texto sigue debajo.
+     - Desde 768 px: la foto ocupa todo el banner; el blanco parte a la izquierda (88 %,
+       así siempre se intuye la imagen) y se desvanece hacia la derecha.
+     Las diapositivas van en una fila con ajuste de desplazamiento (se puede deslizar
+     con el dedo y, sin JavaScript, sigue siendo contenido normal desplazable). */
+
+  .hero {
+    position: relative;
+    background: var(--color-bg);
+  }
+
+  .hero__track {
+    display: flex;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+
+  .hero__track::-webkit-scrollbar {
+    display: none;
+  }
+
+  .hero__slide {
+    /* Alto de la foto en móvil. Fijo en px: no se achica cuando se amplía el texto. */
+    --hero-img-h: clamp(210px, 66vw, 320px);
+
+    position: relative;
+    display: flex;
+    flex: 0 0 100%;
+    flex-direction: column;
+    min-width: 0;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+  }
+
+  .hero__slide :global(.hero__bg) {
+    display: block;
+    width: 100%;
+    height: var(--hero-img-h);
+    object-fit: cover;
+    object-position: center 65%;
+  }
+
+  /* Móvil: el borde inferior de la foto se funde a blanco. */
+  .hero__slide::after {
+    content: '';
+    position: absolute;
+    top: calc(var(--hero-img-h) - 6rem);
+    right: 0;
+    left: 0;
+    height: 6rem;
+    background: linear-gradient(to bottom, rgb(255 255 255 / 0), rgb(255 255 255 / 0.9) 70%, #fff);
+    pointer-events: none;
+  }
+
+  .hero__inner {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    flex: 1;
+    grid-template-columns: minmax(0, 1fr);
+    align-content: start;
+    gap: var(--space-4);
+    margin-top: -1.75rem;
+    padding-bottom: var(--space-4);
+  }
+
+  .hero__kicker {
+    margin-bottom: var(--space-2);
+    color: var(--color-primary);
+    font-weight: var(--font-semibold);
+  }
+
+  /* El título se ve igual en las tres diapositivas, sea h1 o h2. */
+  .hero__title {
+    /* Con tope según el ancho: en pantallas angostas con texto ampliado no se parten las palabras. */
+    font-size: min(var(--text-3xl), 9.5vw);
+    font-weight: var(--font-bold);
+  }
+
+  .hero__text {
+    max-width: 45ch;
+    margin-top: var(--space-3);
+    font-size: var(--text-lg);
+  }
+
+  /* Botones siempre uno al lado del otro. En pantallas angostas se reparten el ancho
+     y, si hace falta, el texto del botón baja a una segunda línea. */
+  .hero__actions {
+    display: flex;
+    gap: var(--space-2);
+    margin-top: var(--space-5);
+  }
+
+  .hero__actions .btn {
+    flex: 0 1 auto;
+    padding-inline: var(--space-3);
+    font-size: var(--text-sm);
+  }
+
+  /* --- Controles: una píldora azul sólida, legible sobre cualquier fotografía --- */
+
+  .hero__controls {
+    display: flex;
+    justify-content: center;
+    padding-bottom: var(--space-4);
+  }
+
+  .hero__pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px var(--space-1);
+    border-radius: var(--radius-pill);
+    background: var(--color-primary);
+    color: var(--color-on-primary);
+  }
+
+  .hero__control {
+    display: grid;
+    place-items: center;
+    width: var(--touch-target);
+    height: var(--touch-target);
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-pill);
+    background: transparent;
+    color: var(--color-on-primary);
+    transition: background-color var(--duration-fast) var(--easing);
+  }
+
+  .hero__control:hover {
+    background: rgb(255 255 255 / 0.16);
+  }
+
+  .hero__play :global(.hero__icon-play),
+  .hero__play[aria-pressed='true'] :global(.hero__icon-pause) {
+    display: none;
+  }
+
+  .hero__play[aria-pressed='true'] :global(.hero__icon-play) {
+    display: block;
+  }
+
+  .hero__dots {
+    display: flex;
+    align-items: center;
+  }
+
+  /* Botón de 32 px con el punto al centro (área táctil suficiente, WCAG 2.5.8). */
+  .hero__dot {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-pill);
+    background: transparent;
+  }
+
+  .hero__dot::before {
+    content: '';
+    width: 10px;
+    height: 10px;
+    border: 2px solid var(--color-on-primary);
+    border-radius: var(--radius-pill);
+    transition:
+      width var(--duration-base) var(--easing),
+      background-color var(--duration-base) var(--easing);
+  }
+
+  /* Actual: punto relleno y más ancho (no depende solo del color). */
+  .hero__dot[aria-current='true']::before {
+    width: 26px;
+    background: var(--color-on-primary);
+  }
+
+  @media (min-width: 48em) {
+    .hero__slide {
+      /* Hasta dónde llega el texto: margen izquierdo del contenedor + ancho del bloque. */
+      --hero-text-end: calc(max(var(--gutter), (100% - var(--container-max)) / 2) + 32rem);
+    }
+
+    .hero__slide :global(.hero__bg) {
+      position: absolute;
+      inset: 0;
+      height: 100%;
+    }
+
+    /* Degradado lineal: blanco al 88 % bajo el texto (siempre se intuye la imagen)
+       que se desvanece hasta dejar la foto limpia. */
+    .hero__slide::after {
+      inset: 0;
+      height: auto;
+      background: linear-gradient(
+        to right,
+        rgb(255 255 255 / 0.88) 0,
+        rgb(255 255 255 / 0.88) calc(var(--hero-text-end) - 6rem),
+        rgb(255 255 255 / 0.55) calc(var(--hero-text-end) + 4rem),
+        rgb(255 255 255 / 0) calc(var(--hero-text-end) + 18rem)
+      );
+    }
+
+    .hero__actions {
+      gap: var(--space-3);
+    }
+
+    .hero__actions .btn {
+      flex: none;
+      padding-inline: var(--space-5);
+      font-size: var(--text-base);
+    }
+
+    .hero__inner {
+      align-content: center;
+      min-height: 34rem;
+      margin-top: 0;
+      /* Abajo se reserva el espacio de los controles, que van sobre la fotografía. */
+      padding-block: var(--space-7) calc(var(--touch-target) + var(--space-7));
+    }
+
+    .hero__content {
+      max-width: 32rem;
+    }
+
+    .hero__controls {
+      position: absolute;
+      inset: auto 0 0;
+      z-index: 2;
+      justify-content: flex-start;
+      padding-bottom: var(--space-5);
+    }
+  }
+
+  /* --- Beneficio: entrega el mismo día ---------------------------------- */
+  .same-day {
+    background: var(--color-primary);
+    color: var(--color-on-primary);
+  }
+
+  .same-day__inner {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: var(--space-2) var(--space-3);
+    padding-block: var(--space-4);
+  }
+
+  .same-day__icon {
+    display: grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: var(--radius-pill);
+    background: var(--color-accent);
+    color: var(--color-primary);
+    flex: none;
+  }
+
+  .same-day__icon :global(.icon) {
+    width: 1.75rem;
+    height: 1.75rem;
+  }
+
+  .same-day__title {
+    margin: 0;
+    font-size: var(--text-xl);
+    font-weight: 700;
+    line-height: var(--leading-tight);
+    color: var(--color-on-primary);
+  }
+
+  .same-day__text {
+    margin: var(--space-1) 0 0;
+    font-size: var(--text-sm);
+  }
+
+  .same-day__note {
+    grid-column: 1 / -1;
+    margin: 0;
+    padding-top: var(--space-2);
+    border-top: 1px solid rgb(255 255 255 / 0.3);
+    font-size: var(--text-xs);
+    line-height: 1.5;
+  }
+
+  @media (min-width: 48em) {
+    .same-day__inner {
+      grid-template-columns: auto minmax(0, 1.4fr) minmax(0, 1fr);
+      gap: var(--space-5);
+      padding-block: var(--space-5);
+    }
+
+    .same-day__icon {
+      width: 3.5rem;
+      height: 3.5rem;
+    }
+
+    .same-day__title {
+      font-size: var(--text-2xl);
+    }
+
+    .same-day__text {
+      font-size: var(--text-base);
+    }
+
+    .same-day__note {
+      grid-column: auto;
+      padding: 0 0 0 var(--space-5);
+      border-top: 0;
+      border-left: 3px solid var(--color-accent);
+      font-size: var(--text-sm);
+    }
+  }
+
+  /* --- Accesos rápidos -------------------------------------------------- */
+
+  .quick {
+    padding-top: var(--space-5);
+  }
+
+  .quick ul {
+    display: grid;
+    /* Rejilla fluida: se reordena sola cuando el texto crece. */
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+    gap: var(--space-2);
+  }
+
+  .quick a {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    position: relative;
+    min-height: 5.5rem;
+    padding: var(--space-3) var(--space-4);
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    color: var(--color-text);
+    font-weight: var(--font-semibold);
+    text-decoration: none;
+    transition:
+      border-color var(--duration-fast) var(--easing),
+      background-color var(--duration-fast) var(--easing);
+  }
+
+  .quick a:hover {
+    border-color: var(--color-primary);
+    background: var(--color-primary-tint);
+  }
+
+  /* Acceso con fotografía de fondo: filtro azul petróleo oscuro para que el texto
+     blanco se lea (contraste mínimo 6,3:1 sobre las zonas más claras de la foto). */
+  .quick a :global(.quick__bg) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .quick a.quick__link--photo {
+    border-color: transparent;
+    color: var(--color-on-primary);
+  }
+
+  .quick__link--photo::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgb(3 50 60 / 0.75);
+    transition: background-color var(--duration-fast) var(--easing);
+  }
+
+  .quick a.quick__link--photo:hover {
+    border-color: transparent;
+    background: none;
+  }
+
+  .quick__link--photo:hover::after {
+    background: rgb(3 50 60 / 0.85);
+  }
+
+  /* El contenido va sobre la foto y el filtro. */
+  .quick__icon,
+  .quick__label,
+  .quick a :global(.quick__arrow) {
+    position: relative;
+    z-index: 1;
+  }
+
+  .quick a.quick__link--photo :global(.quick__arrow) {
+    color: var(--color-on-primary);
+  }
+
+  .quick__link--photo:focus-visible {
+    outline-offset: 3px;
+  }
+
+  .quick__icon {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: var(--radius-md);
+    background: var(--color-accent);
+    color: var(--color-primary);
+  }
+
+  .quick__label {
+    flex: 1;
+  }
+
+  .quick a :global(.quick__arrow) {
+    color: var(--color-text-muted);
+  }
+
+  @media (min-width: 48em) {
+    .quick ul {
+      gap: var(--space-4);
+    }
+  }
+
+  /* --- Beneficios ------------------------------------------------------- */
+
+  .benefits {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+    gap: var(--space-3);
+  }
+
+  .benefits li {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-3);
+    padding: var(--space-4);
+    border-radius: var(--radius-lg);
+    background: var(--color-primary-tint);
+  }
+
+  .benefits :global(.icon) {
+    width: 1.75rem;
+    height: 1.75rem;
+    color: var(--color-primary);
+  }
+
+  .benefits h3 {
+    font-size: var(--text-base);
+  }
+
+  .benefits p {
+    margin-top: var(--space-1);
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+  }
+
+  @media (min-width: 48em) {
+    .benefits {
+      gap: var(--space-4);
+    }
+
+    .benefits li {
+      flex-direction: column;
+      align-items: flex-start;
+      padding: var(--space-5);
+    }
+  }
+
+  /* --- Categorías ------------------------------------------------------- */
+
+  .categories {
+    display: grid;
+    gap: var(--space-4);
+  }
+
+  .categories a {
+    display: block;
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    color: var(--color-text);
+    text-decoration: none;
+    transition: border-color var(--duration-fast) var(--easing);
+  }
+
+  .categories a:hover {
+    border-color: var(--color-primary);
+  }
+
+  .categories a :global(.categories__photo) {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+  }
+
+  .categories a :global(.media-placeholder) {
+    border-radius: 0;
+  }
+
+  .categories__title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    padding: var(--space-4);
+    font-size: var(--text-lg);
+    font-weight: var(--font-semibold);
+  }
+
+  .categories__title :global(.icon) {
+    color: var(--color-primary);
+  }
+
+  /* Las tres categorías en una sola línea; si el texto crece, bajan de a una. */
+  @media (min-width: 37.5em) {
+    .categories {
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr));
+      gap: var(--space-3);
+    }
+
+    .categories__title {
+      padding: var(--space-3);
+      font-size: var(--text-base);
+    }
+  }
+
+  @media (min-width: 64em) {
+    .categories {
+      gap: var(--space-4);
+    }
+  }
+
+  /* --- Productos destacados ---------------------------------------------
+     Móvil: carrusel horizontal con ajuste (patrón de app; la tarjeta siguiente
+     asoma para indicar que hay más). Tablet y escritorio: grilla. */
+
+  .featured {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: min(15rem, 78vw);
+    gap: var(--space-3);
+    padding: 0 var(--gutter) var(--space-2);
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-padding-inline: var(--gutter);
+    scroll-snap-type: x mandatory;
+    scrollbar-width: thin;
+  }
+
+  .featured li {
+    scroll-snap-align: start;
+  }
+
+  @media (min-width: 48em) {
+    .featured {
+      grid-auto-flow: row;
+      grid-auto-columns: auto;
+      /* Tres columnas; baja a dos o una si el texto ampliado ya no cabe. */
+      grid-template-columns: repeat(auto-fill, minmax(min(100%, max(14rem, 30%)), 1fr));
+      gap: var(--space-4);
+      max-width: calc(var(--container-max) + var(--gutter) * 2);
+      margin-inline: auto;
+      overflow: visible;
+    }
+  }
+
+  /* --- Promociones ------------------------------------------------------ */
+
+  .promo {
+    display: grid;
+    gap: var(--space-3);
+  }
+
+  .promo :global(.promo__photo) {
+    width: 100%;
+    height: auto;
+    border-radius: var(--radius-lg);
+  }
+
+  /* Móvil: el botón va bajo el afiche, sobre fondo blanco → azul. */
+  .promo__cta {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--color-on-primary);
+    font-size: var(--text-lg);
+    font-weight: 700;
+  }
+
+  .promo__cta:hover {
+    background: var(--color-primary-hover);
+    border-color: var(--color-primary-hover);
+  }
+
+  @media (min-width: 48em) {
+    .promo {
+      position: relative;
+    }
+
+    /* Sobre la franja inferior del afiche, a la derecha. */
+    .promo__cta {
+      position: absolute;
+      right: 3%;
+      bottom: 2.5%;
+      /* Sobre el rojo del afiche: blanco con texto azul (el coral se perdía). */
+      background: var(--color-bg);
+      border-color: var(--color-bg);
+      color: var(--color-primary);
+      box-shadow: var(--shadow-md);
+    }
+
+    .promo__cta:hover {
+      background: var(--color-primary);
+      border-color: var(--color-bg);
+      color: var(--color-on-primary);
+    }
+  }
+
+  /* --- Servicios -------------------------------------------------------- */
+
+  .services {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+    gap: var(--space-3);
+  }
+
+  .services li {
+    display: grid;
+    gap: var(--space-2);
+    justify-items: start;
+    padding: var(--space-5);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+  }
+
+  .services li :global(.icon) {
+    color: var(--color-primary);
+  }
+
+  .services h3 {
+    font-size: var(--text-lg);
+  }
+
+  .services p,
+  .services :global(.provisional-badge) {
+    color: var(--color-text-muted);
+  }
+
+  .services__cta {
+    margin-top: var(--space-5);
+  }
+
+  @media (max-width: 29.99em) {
+    .services__cta {
+      width: 100%;
+    }
+  }
+
+  @media (min-width: 48em) {
+    .services {
+      gap: var(--space-4);
+    }
+  }
+
+  /* --- Convenios y operativos ------------------------------------------- */
+
+  .b2b {
+    margin-top: var(--space-7);
+    background: var(--color-primary);
+    color: var(--color-on-primary);
+  }
+
+  .b2b__inner {
+    display: grid;
+    gap: var(--space-4);
+    padding-block: var(--space-6);
+  }
+
+  .b2b__icon {
+    display: grid;
+    place-items: center;
+    width: 3rem;
+    height: 3rem;
+    border-radius: var(--radius-md);
+    background: rgb(255 255 255 / 0.12);
+    color: var(--color-accent);
+  }
+
+  .b2b h2 {
+    max-width: 26ch;
+  }
+
+  .b2b p {
+    margin-top: var(--space-2);
+  }
+
+  @media (min-width: 48em) {
+    .b2b__inner {
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: var(--space-5);
+      padding-block: var(--space-7);
+    }
+  }
+
+  @media (min-width: 64em) {
+    .b2b {
+      margin-top: var(--space-8);
+    }
+  }
+</style>

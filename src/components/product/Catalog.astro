@@ -1,0 +1,1047 @@
+---
+/**
+ * Catálogo interactivo. Lo usan /productos, /productos/anteojos-opticos y
+ * /productos/anteojos-de-sol: cada ruta entrega su HTML completo (indexable)
+ * y el filtrado, orden y carga progresiva ocurren en el navegador.
+ * Orientado al descubrimiento: no hay buscador por nombre, código ni modelo.
+ */
+import Icon from '../ui/Icon.astro';
+import PageBanner from '../ui/PageBanner.astro';
+import bannerImage from '../../assets/hero-productos.jpg';
+import ProductCard from './ProductCard.astro';
+import {
+  products,
+  frameColors,
+  formatPrice,
+  productTypeLabels,
+  productTypeRoutes,
+  type FrameColor,
+  type ProductType,
+} from '../../data/products';
+import { site } from '../../config/site';
+import { whatsappUrl, whatsappMessages } from '../../lib/whatsapp';
+
+interface Props {
+  category: 'todos' | ProductType;
+}
+
+const { category } = Astro.props;
+const PAGE_SIZE = 12;
+
+const list = category === 'todos' ? products : products.filter((p) => p.type === category);
+
+const categories = [
+  { key: 'todos', label: 'Todos', href: '/productos' },
+  { key: 'opticos', label: productTypeLabels.opticos, href: productTypeRoutes.opticos },
+  { key: 'sol', label: productTypeLabels.sol, href: productTypeRoutes.sol },
+  { key: 'accesorios', label: productTypeLabels.accesorios, href: productTypeRoutes.accesorios },
+];
+
+// Las opciones de cada filtro salen de los productos: un filtro sin datos no se muestra.
+const unique = (values: (string | null)[]) =>
+  [...new Set(values.filter((v): v is string => Boolean(v)))].sort((a, b) => a.localeCompare(b, 'es'));
+
+const brands = unique(list.map((p) => p.brand));
+const shapes = unique(list.map((p) => p.shape));
+const styles = unique(list.map((p) => p.style));
+const colorsInUse = new Set(list.flatMap((p) => p.variants.map((v) => v.color)));
+const colors = (Object.keys(frameColors) as FrameColor[]).filter((c) => colorsInUse.has(c));
+const prices = list.map((p) => p.price).filter((p): p is number => p !== null);
+const hasPrices = prices.length > 0;
+const priceMin = hasPrices ? Math.min(...prices) : 0;
+const priceMax = hasPrices ? Math.max(...prices) : 0;
+
+// Orden de los grupos de filtros. Un grupo sin opciones no se muestra.
+type Group =
+  | { kind: 'check'; name: string; legend: string; options: string[] }
+  | { kind: 'price'; name: 'precio'; legend: string }
+  | { kind: 'color'; name: 'color'; legend: string; options: FrameColor[] };
+
+const groups: Group[] = (
+  [
+    { kind: 'check', name: 'marca', legend: 'Marca', options: brands },
+    hasPrices && { kind: 'price', name: 'precio', legend: 'Precio' },
+    { kind: 'check', name: 'forma', legend: 'Forma del marco', options: shapes },
+    { kind: 'color', name: 'color', legend: 'Color del marco', options: colors },
+    { kind: 'check', name: 'estilo', legend: 'Estilo', options: styles },
+  ] as (Group | false)[]
+).filter((g): g is Group => g !== false && (g.kind === 'price' || g.options.length > 0));
+
+const countLabel = (n: number) => `${n} ${n === 1 ? 'producto' : 'productos'}`;
+---
+
+<!-- Banner de entrada: PROVISIONAL (foto de banco). Cambiar `image`, `title` y `text` cuando haya contenido definitivo. -->
+<PageBanner
+  title="Encuentra los anteojos que van contigo"
+  text="Explora nuestra selección de anteojos ópticos y de sol. Descubre diferentes estilos, formas y colores."
+  image={bannerImage}
+  imagePosition="center 65%"
+/>
+
+<div class="container catalog" data-catalog data-page-size={PAGE_SIZE}>
+  <nav class="catalog__cats" aria-label="Categorías de productos">
+    <ul role="list">
+      {
+        categories.map((item) => (
+          <li>
+            <a
+              href={item.href}
+              data-cat-link
+              data-base={item.href}
+              aria-current={item.key === category ? 'page' : undefined}
+            >
+              {item.label}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </nav>
+
+  <div class="catalog__layout">
+    <!-- Filtros: panel inferior (bottom sheet) en móvil y tablet; barra lateral en escritorio. -->
+    <div class="filters" id="catalog-filters" data-filters aria-labelledby="filters-title">
+      <div class="filters__head">
+        <h2 id="filters-title">Filtrar productos</h2>
+        <button type="button" class="icon-btn filters__close" data-cancel-filters aria-label="Cerrar filtros">
+          <Icon name="close" />
+        </button>
+      </div>
+
+      <form class="filters__body" data-filter-form>
+        {
+          groups.map((group, index) => (
+            <details class="group" data-group open={index === 0 || undefined}>
+              <summary>
+                <span>{group.legend}</span>
+                <span class="group__count" data-group-count hidden />
+                <Icon name="chevron_right" />
+              </summary>
+              <div class="group__body" role="group" aria-label={group.legend}>
+                {group.kind === 'check' &&
+                  group.options.map((option) => (
+                    <label class="check">
+                      <input type="checkbox" name={group.name} value={option} />
+                      <span>{option}</span>
+                    </label>
+                  ))}
+
+                {group.kind === 'color' && (
+                  <div class="colors">
+                    {group.options.map((color) => (
+                      <label class="check">
+                        <input type="checkbox" name="color" value={color} />
+                        <span class="check__swatch" style={`--swatch: ${frameColors[color]}`} />
+                        <span>{color}</span>
+                      </label>
+                    ))}
+                  </div>
+                )}
+
+                {group.kind === 'price' && (
+                  <>
+                    <div class="price">
+                      <label>
+                        <span>Precio mínimo</span>
+                        <input
+                          type="number"
+                          name="min"
+                          inputmode="numeric"
+                          min="0"
+                          step="1000"
+                          placeholder={String(priceMin)}
+                          data-default={priceMin}
+                        />
+                      </label>
+                      <label>
+                        <span>Precio máximo</span>
+                        <input
+                          type="number"
+                          name="max"
+                          inputmode="numeric"
+                          min="0"
+                          step="1000"
+                          placeholder={String(priceMax)}
+                          data-default={priceMax}
+                        />
+                      </label>
+                    </div>
+                    <p class="price__range" data-price-range>
+                      Rango: {formatPrice(priceMin)} a {formatPrice(priceMax)}
+                    </p>
+                  </>
+                )}
+              </div>
+            </details>
+          ))
+        }
+      </form>
+
+      <div class="filters__foot">
+        <button type="button" class="btn btn--outline" data-clear-panel>Limpiar filtros</button>
+        <button type="button" class="btn btn--primary filters__apply" data-apply-filters>
+          <span data-apply-label>Ver {countLabel(list.length)}</span>
+        </button>
+      </div>
+    </div>
+    <div class="filters-backdrop" data-backdrop hidden></div>
+
+    <div class="catalog__main">
+      <div class="catalog__toolbar">
+        <button
+          type="button"
+          class="btn btn--outline catalog__open-filters"
+          data-open-filters
+          aria-haspopup="dialog"
+          aria-controls="catalog-filters"
+        >
+          <Icon name="tune" />
+          <span>Filtrar</span>
+          <span class="catalog__badge" data-filter-count hidden></span>
+        </button>
+        <label class="sort">
+          <span>Ordenar por</span>
+          <select name="orden" data-sort>
+            <option value="destacados">Destacados</option>
+            <option value="recientes">Más recientes</option>
+            {hasPrices && <option value="precio-asc">Menor precio</option>}
+            {hasPrices && <option value="precio-desc">Mayor precio</option>}
+          </select>
+        </label>
+      </div>
+
+      <ul role="list" class="chips" data-chips aria-label="Filtros activos" hidden></ul>
+
+      <p class="catalog__count" data-count role="status" aria-live="polite">{countLabel(list.length)}</p>
+
+      <ul role="list" class="catalog__grid" data-grid>
+        {
+          list.map((product, index) => (
+            <li
+              data-item
+              data-index={index}
+              data-brand={product.brand}
+              data-shape={product.shape ?? ''}
+              data-style={product.style}
+              data-colors={product.variants.map((v) => v.color).join('|')}
+              data-price={product.price}
+              data-added={Date.parse(product.addedAt)}
+              hidden={index >= PAGE_SIZE}
+            >
+              <ProductCard product={product} headingLevel="h2" compact />
+            </li>
+          ))
+        }
+      </ul>
+
+      <div class="catalog__more" data-more-wrap hidden={list.length <= PAGE_SIZE}>
+        <p data-progress>
+          Mostrando {Math.min(PAGE_SIZE, list.length)} de {list.length}
+        </p>
+        <button type="button" class="btn btn--outline" data-more>Ver más productos</button>
+      </div>
+
+      <div class="catalog__empty" data-empty hidden>
+        <Icon name="search_off" />
+        <h2>No encontramos anteojos con estas características.</h2>
+        <p>Prueba modificando los filtros para descubrir otras alternativas.</p>
+        <div class="catalog__empty-actions">
+          <button type="button" class="btn btn--primary" data-clear>Limpiar filtros</button>
+          <a class="btn btn--outline" href="/productos">Ver todos los productos</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <section class="catalog__help" aria-labelledby="catalog-help-title">
+    <div>
+      <h2 id="catalog-help-title">¿Necesitas ayuda para elegir tus anteojos?</h2>
+      <p>Escríbenos y te orientamos.</p>
+    </div>
+    <a class="btn btn--accent" href={whatsappUrl(whatsappMessages.catalogHelp)} target="_blank" rel="noopener">
+      <Icon name="chat" />
+      <span>Consultar por WhatsApp<span class="visually-hidden"> (se abre en una pestaña nueva)</span></span>
+    </a>
+  </section>
+</div>
+
+<script>
+  const MULTI = ['marca', 'forma', 'color', 'estilo'] as const;
+  const DESKTOP = '(min-width: 64em)';
+  const clp = new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 });
+
+  function initCatalog() {
+    const root = document.querySelector<HTMLElement>('[data-catalog]');
+    if (!root || root.dataset.ready) return;
+    root.dataset.ready = 'true';
+
+    const $ = <T extends HTMLElement>(selector: string) => root.querySelector<T>(selector)!;
+    const form = $<HTMLFormElement>('[data-filter-form]');
+    const sort = $<HTMLSelectElement>('[data-sort]');
+    const grid = $('[data-grid]');
+    const items = [...grid.querySelectorAll<HTMLElement>('[data-item]')];
+    const chips = $('[data-chips]');
+    const count = $('[data-count]');
+    const moreWrap = $('[data-more-wrap]');
+    const progress = $('[data-progress]');
+    const empty = $('[data-empty]');
+    const panel = $('[data-filters]');
+    const backdrop = $('[data-backdrop]');
+    const openButton = $<HTMLButtonElement>('[data-open-filters]');
+    const badge = $('[data-filter-count]');
+    const applyLabel = $('[data-apply-label]');
+    const plural = (n: number) => `${n} ${n === 1 ? 'producto' : 'productos'}`;
+    const minInput = form.querySelector<HTMLInputElement>('[name="min"]');
+    const maxInput = form.querySelector<HTMLInputElement>('[name="max"]');
+    const priceRange = root.querySelector<HTMLElement>('[data-price-range]');
+    const pageSize = Number(root.dataset.pageSize) || 12;
+    let pages = 1;
+    /** Últimos filtros aplicados. En el bottom sheet, los cambios quedan en borrador hasta confirmar. */
+    let committed = new URLSearchParams();
+
+    const checked = (name: string) =>
+      [...form.querySelectorAll<HTMLInputElement>(`[name="${name}"]:checked`)].map((input) => input.value);
+    const number = (input: HTMLInputElement | null) =>
+      input && input.value !== '' && !Number.isNaN(Number(input.value)) ? Number(input.value) : null;
+
+    function readState() {
+      let min = number(minInput);
+      let max = number(maxInput);
+      if (min !== null && max !== null && min > max) [min, max] = [max, min];
+      return {
+        marca: checked('marca'),
+        forma: checked('forma'),
+        color: checked('color'),
+        estilo: checked('estilo'),
+        min,
+        max,
+        orden: sort.value,
+      };
+    }
+
+    type State = ReturnType<typeof readState>;
+
+    function matches(item: HTMLElement, state: State) {
+      const { brand = '', shape = '', style = '', colors = '', price = '' } = item.dataset;
+      if (state.marca.length && !state.marca.includes(brand)) return false;
+      if (state.forma.length && !state.forma.includes(shape)) return false;
+      if (state.estilo.length && !state.estilo.includes(style)) return false;
+      if (state.color.length && !colors.split('|').some((c) => state.color.includes(c))) return false;
+      if (state.min !== null || state.max !== null) {
+        if (price === '') return false;
+        if (state.min !== null && Number(price) < state.min) return false;
+        if (state.max !== null && Number(price) > state.max) return false;
+      }
+      return true;
+    }
+
+    function sorted(list: HTMLElement[], order: string) {
+      const by = (key: string) => (item: HTMLElement) => Number(item.dataset[key]);
+      const compare: Record<string, (a: HTMLElement, b: HTMLElement) => number> = {
+        destacados: (a, b) => by('index')(a) - by('index')(b),
+        recientes: (a, b) => by('added')(b) - by('added')(a),
+        'precio-asc': (a, b) => by('price')(a) - by('price')(b),
+        'precio-desc': (a, b) => by('price')(b) - by('price')(a),
+      };
+      return [...list].sort(compare[order] ?? compare.destacados);
+    }
+
+    function toParams(state: State) {
+      const params = new URLSearchParams();
+      MULTI.forEach((name) => state[name].forEach((value) => params.append(name, value)));
+      if (state.min !== null) params.set('min', String(state.min));
+      if (state.max !== null) params.set('max', String(state.max));
+      if (state.orden !== 'destacados') params.set('orden', state.orden);
+      return params;
+    }
+
+    function writeUrl(state: State) {
+      const query = toParams(state).toString();
+      // Los filtros viajan en la URL: se conservan al cambiar de categoría, recargar o volver atrás.
+      try {
+        history.replaceState(history.state, '', (query ? `?${query}` : location.pathname) + location.hash);
+        // El detalle de producto usa esta dirección para su enlace "Volver".
+        const current = root!.querySelector<HTMLElement>('[data-cat-link][aria-current]')?.dataset.base ?? '/productos';
+        sessionStorage.setItem('erredos:catalog-url', current + (query ? `?${query}` : ''));
+      } catch {
+        /* algunos contextos embebidos no permiten modificar la URL */
+      }
+      root!.querySelectorAll<HTMLAnchorElement>('[data-cat-link]').forEach((link) => {
+        link.href = link.dataset.base + (query ? `?${query}` : '');
+      });
+    }
+
+    function renderChips(state: State) {
+      const entries: { label: string; remove: () => void }[] = [];
+      MULTI.forEach((name) =>
+        state[name].forEach((value) =>
+          entries.push({
+            label: value,
+            remove: () => {
+              const input = [...form.querySelectorAll<HTMLInputElement>(`[name="${name}"]`)].find(
+                (candidate) => candidate.value === value,
+              );
+              if (input) input.checked = false;
+            },
+          }),
+        ),
+      );
+      if (state.min !== null || state.max !== null) {
+        const from = state.min !== null ? clp.format(state.min) : null;
+        const to = state.max !== null ? clp.format(state.max) : null;
+        entries.push({
+          label: from && to ? `${from} a ${to}` : from ? `Desde ${from}` : `Hasta ${to}`,
+          remove: () => {
+            if (minInput) minInput.value = '';
+            if (maxInput) maxInput.value = '';
+          },
+        });
+      }
+
+      chips.replaceChildren(
+        ...entries.map((entry) => {
+          const li = document.createElement('li');
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'chip';
+          button.setAttribute('aria-label', `Quitar filtro: ${entry.label}`);
+          button.innerHTML = `<span></span><svg class="icon" aria-hidden="true" viewBox="0 -960 960 960" fill="currentColor"><path d="M480-438 270-228q-9 9-21 9t-21-9q-9-9-9-21t9-21l210-210-210-210q-9-9-9-21t9-21q9-9 21-9t21 9l210 210 210-210q9-9 21-9t21 9q9 9 9 21t-9 21L522-480l210 210q9 9 9 21t-9 21q-9 9-21 9t-21-9L480-438Z"/></svg>`;
+          button.firstElementChild!.textContent = entry.label;
+          button.addEventListener('click', () => {
+            entry.remove();
+            update(true);
+            // El chip desaparece: el foco pasa al siguiente chip o al botón de filtros.
+            (chips.querySelector<HTMLElement>('button') ?? openButton).focus();
+          });
+          li.append(button);
+          return li;
+        }),
+      );
+      chips.hidden = entries.length === 0;
+      badge.textContent = String(entries.length);
+      badge.hidden = entries.length === 0;
+      openButton.setAttribute(
+        'aria-label',
+        entries.length ? `Filtrar, ${entries.length} filtros activos` : 'Filtrar',
+      );
+    }
+
+    function update(resetPages: boolean) {
+      if (resetPages) pages = 1;
+      const state = readState();
+      const matched = sorted(
+        items.filter((item) => matches(item, state)),
+        state.orden,
+      );
+      const visible = pages * pageSize;
+
+      items.forEach((item) => (item.hidden = true));
+      matched.forEach((item, rank) => {
+        grid.append(item); // reordena según el criterio elegido
+        item.hidden = rank >= visible;
+        // Si hay filtro de color, la tarjeta muestra directamente un color que coincide.
+        // Si el usuario ya eligió en la tarjeta un color que coincide, se respeta su elección.
+        if (state.color.length) {
+          const swatches = [...item.querySelectorAll<HTMLButtonElement>('[data-swatch]')];
+          const current = swatches.find((button) => button.getAttribute('aria-pressed') === 'true');
+          if (current && !state.color.includes(current.dataset.color ?? '')) {
+            swatches.find((button) => state.color.includes(button.dataset.color ?? ''))?.click();
+          }
+        }
+      });
+
+      const total = matched.length;
+      const shown = Math.min(visible, total);
+      count.textContent = plural(total);
+      progress.textContent = `Mostrando ${shown} de ${total}`;
+      moreWrap.hidden = shown >= total;
+      empty.hidden = total > 0;
+      grid.hidden = total === 0;
+
+      renderChips(state);
+      writeUrl(state);
+      renderPanel(state);
+      committed = toParams(state);
+    }
+
+    /** Contador del botón "Ver N productos", rango de precio e indicadores por grupo. */
+    function renderPanel(state: State) {
+      applyLabel.textContent = `Ver ${plural(items.filter((item) => matches(item, state)).length)}`;
+      if (priceRange && minInput && maxInput) {
+        const from = state.min ?? Number(minInput.dataset.default);
+        const to = state.max ?? Number(maxInput.dataset.default);
+        priceRange.textContent = `Rango: ${clp.format(from)} a ${clp.format(to)}`;
+      }
+      form.querySelectorAll<HTMLElement>('[data-group]').forEach((group) => {
+        const selected =
+          group.querySelectorAll('input[type="checkbox"]:checked').length +
+          (group.querySelector('[name="min"]') && (state.min !== null || state.max !== null) ? 1 : 0);
+        const badge = group.querySelector<HTMLElement>('[data-group-count]')!;
+        badge.textContent = String(selected);
+        badge.hidden = selected === 0;
+        badge.setAttribute('aria-label', `${selected} seleccionados`);
+      });
+    }
+
+    function applyParams(params: URLSearchParams) {
+      MULTI.forEach((name) => {
+        const values = params.getAll(name);
+        form.querySelectorAll<HTMLInputElement>(`[name="${name}"]`).forEach((input) => {
+          input.checked = values.includes(input.value);
+        });
+      });
+      if (minInput) minInput.value = params.get('min') ?? '';
+      if (maxInput) maxInput.value = params.get('max') ?? '';
+      const order = params.get('orden');
+      if (order && [...sort.options].some((option) => option.value === order)) sort.value = order;
+    }
+
+    function clearAll() {
+      form.reset();
+      update(true);
+    }
+
+    /* --- Panel de filtros como bottom sheet (móvil y tablet) -------------- */
+
+    const isSheet = () => !window.matchMedia(DESKTOP).matches;
+    const focusables = () =>
+      [...panel.querySelectorAll<HTMLElement>('button, input, select, [href]')].filter(
+        (element) => element.offsetParent !== null,
+      );
+
+    function setSheet(open: boolean) {
+      panel.classList.toggle('is-open', open);
+      backdrop.hidden = !open;
+      document.body.style.overflow = open ? 'hidden' : '';
+      if (open) {
+        panel.setAttribute('role', 'dialog');
+        panel.setAttribute('aria-modal', 'true');
+        panel.querySelector<HTMLElement>('.filters__close')!.focus();
+      } else {
+        panel.removeAttribute('role');
+        panel.removeAttribute('aria-modal');
+      }
+    }
+
+    const sheetOpen = () => panel.classList.contains('is-open');
+    /** Cierra el panel descartando los cambios que no se confirmaron. */
+    const cancelSheet = () => {
+      applyParams(committed);
+      renderPanel(readState());
+      setSheet(false);
+      openButton.focus();
+    };
+
+    openButton.addEventListener('click', () => setSheet(true));
+    backdrop.addEventListener('click', cancelSheet);
+    $('[data-cancel-filters]').addEventListener('click', cancelSheet);
+    $('[data-apply-filters]').addEventListener('click', () => {
+      update(true);
+      setSheet(false);
+      openButton.focus();
+    });
+    panel.addEventListener('keydown', (event) => {
+      if (!panel.classList.contains('is-open')) return;
+      if (event.key === 'Escape') cancelSheet();
+      if (event.key === 'Tab') {
+        // Mantiene el foco dentro del panel mientras está abierto.
+        const list = focusables();
+        const first = list[0];
+        const last = list[list.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      }
+    });
+    window.matchMedia(DESKTOP).addEventListener('change', () => {
+      if (!isSheet() && sheetOpen()) cancelSheet();
+    });
+    // Al navegar a otra página no debe quedar el scroll bloqueado.
+    document.addEventListener('astro:before-swap', () => (document.body.style.overflow = ''), { once: true });
+
+    /* --- Eventos ----------------------------------------------------------- */
+
+    form.addEventListener('submit', (event) => event.preventDefault());
+    // Escritorio: los filtros se aplican al instante. Bottom sheet: quedan en borrador
+    // (solo se actualiza el contador) hasta presionar "Ver N productos".
+    form.addEventListener('change', () => (sheetOpen() ? renderPanel(readState()) : update(true)));
+    $('[data-clear-panel]').addEventListener('click', () => {
+      form.reset();
+      sheetOpen() ? renderPanel(readState()) : update(true);
+    });
+    sort.addEventListener('change', () => update(true));
+    root.querySelectorAll('[data-clear]').forEach((button) => button.addEventListener('click', clearAll));
+    $('[data-more]').addEventListener('click', () => {
+      const previouslyShown = pages * pageSize;
+      pages += 1;
+      update(false);
+      // El foco pasa al primer producto recién cargado.
+      const next = [...grid.querySelectorAll<HTMLElement>('[data-item]:not([hidden])')][previouslyShown];
+      next?.querySelector<HTMLElement>('a, button')?.focus();
+    });
+
+    applyParams(new URLSearchParams(location.search));
+    // En móvil y tablet solo el primer grupo parte desplegado.
+    if (!isSheet()) form.querySelectorAll<HTMLDetailsElement>('[data-group]').forEach((g) => (g.open = true));
+    update(true);
+  }
+
+  initCatalog();
+  document.addEventListener('astro:page-load', initCatalog);
+</script>
+
+<style>
+  .catalog {
+    padding-top: var(--space-5);
+  }
+
+  .catalog__demo {
+    display: inline-block;
+    margin-top: var(--space-4);
+    padding: var(--space-2) var(--space-3);
+    border: 1px dashed var(--color-border-strong);
+    border-radius: var(--radius-sm);
+    font-size: var(--text-sm);
+  }
+
+  /* --- Categorías: chips desplazables en móvil -------------------------- */
+
+  .catalog__cats {
+    margin: var(--space-5) calc(var(--gutter) * -1) 0;
+  }
+
+  .catalog__cats ul {
+    display: flex;
+    gap: var(--space-2);
+    padding: 3px var(--gutter);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .catalog__cats a {
+    display: flex;
+    align-items: center;
+    min-height: var(--touch-target);
+    padding-inline: var(--space-4);
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-pill);
+    color: var(--color-text);
+    font-weight: var(--font-medium);
+    text-decoration: none;
+    white-space: nowrap;
+    transition:
+      background-color var(--duration-fast) var(--easing),
+      color var(--duration-fast) var(--easing);
+  }
+
+  .catalog__cats a:hover {
+    background: var(--color-primary-tint);
+  }
+
+  .catalog__cats a[aria-current='page'] {
+    border-color: var(--color-primary);
+    background: var(--color-primary);
+    color: var(--color-on-primary);
+    font-weight: var(--font-semibold);
+  }
+
+  /* --- Layout ------------------------------------------------------------ */
+
+  .catalog__layout {
+    margin-top: var(--space-5);
+  }
+
+  .catalog__toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--space-3);
+  }
+
+  .catalog__open-filters {
+    padding-inline: var(--space-4);
+  }
+
+  .catalog__badge {
+    display: grid;
+    place-items: center;
+    min-width: 1.5rem;
+    height: 1.5rem;
+    padding-inline: 0.375rem;
+    border-radius: var(--radius-pill);
+    background: var(--color-primary);
+    color: var(--color-on-primary);
+    font-size: var(--text-xs);
+  }
+
+  .sort {
+    display: grid;
+    gap: 0.125rem;
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+  }
+
+  .sort select {
+    min-height: var(--touch-target);
+    padding: var(--space-2) var(--space-3);
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-md);
+    background: var(--color-bg);
+    font-size: var(--text-base);
+  }
+
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-top: var(--space-4);
+  }
+
+  .chips :global(.chip) {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    min-height: 2.25rem;
+    padding: var(--space-1) var(--space-2) var(--space-1) var(--space-3);
+    border: 1px solid var(--color-primary);
+    border-radius: var(--radius-pill);
+    background: var(--color-primary-tint);
+    color: var(--color-text);
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+  }
+
+  .chips :global(.chip .icon) {
+    width: 1.125rem;
+    height: 1.125rem;
+  }
+
+  .catalog__count {
+    margin-top: var(--space-4);
+    color: var(--color-text-muted);
+    font-weight: var(--font-medium);
+  }
+
+  /* Móvil: dos columnas. Si el texto ampliado ya no cabe, baja a una. */
+  .catalog__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 8.5rem), 1fr));
+    gap: var(--space-3);
+    margin-top: var(--space-3);
+  }
+
+  @media (min-width: 48em) {
+    .catalog__grid {
+      /* Siempre 3 por fila desde tablet. */
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: var(--space-4);
+    }
+  }
+
+  .catalog__more {
+    display: grid;
+    gap: var(--space-3);
+    justify-items: center;
+    margin-top: var(--space-6);
+    color: var(--color-text-muted);
+  }
+
+  .catalog__empty {
+    display: grid;
+    gap: var(--space-3);
+    justify-items: center;
+    margin-top: var(--space-5);
+    padding: var(--space-7) var(--space-4);
+    border: 1px dashed var(--color-border-strong);
+    border-radius: var(--radius-lg);
+    text-align: center;
+  }
+
+  .catalog__empty :global(.icon) {
+    width: 3rem;
+    height: 3rem;
+    color: var(--color-primary);
+  }
+
+  .catalog__empty h2 {
+    font-size: var(--text-xl);
+  }
+
+  .catalog__empty p {
+    color: var(--color-text-muted);
+  }
+
+  .catalog__empty-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    justify-content: center;
+    margin-top: var(--space-2);
+  }
+
+  .catalog__help {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    margin-top: var(--space-7);
+    padding: var(--space-5);
+    border-radius: var(--radius-lg);
+    background: var(--color-primary-tint);
+  }
+
+  .catalog__help h2 {
+    font-size: var(--text-xl);
+  }
+
+  .catalog__help p {
+    margin-top: var(--space-1);
+    color: var(--color-text-muted);
+  }
+
+  /* --- Filtros ------------------------------------------------------------ */
+
+  .filters {
+    position: fixed;
+    inset: auto 0 0;
+    z-index: 300;
+    display: none;
+    flex-direction: column;
+    max-height: min(85dvh, 85vh);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    background: var(--color-bg);
+    box-shadow: var(--shadow-md);
+  }
+
+  .filters.is-open {
+    display: flex;
+    animation: sheet-in var(--duration-base) var(--easing);
+  }
+
+  @keyframes sheet-in {
+    from {
+      transform: translateY(100%);
+    }
+  }
+
+  .filters-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 290;
+    background: rgb(33 33 33 / 0.5);
+  }
+
+  .filters__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-3) var(--space-3) var(--space-3) var(--space-4);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .filters__head h2 {
+    font-size: var(--text-xl);
+  }
+
+  .filters__body {
+    flex: 1;
+    padding: var(--space-2) var(--space-4) var(--space-4);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .filters__foot {
+    display: flex;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4) calc(var(--space-3) + var(--safe-bottom));
+    border-top: 1px solid var(--color-border);
+  }
+
+  .filters__foot .btn {
+    flex: 1;
+    padding-inline: var(--space-3);
+  }
+
+  .group {
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .group:last-child {
+    border-bottom: 0;
+  }
+
+  .group summary {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: 3.25rem;
+    font-weight: var(--font-semibold);
+    list-style: none;
+    cursor: pointer;
+  }
+
+  .group summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .group summary span:first-child {
+    flex: 1;
+  }
+
+  .group summary :global(.icon) {
+    transition: transform var(--duration-fast) var(--easing);
+  }
+
+  .group[open] summary :global(.icon) {
+    transform: rotate(90deg);
+  }
+
+  .group__count {
+    display: grid;
+    place-items: center;
+    min-width: 1.5rem;
+    height: 1.5rem;
+    padding-inline: 0.375rem;
+    border-radius: var(--radius-pill);
+    background: var(--color-primary);
+    color: var(--color-on-primary);
+    font-size: var(--text-xs);
+  }
+
+  .group__body {
+    padding-bottom: var(--space-3);
+  }
+
+  .check {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    min-height: var(--touch-target);
+    cursor: pointer;
+  }
+
+  .check input {
+    flex: none;
+    width: 1.25rem;
+    height: 1.25rem;
+    margin: 0;
+    accent-color: var(--color-primary);
+  }
+
+  .check__swatch {
+    flex: none;
+    width: 1.25rem;
+    height: 1.25rem;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-pill);
+    background: var(--swatch);
+  }
+
+  .colors {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 9.5rem), 1fr));
+    gap: 0 var(--space-3);
+  }
+
+  .price {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 6.5rem), 1fr));
+    gap: var(--space-3);
+    align-items: end;
+  }
+
+  .price label {
+    display: grid;
+    gap: 0.125rem;
+    font-size: var(--text-sm);
+  }
+
+  .price input {
+    width: 100%;
+    min-height: var(--touch-target);
+    padding: var(--space-2) var(--space-3);
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-md);
+    font-size: var(--text-base);
+  }
+
+  .price input::placeholder {
+    color: var(--color-text-muted);
+    opacity: 1;
+  }
+
+  .price__range {
+    margin-top: var(--space-2);
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+  }
+
+  /* --- Escritorio: filtros laterales ------------------------------------- */
+
+  @media (min-width: 48em) {
+    .catalog__cats {
+      margin-inline: 0;
+    }
+
+    .catalog__cats ul {
+      padding-inline: 3px;
+    }
+  }
+
+  @media (min-width: 64em) {
+    .catalog__layout {
+      display: grid;
+      grid-template-columns: minmax(0, 16rem) minmax(0, 1fr);
+      gap: var(--space-6);
+      align-items: start;
+    }
+
+    .filters {
+      position: static;
+      z-index: auto;
+      display: block;
+      max-height: none;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      box-shadow: none;
+    }
+
+    .filters__close,
+    .filters__apply,
+    .catalog__open-filters {
+      display: none;
+    }
+
+    .filters__head {
+      padding: var(--space-4);
+    }
+
+    .filters__body {
+      overflow: visible;
+    }
+
+    .filters__foot {
+      padding-bottom: var(--space-4);
+    }
+
+    .filters-backdrop {
+      display: none;
+    }
+
+    .catalog__toolbar {
+      justify-content: flex-end;
+    }
+
+    .sort {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
+  }
+</style>

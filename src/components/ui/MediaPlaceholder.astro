@@ -1,0 +1,71 @@
+---
+/**
+ * Imagen provisional. Ocupa el mismo espacio que tendrá la fotografía real,
+ * así se reemplaza sin tocar el layout.
+ */
+import Icon from './Icon.astro';
+import type { IconName } from './icons';
+
+interface Props {
+  icon?: IconName;
+  /** Proporción CSS, ej. "4 / 3". */
+  ratio?: string;
+  tone?: 'primary' | 'accent' | 'neutral';
+  /** Descripción de la fotografía que irá aquí. */
+  label?: string;
+  class?: string;
+}
+
+const { icon = 'image', ratio = '4 / 3', tone = 'primary', label, class: className } = Astro.props;
+---
+
+<div
+  class:list={['media-placeholder', `media-placeholder--${tone}`, className]}
+  style={`aspect-ratio: ${ratio}`}
+  role="img"
+  aria-label={`Imagen provisional${label ? ': ' + label : ''}`}
+>
+  <Icon name={icon} />
+  <span class="media-placeholder__tag" aria-hidden="true">Imagen provisional</span>
+</div>
+
+<style>
+  .media-placeholder {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 100%;
+    overflow: hidden;
+    border-radius: var(--radius-md);
+    background: var(--color-primary-tint);
+    color: var(--color-primary);
+  }
+
+  .media-placeholder--accent {
+    background: var(--color-accent-tint);
+  }
+
+  .media-placeholder--neutral {
+    background: #f4f4f4;
+  }
+
+  .media-placeholder :global(.icon) {
+    width: 28%;
+    max-width: 6rem;
+    height: auto;
+    opacity: 0.55;
+  }
+
+  .media-placeholder__tag {
+    position: absolute;
+    left: var(--space-2);
+    bottom: var(--space-2);
+    max-width: calc(100% - var(--space-4));
+    padding: 0.125rem var(--space-2);
+    border-radius: var(--radius-sm);
+    background: rgb(255 255 255 / 0.9);
+    color: var(--color-text);
+    font-size: min(var(--text-xs), 14px);
+    font-weight: var(--font-medium);
+  }
+</style>

@@ -1,0 +1,134 @@
+---
+/**
+ * Banner de entrada de una página: foto a todo el ancho con el texto sobre un degradado blanco
+ * (mismo patrón que el hero de Inicio, sin carrusel). Para cambiar la foto o el texto basta con
+ * modificar las propiedades al usarlo. El título es el h1 de la página.
+ */
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+
+interface Props {
+  title: string;
+  text?: string;
+  kicker?: string;
+  image: ImageMetadata;
+  /** Encuadre de la foto (object-position). */
+  imagePosition?: string;
+}
+
+const { title, text, kicker, image, imagePosition = 'center 50%' } = Astro.props;
+---
+
+<section class="banner" aria-labelledby="banner-title">
+  <Image
+    class="banner__bg"
+    src={image}
+    alt=""
+    widths={[640, 1024, 1600]}
+    sizes="100vw"
+    style={`object-position: ${imagePosition}`}
+    loading="eager"
+    fetchpriority="high"
+  />
+  <div class="container banner__inner">
+    <div class="banner__content">
+      {kicker && <p class="banner__kicker">{kicker}</p>}
+      <h1 id="banner-title" class="banner__title">{title}</h1>
+      {text && <p class="banner__text">{text}</p>}
+      <slot />
+    </div>
+  </div>
+</section>
+
+<style>
+  .banner {
+    /* Alto de la foto en móvil. Fijo en px: no se achica cuando se amplía el texto. */
+    --banner-img-h: clamp(210px, 66vw, 320px);
+
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    background: var(--color-bg);
+  }
+
+  .banner :global(.banner__bg) {
+    display: block;
+    width: 100%;
+    height: var(--banner-img-h);
+    object-fit: cover;
+  }
+
+  /* Móvil: el borde inferior de la foto se funde a blanco. */
+  .banner::after {
+    content: '';
+    position: absolute;
+    top: calc(var(--banner-img-h) - 6rem);
+    right: 0;
+    left: 0;
+    height: 6rem;
+    background: linear-gradient(to bottom, rgb(255 255 255 / 0), rgb(255 255 255 / 0.9) 70%, #fff);
+    pointer-events: none;
+  }
+
+  .banner__inner {
+    position: relative;
+    z-index: 1;
+    margin-top: -1.75rem;
+    padding-bottom: var(--space-4);
+  }
+
+  .banner__kicker {
+    margin-bottom: var(--space-2);
+    color: var(--color-primary);
+    font-weight: var(--font-semibold);
+  }
+
+  .banner__title {
+    font-size: min(var(--text-3xl), 9.5vw);
+    font-weight: var(--font-bold);
+  }
+
+  .banner__text {
+    max-width: 45ch;
+    margin-top: var(--space-3);
+    font-size: var(--text-lg);
+  }
+
+  @media (min-width: 48em) {
+    .banner {
+      /* Hasta dónde llega el texto: margen izquierdo del contenedor + ancho del bloque. */
+      --banner-text-end: calc(max(var(--gutter), (100% - var(--container-max)) / 2) + 32rem);
+    }
+
+    .banner :global(.banner__bg) {
+      position: absolute;
+      inset: 0;
+      height: 100%;
+    }
+
+    /* Degradado lineal blanco a la izquierda bajo el texto; deja ver la foto a la derecha. */
+    .banner::after {
+      inset: 0;
+      height: auto;
+      background: linear-gradient(
+        to right,
+        rgb(255 255 255 / 0.88) 0,
+        rgb(255 255 255 / 0.88) calc(var(--banner-text-end) - 6rem),
+        rgb(255 255 255 / 0.55) calc(var(--banner-text-end) + 4rem),
+        rgb(255 255 255 / 0) calc(var(--banner-text-end) + 18rem)
+      );
+    }
+
+    .banner__inner {
+      display: grid;
+      align-content: center;
+      min-height: 30rem;
+      margin-top: 0;
+      padding-block: var(--space-7);
+    }
+
+    .banner__content {
+      max-width: 32rem;
+    }
+  }
+</style>

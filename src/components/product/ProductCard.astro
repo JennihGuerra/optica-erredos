@@ -1,0 +1,253 @@
+---
+/**
+ * Tarjeta de producto. Una tarjeta = un modelo, con hasta cuatro colores.
+ * Se reutiliza en Inicio (destacados), catálogo y productos relacionados.
+ */
+import Icon from '../ui/Icon.astro';
+import ProductMedia from './ProductMedia.astro';
+import ColorSwatches from './ColorSwatches.astro';
+import { formatPrice, productPriceLabel, productTypeLabels, type Product } from '../../data/products';
+import { whatsappUrl, whatsappMessages, productLink, priceText } from '../../lib/whatsapp';
+
+interface Props {
+  product: Product;
+  /** Nivel del encabezado según el contexto donde se use la tarjeta. */
+  headingLevel?: 'h2' | 'h3';
+  /** Versión compacta para la grilla de dos columnas del catálogo. */
+  compact?: boolean;
+}
+
+const { product, headingLevel: Heading = 'h3', compact = false } = Astro.props;
+const first = product.variants[0];
+const detailHref = `/productos/${product.slug}`;
+---
+
+<article class:list={['product-card', { 'product-card--compact': compact }]} data-product-card>
+  <div class="product-card__media">
+    <ProductMedia product={product} />
+    {product.promotion && <span class="product-card__promo">{product.promotion}</span>}
+  </div>
+
+  <div class="product-card__body">
+    <ColorSwatches product={product} />
+
+    <p class="product-card__type">{productTypeLabels[product.type]}</p>
+    <Heading class="product-card__name">
+      <a href={detailHref} data-card-link data-base={detailHref}>{product.name}</a>
+    </Heading>
+    {product.brand && <p class="product-card__brand">{product.brand}</p>}
+    <p class="product-card__price">{productPriceLabel(product)}</p>
+
+    <div class="product-card__actions">
+      <a
+        class="btn btn--primary product-card__btn"
+        href={detailHref}
+        data-card-link
+        data-base={detailHref}
+      >
+        <span>Ver producto<span class="visually-hidden">: {product.name}</span></span>
+      </a>
+      <a
+        class="btn btn--outline product-card__btn"
+        href={whatsappUrl(whatsappMessages.product(product.name, product.brand, first.color, product.code, productLink(product.slug, first.color), priceText(product)))}
+        target="_blank"
+        rel="noopener"
+        data-card-cta
+      >
+        <Icon name="chat" />
+        <span>
+          Consultar
+          <span class="visually-hidden"> por WhatsApp: {product.name} (se abre en una pestaña nueva)</span>
+        </span>
+      </a>
+    </div>
+  </div>
+</article>
+
+<script>
+  /**
+   * Cambio de color de un producto. Un solo listener delegado sirve para todas las
+   * tarjetas y para la página de detalle: cada [data-product-card] es independiente.
+   */
+  function selectSwatch(swatch: HTMLButtonElement) {
+    const card = swatch.closest<HTMLElement>('[data-product-card]');
+    if (!card) return;
+    const { color = '', hex = '', wa } = swatch.dataset;
+
+    card.querySelectorAll('[data-swatch]').forEach((button) => {
+      button.setAttribute('aria-pressed', String(button === swatch));
+    });
+    card.querySelectorAll('[data-card-color-name]').forEach((label) => (label.textContent = color));
+    card.querySelectorAll<HTMLAnchorElement>('[data-card-cta]').forEach((cta) => wa && (cta.href = wa));
+
+    // Fotografía propia de la variante si existe; si no, ilustración provisional en ese color.
+    const media = card.querySelector<HTMLElement>('[data-card-media]');
+    if (media) {
+      const photo = (JSON.parse(media.dataset.photos ?? '{}') as Record<string, string | null>)[color];
+      const img = media.querySelector<HTMLImageElement>('[data-card-image]');
+      const illustration = media.querySelector<HTMLElement>('[data-card-illustration]');
+      media.style.setProperty('--frame-color', hex);
+      if (img) {
+        img.hidden = !photo;
+        if (photo) img.src = photo;
+        img.alt = `${img.dataset.name} en color ${color.toLowerCase()}`;
+      }
+      if (illustration) illustration.hidden = Boolean(photo);
+    }
+
+    // El enlace al detalle lleva el color elegido para conservarlo al entrar.
+    card.querySelectorAll<HTMLAnchorElement>('[data-card-link]').forEach((link) => {
+      link.href = `${link.dataset.base}?color=${encodeURIComponent(color)}`;
+    });
+  }
+
+  document.addEventListener('click', (event) => {
+    const swatch = (event.target as HTMLElement).closest<HTMLButtonElement>('[data-swatch]');
+    if (swatch) selectSwatch(swatch);
+  });
+
+  // Detalle de producto: respeta el color con el que se llegó desde la tarjeta (?color=).
+  function restoreColorFromUrl() {
+    const color = new URLSearchParams(location.search).get('color');
+    if (!color) return;
+    document.querySelectorAll<HTMLElement>('[data-product-card][data-use-url-color]').forEach((card) => {
+      const swatch = [...card.querySelectorAll<HTMLButtonElement>('[data-swatch]')].find(
+        (button) => button.dataset.color === color,
+      );
+      if (swatch) selectSwatch(swatch);
+    });
+  }
+
+  restoreColorFromUrl();
+  document.addEventListener('astro:page-load', restoreColorFromUrl);
+</script>
+
+<style>
+  .product-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-bg);
+    transition: border-color var(--duration-fast) var(--easing);
+  }
+
+  .product-card:hover {
+    border-color: var(--color-primary);
+  }
+
+  .product-card__media {
+    position: relative;
+  }
+
+  .product-card__promo {
+    position: absolute;
+    top: var(--space-2);
+    left: var(--space-2);
+    padding: 0.125rem var(--space-2);
+    border-radius: var(--radius-sm);
+    background: var(--color-primary);
+    color: var(--color-on-primary);
+    font-size: var(--text-xs);
+    font-weight: var(--font-semibold);
+  }
+
+  .product-card__body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 0.125rem;
+    padding: var(--space-3) var(--space-4) var(--space-4);
+  }
+
+  .product-card__type {
+    margin-top: var(--space-2);
+    color: var(--color-primary);
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+  }
+
+  .product-card__name {
+    font-size: var(--text-lg);
+    font-weight: var(--font-semibold);
+  }
+
+  .product-card__name a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .product-card__name a:hover {
+    color: var(--color-primary);
+    text-decoration: underline;
+  }
+
+  /* Toda la fotografía lleva al detalle sin duplicar el enlace para lectores de pantalla. */
+  .product-card__name a::after {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto;
+    aspect-ratio: 1 / 1;
+  }
+
+  @media (min-width: 48em) {
+    .product-card__name a::after {
+      aspect-ratio: 4 / 3;
+    }
+  }
+
+  .product-card__brand {
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+  }
+
+  .product-card__price {
+    margin-block: var(--space-1) var(--space-3);
+    font-weight: var(--font-semibold);
+  }
+
+  /* Dos botones lado a lado cuando caben; si la tarjeta es angosta (2 columnas en móvil, texto
+     ampliado) se apilan en vez de apretarse. */
+  .product-card__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-top: auto;
+  }
+
+  .product-card__btn {
+    flex: 1 1 7.5rem;
+    min-width: 0;
+    padding-inline: var(--space-3);
+    font-size: var(--text-sm);
+  }
+
+  /* --- Versión compacta (catálogo, dos columnas en móvil) --------------- */
+
+  .product-card--compact .product-card__body {
+    padding: var(--space-2) var(--space-3) var(--space-3);
+  }
+
+  .product-card--compact .product-card__name {
+    font-size: var(--text-base);
+  }
+
+  .product-card--compact .product-card__type,
+  .product-card--compact .product-card__brand {
+    font-size: var(--text-xs);
+  }
+
+  @media (min-width: 48em) {
+    .product-card--compact .product-card__body {
+      padding: var(--space-3) var(--space-4) var(--space-4);
+    }
+
+    .product-card--compact .product-card__type,
+    .product-card--compact .product-card__brand {
+      font-size: var(--text-sm);
+    }
+  }
+</style>

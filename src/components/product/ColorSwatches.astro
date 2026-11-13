@@ -1,0 +1,95 @@
+---
+/**
+ * Selector de color del marco (máximo cuatro variantes).
+ * Funciona dentro de cualquier contenedor con [data-product-card]:
+ * la lógica vive en ProductCard.astro y sirve para la tarjeta y para el detalle.
+ */
+import type { Product } from '../../data/products';
+import { whatsappUrl, whatsappMessages, productLink, priceText } from '../../lib/whatsapp';
+
+interface Props {
+  product: Product;
+}
+
+const { product } = Astro.props;
+const variants = product.variants.slice(0, 4);
+const first = variants[0];
+---
+
+<div class="swatches">
+  <p class="swatches__name">
+    Color: <span data-card-color-name>{first.color}</span>
+  </p>
+  {
+    variants.length > 1 && (
+      <div class="swatches__list" role="group" aria-label={`Colores disponibles de ${product.name}`}>
+        {variants.map((variant, index) => (
+          <button
+            type="button"
+            class="swatches__btn"
+            style={`--swatch: ${variant.hex}`}
+            data-swatch
+            data-color={variant.color}
+            data-hex={variant.hex}
+            data-wa={whatsappUrl(
+              whatsappMessages.product(product.name, product.brand, variant.color, product.code, productLink(product.slug, variant.color), priceText(product)),
+            )}
+            aria-pressed={index === 0 ? 'true' : 'false'}
+            aria-label={`Ver anteojos en color ${variant.color.toLowerCase()}`}
+            title={variant.color}
+          />
+        ))}
+      </div>
+    )
+  }
+</div>
+
+<style>
+  /* Reserva el alto de la fila de muestras: las tarjetas de un solo color quedan alineadas. */
+  .swatches {
+    min-height: calc(0.875rem * 1.6 + 38px);
+  }
+
+  .swatches__name {
+    font-size: var(--text-sm);
+  }
+
+  .swatches__name span {
+    font-weight: var(--font-semibold);
+  }
+
+  .swatches__list {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 0.125rem 0 0 -6px;
+  }
+
+  /* Botón de 36 px con la muestra al centro: cómodo de tocar (WCAG 2.5.8 pide 24 px). */
+  .swatches__btn {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-pill);
+    background: transparent;
+  }
+
+  .swatches__btn::before {
+    content: '';
+    width: 22px;
+    height: 22px;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-pill);
+    background: var(--swatch);
+  }
+
+  /* Seleccionado: anillo oscuro alrededor de la muestra, además del nombre del color
+     escrito arriba. No depende solo del color. */
+  .swatches__btn[aria-pressed='true']::before {
+    outline: 2px solid var(--color-text);
+    outline-offset: 2px;
+  }
+</style>

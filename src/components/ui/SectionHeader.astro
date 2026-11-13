@@ -1,0 +1,73 @@
+---
+import Icon from './Icon.astro';
+
+interface Props {
+  id: string;
+  title: string;
+  description?: string;
+  link?: { href: string; label: string };
+  /** Muestra la etiqueta de contenido provisional junto al título. */
+  provisional?: boolean;
+}
+
+const { id, title, description, link, provisional = false } = Astro.props;
+---
+
+<div class="section-header">
+  <div>
+    <h2 id={id}>{title}</h2>
+    {description && <p>{description}</p>}
+  </div>
+  {
+    link && (
+      <a class="section-header__link" href={link.href}>
+        {link.label}
+        <Icon name="arrow_forward" />
+      </a>
+    )
+  }
+</div>
+
+<style>
+  .section-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--space-2) var(--space-5);
+    margin-bottom: var(--space-5);
+  }
+
+  h2 {
+    max-width: 24ch;
+  }
+
+  h2 + :global(.provisional-badge) {
+    margin-top: var(--space-2);
+    color: var(--color-text-muted);
+  }
+
+  p {
+    max-width: 55ch;
+    margin-top: var(--space-2);
+    color: var(--color-text-muted);
+  }
+
+  .section-header__link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    min-height: var(--touch-target);
+    font-weight: var(--font-semibold);
+    text-decoration: none;
+  }
+
+  .section-header__link:hover {
+    text-decoration: underline;
+  }
+
+  .section-header__link :global(.icon) {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+</style>

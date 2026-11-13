@@ -1,0 +1,207 @@
+---
+/**
+ * Control lateral de tamaño de texto.
+ * Cambia la escala tipográfica de toda la interfaz (no es zoom del navegador):
+ * modifica --text-scale en <html> y todo lo definido en rem se adapta.
+ * La lógica de persistencia vive en BaseLayout (window.erredosTextSize).
+ */
+import Icon from '../ui/Icon.astro';
+---
+
+<div class="text-size" data-text-size>
+  <div id="text-size-panel" class="text-size__panel" role="group" aria-label="Tamaño del texto" hidden>
+    <button type="button" class="text-size__btn" data-action="increase" aria-label="Aumentar tamaño del texto">
+      <Icon name="text_increase" />
+    </button>
+    <output class="text-size__value" data-text-size-value aria-live="polite">
+      <span class="visually-hidden">Tamaño del texto: </span><span data-text-size-number>100</span>%
+    </output>
+    <button type="button" class="text-size__btn" data-action="decrease" aria-label="Disminuir tamaño del texto">
+      <Icon name="text_decrease" />
+    </button>
+    <button type="button" class="text-size__btn" data-action="reset" aria-label="Restablecer tamaño original del texto">
+      <Icon name="restart_alt" />
+    </button>
+  </div>
+  <button
+    type="button"
+    class="text-size__toggle"
+    data-text-size-toggle
+    aria-expanded="false"
+    aria-controls="text-size-panel"
+    aria-label="Accesibilidad: ajustar tamaño del texto"
+  >
+    <Icon name="accessibility_new" />
+  </button>
+</div>
+
+<script>
+  interface TextSizeApi {
+    levels: number[];
+    defaultIndex: number;
+    get(): number;
+    set(index: number): number;
+  }
+
+  function initTextSize() {
+    const api = (window as unknown as { erredosTextSize?: TextSizeApi }).erredosTextSize;
+    const root = document.querySelector<HTMLElement>('[data-text-size]');
+    if (!api || !root || root.dataset.ready) return;
+    root.dataset.ready = 'true';
+
+    const toggle = root.querySelector<HTMLButtonElement>('[data-text-size-toggle]')!;
+    const panel = root.querySelector<HTMLElement>('.text-size__panel')!;
+    const number = root.querySelector<HTMLElement>('[data-text-size-number]')!;
+    const button = (action: string) =>
+      root.querySelector<HTMLButtonElement>(`[data-action="${action}"]`)!;
+
+    const render = () => {
+      const index = api.get();
+      number.textContent = String(Math.round(api.levels[index]));
+      // aria-disabled (no disabled) para que el foco de teclado no se pierda al llegar al límite.
+      button('increase').setAttribute('aria-disabled', String(index === api.levels.length - 1));
+      button('decrease').setAttribute('aria-disabled', String(index === 0));
+      button('reset').setAttribute('aria-disabled', String(index === api.defaultIndex));
+    };
+
+    const setOpen = (open: boolean, returnFocus = false) => {
+      panel.hidden = !open;
+      toggle.setAttribute('aria-expanded', String(open));
+      if (!open && returnFocus) toggle.focus();
+    };
+
+    toggle.addEventListener('click', () => setOpen(panel.hidden));
+
+    panel.addEventListener('click', (event) => {
+      const target = (event.target as HTMLElement).closest<HTMLButtonElement>('[data-action]');
+      if (!target || target.getAttribute('aria-disabled') === 'true') return;
+      const index = api.get();
+      if (target.dataset.action === 'increase') api.set(index + 1);
+      if (target.dataset.action === 'decrease') api.set(index - 1);
+      if (target.dataset.action === 'reset') api.set(api.defaultIndex);
+      render();
+    });
+
+    root.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && !panel.hidden) setOpen(false, true);
+    });
+
+    document.addEventListener('click', (event) => {
+      if (!panel.hidden && !root.contains(event.target as Node)) setOpen(false);
+    });
+
+    render();
+  }
+
+  initTextSize();
+  document.addEventListener('astro:page-load', initTextSize);
+</script>
+
+<style>
+  .text-size {
+    /* Botones del panel (mín. 44 px, tope 52 px con texto ampliado). */
+    --control: clamp(44px, 2.75rem, 52px);
+    /* Pestaña: más grande que el resto para que se note; también con tope para no deformarse. */
+    --toggle: clamp(54px, 3.5rem, 62px);
+
+    position: fixed;
+    right: 0;
+    /* Móvil: sobre la barra inferior y sobre el botón flotante de WhatsApp, sin taparlos. */
+    /* 3.75rem = alto del botón flotante (crece con el texto, incluso en 2 líneas). */
+    bottom: calc(var(--bottom-nav-h) + var(--safe-bottom) + var(--space-3) + 3.75rem + var(--space-4));
+    z-index: var(--z-text-size);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: var(--space-2);
+  }
+
+  @media (min-width: 48em) {
+    .text-size {
+      bottom: 50%;
+      transform: translateY(50%);
+    }
+  }
+
+  .text-size__toggle {
+    display: grid;
+    place-items: center;
+    width: var(--toggle);
+    height: var(--toggle);
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-md) 0 0 var(--radius-md);
+    background: var(--color-primary);
+    color: var(--color-on-primary);
+    /* Anillo blanco: la pestaña sigue visible sobre bandas azules. */
+    box-shadow: 0 0 0 2px var(--color-bg), var(--shadow-md);
+    transition: background-color var(--duration-fast) var(--easing);
+  }
+
+  .text-size__toggle:hover,
+  .text-size__toggle[aria-expanded='true'] {
+    background: var(--color-primary-hover);
+  }
+
+  .text-size__toggle:focus-visible {
+    outline-offset: -6px;
+    outline-color: var(--color-on-primary);
+  }
+
+  .text-size__panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-1);
+    margin-right: var(--space-2);
+    padding: var(--space-1);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-bg);
+    box-shadow: var(--shadow-md);
+  }
+
+  .text-size__btn {
+    display: grid;
+    place-items: center;
+    width: var(--control);
+    height: var(--control);
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--color-primary);
+    transition: background-color var(--duration-fast) var(--easing);
+  }
+
+  .text-size__btn:hover {
+    background: var(--color-primary-tint);
+  }
+
+  .text-size__btn[aria-disabled='true'] {
+    color: var(--color-border-strong);
+    cursor: not-allowed;
+  }
+
+  .text-size__btn[aria-disabled='true']:hover {
+    background: transparent;
+  }
+
+  .text-size :global(.icon) {
+    width: 24px;
+    height: 24px;
+  }
+
+  /* El icono de la pestaña crece en proporción a ella (no queda perdido en una caja grande). */
+  .text-size__toggle :global(.icon) {
+    width: calc(var(--toggle) * 0.58);
+    height: calc(var(--toggle) * 0.58);
+  }
+
+  .text-size__value {
+    font-size: min(var(--text-sm), 16px);
+    font-weight: var(--font-semibold);
+    line-height: 1.6;
+    white-space: nowrap;
+  }
+</style>

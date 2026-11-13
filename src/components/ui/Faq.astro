@@ -1,0 +1,99 @@
+---
+/**
+ * Preguntas frecuentes en acordeones (<details>, accesibles por teclado sin JavaScript).
+ * Las respuestas pendientes muestran un texto neutro y la etiqueta "Por confirmar".
+ */
+import Icon from './Icon.astro';
+import ProvisionalBadge from './ProvisionalBadge.astro';
+
+interface Props {
+  groups: { title: string; items: { question: string; answer: string | null }[] }[];
+  /** Texto para las respuestas que el negocio aún no confirma. */
+  pendingText?: string;
+}
+
+const {
+  groups,
+  pendingText = 'Estamos confirmando esta información. Mientras tanto, escríbenos por WhatsApp y te orientamos.',
+} = Astro.props;
+---
+
+<div class="faq">
+  {
+    groups.map((group) => (
+      <div class="faq__group">
+        <h3>{group.title}</h3>
+        {group.items.map((item) => (
+          <details>
+            <summary>
+              <span>{item.question}</span>
+              <Icon name="chevron_right" />
+            </summary>
+            <div class="faq__answer">
+              <p>{item.answer ?? pendingText}</p>
+              {item.answer === null && <ProvisionalBadge />}
+            </div>
+          </details>
+        ))}
+      </div>
+    ))
+  }
+</div>
+
+<style>
+  .faq {
+    display: grid;
+    gap: var(--space-6);
+  }
+
+  @media (min-width: 64em) {
+    .faq {
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-7);
+      align-items: start;
+    }
+  }
+
+  h3 {
+    margin-bottom: var(--space-2);
+    color: var(--color-primary);
+    font-size: var(--text-lg);
+  }
+
+  details {
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    min-height: 3.5rem;
+    padding-block: var(--space-2);
+    font-weight: var(--font-medium);
+    list-style: none;
+    cursor: pointer;
+  }
+
+  summary::-webkit-details-marker {
+    display: none;
+  }
+
+  summary :global(.icon) {
+    color: var(--color-primary);
+    transition: transform var(--duration-fast) var(--easing);
+  }
+
+  details[open] summary :global(.icon) {
+    transform: rotate(90deg);
+  }
+
+  .faq__answer {
+    display: grid;
+    gap: var(--space-2);
+    justify-items: start;
+    padding-bottom: var(--space-4);
+    color: var(--color-text-muted);
+  }
+</style>

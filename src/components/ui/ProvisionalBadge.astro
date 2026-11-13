@@ -1,0 +1,20 @@
+---
+interface Props {
+  label?: string;
+}
+const { label = 'Por confirmar' } = Astro.props;
+---
+
+<span class="provisional-badge">{label}</span>
+
+<style>
+  .provisional-badge {
+    display: inline-block;
+    padding: 0.125rem 0.5rem;
+    border: 1px dashed currentColor;
+    border-radius: var(--radius-sm);
+    font-size: var(--text-xs);
+    font-weight: 500;
+    line-height: 1.5;
+  }
+</style>

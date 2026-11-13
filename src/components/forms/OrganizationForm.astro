@@ -1,0 +1,174 @@
+---
+/**
+ * Formulario de contacto para organizaciones (convenios y operativos).
+ * La validación, el envío y el modo demostración viven en FormBehavior.astro.
+ */
+import Icon from '../ui/Icon.astro';
+import FormBehavior from './FormBehavior.astro';
+import { site } from '../../config/site';
+import { whatsappUrl } from '../../lib/whatsapp';
+
+const requestTypes = [
+  { value: 'convenio', label: 'Convenio óptico' },
+  { value: 'operativo', label: 'Operativo óptico' },
+  { value: 'ambos', label: 'Ambos' },
+  { value: 'informacion', label: 'Necesito más información' },
+];
+const isDemo = !site.formEndpoint && !site.prototypeMode;
+---
+
+<form
+  class="form"
+  id="form-organizaciones"
+  novalidate
+  data-form
+  data-org-form
+  data-endpoint={site.formEndpoint}
+  data-prototype={String(site.prototypeMode)}
+  data-wa-base={whatsappUrl('')}
+  data-wa-intro="Hola, represento a una organización y quisiera información sobre convenios y operativos ópticos."
+  data-demo-title="Tus datos están correctos, pero no se enviaron."
+  data-demo-text="Este formulario está en modo demostración y aún no está conectado con Óptica Erredos. Si quieres contactarnos ahora, envía esta misma información por WhatsApp."
+  data-success-title="Recibimos tu solicitud."
+  data-success-text="El equipo de Óptica Erredos la revisará y se pondrá en contacto contigo."
+>
+  {
+    isDemo && (
+      <p class="form__demo" role="note">
+        <Icon name="info" />
+        <span>
+          <strong>Formulario en modo demostración.</strong> Todavía no está conectado: puedes probarlo,
+          pero tus datos no se enviarán a Óptica Erredos.
+        </span>
+      </p>
+    )
+  }
+
+  <p class="form__legend">Los campos sin la palabra "opcional" son obligatorios.</p>
+
+  <div class="form__grid">
+    <div class="field">
+      <label class="field__label" for="org-nombre">Nombre y apellido</label>
+      <input
+        class="field__control"
+        id="org-nombre"
+        name="nombre"
+        type="text"
+        autocomplete="name"
+        required
+        data-wa-label="Nombre"
+        data-error="Escribe tu nombre y apellido."
+      />
+    </div>
+
+    <div class="field">
+      <label class="field__label" for="org-organizacion">Empresa u organización</label>
+      <input
+        class="field__control"
+        id="org-organizacion"
+        name="organizacion"
+        type="text"
+        autocomplete="organization"
+        required
+        data-wa-label="Organización"
+        data-error="Escribe el nombre de tu empresa u organización."
+      />
+    </div>
+
+    <div class="field">
+      <label class="field__label" for="org-cargo">
+        Cargo o función <span class="field__optional">(opcional)</span>
+      </label>
+      <input
+        class="field__control"
+        id="org-cargo"
+        name="cargo"
+        type="text"
+        autocomplete="organization-title"
+        data-wa-label="Cargo"
+      />
+    </div>
+
+    <div class="field">
+      <label class="field__label" for="org-correo">Correo electrónico</label>
+      <input
+        class="field__control"
+        id="org-correo"
+        name="correo"
+        type="email"
+        autocomplete="email"
+        inputmode="email"
+        required
+        data-wa-label="Correo"
+        data-error="Escribe un correo válido, por ejemplo nombre@empresa.cl."
+      />
+    </div>
+
+    <div class="field">
+      <label class="field__label" for="org-telefono">Número de teléfono</label>
+      <input
+        class="field__control"
+        id="org-telefono"
+        name="telefono"
+        type="tel"
+        autocomplete="tel"
+        inputmode="tel"
+        required
+        data-wa-label="Teléfono"
+        data-error="Escribe un teléfono de contacto con al menos 8 dígitos."
+      />
+    </div>
+
+    <div class="field">
+      <label class="field__label" for="org-participantes">
+        Cantidad de participantes <span class="field__optional">(aprox.)</span>
+      </label>
+      <input
+        class="field__control"
+        id="org-participantes"
+        name="participantes"
+        type="number"
+        inputmode="numeric"
+        min="1"
+        data-wa-label="Participantes (aprox.)"
+        data-error="Escribe un número mayor que cero o deja el campo vacío."
+      />
+    </div>
+
+    <div class="field form__wide">
+      <label class="field__label" for="org-tipo">Tipo de solicitud</label>
+      <select
+        class="field__control"
+        id="org-tipo"
+        name="tipo"
+        required
+        data-wa-label="Tipo de solicitud"
+        data-error="Elige qué tipo de solicitud quieres hacer."
+      >
+        <option value="">Elige una opción</option>
+        {requestTypes.map((type) => <option value={type.value}>{type.label}</option>)}
+      </select>
+    </div>
+
+    <div class="field form__wide">
+      <label class="field__label" for="org-mensaje">
+        Mensaje o información adicional <span class="field__optional">(opcional)</span>
+      </label>
+      <textarea class="field__control" id="org-mensaje" name="mensaje" rows="4" data-wa-label="Mensaje"></textarea>
+    </div>
+  </div>
+
+  <p class="form__privacy">
+    Usaremos estos datos solo para responder tu solicitud. No pedimos información de los participantes.
+    Revisa la <a href="/politica-de-privacidad">política de privacidad</a>.
+  </p>
+
+  <button type="submit" class="btn btn--primary form__submit" data-submit>
+    <span data-submit-label>Enviar solicitud</span>
+  </button>
+
+  <!-- Resumen de errores y resultado del envío: se anuncian a lectores de pantalla. -->
+  <div class="form__status" data-status role="status" aria-live="polite" tabindex="-1" hidden></div>
+</form>
+
+<FormBehavior />

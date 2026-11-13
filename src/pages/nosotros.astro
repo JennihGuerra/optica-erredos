@@ -1,0 +1,694 @@
+---
+/**
+ * QUIÉNES SOMOS — identidad, forma de trabajar, local y ubicación (ruta /nosotros).
+ * No se inventan historia, fechas, fundadores, equipo ni equipamiento:
+ * lo que falta queda como contenido provisional claramente identificado.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { Image } from 'astro:assets';
+import historiaLocal from '../assets/historia-local.jpg';
+import espacioExterior from '../assets/espacio-exterior.jpg';
+import espacioEquipo from '../assets/espacio-equipo.jpg';
+import espacioInterior from '../assets/espacio-interior.jpg';
+import heroNosotros from '../assets/hero-quienes-somos.jpg';
+import Icon from '../components/ui/Icon.astro';
+import MediaPlaceholder from '../components/ui/MediaPlaceholder.astro';
+import ProvisionalBadge from '../components/ui/ProvisionalBadge.astro';
+import { site } from '../config/site';
+import { whatsappUrl } from '../lib/whatsapp';
+import { contextMessage } from '../lib/whatsappContext';
+import type { IconName } from '../components/ui/icons';
+
+// PROPUESTA de comunicación: validar con Mauricio antes de presentarla como valores oficiales.
+const principles: { title: string; text: string; icon: IconName }[] = [
+  { title: 'Cercanía', text: 'Facilitar el contacto y la orientación de nuestros clientes.', icon: 'handshake' },
+  { title: 'Atención personalizada', text: 'Escuchar las necesidades de cada persona.', icon: 'hearing' },
+  { title: 'Accesibilidad', text: 'Acercar productos y servicios ópticos a la comunidad.', icon: 'diversity_3' },
+  {
+    title: 'Compromiso',
+    text: 'Trabajar para entregar una experiencia de atención clara y confiable.',
+    icon: 'task_alt',
+  },
+];
+
+// Datos que debe entregar el negocio para escribir la historia definitiva.
+const historyPending = [
+  'Cómo y cuándo nació Óptica Erredos.',
+  'Cuál fue la motivación inicial.',
+  'Cómo ha evolucionado el negocio.',
+  'Qué busca aportar a sus clientes y a la comunidad.',
+];
+
+const newTab = ' (se abre en una pestaña nueva)';
+const links: { title: string; text: string; href: string; icon: IconName; external?: boolean }[] = [
+  {
+    title: 'Productos',
+    text: 'Descubre nuestras alternativas de anteojos ópticos y de sol.',
+    href: '/productos',
+    icon: 'eyeglasses',
+  },
+  {
+    title: 'Servicios',
+    text: 'Conoce nuestra atención visual y reparación de anteojos.',
+    href: '/servicios',
+    icon: 'visibility',
+  },
+  {
+    title: 'Contacto',
+    text: 'Comunícate directamente con nuestro equipo por WhatsApp.',
+    href: whatsappUrl(contextMessage(Astro.url.pathname)),
+    icon: 'chat',
+    external: true,
+  },
+];
+---
+
+<BaseLayout
+  title="Quiénes somos"
+  description="Conoce Óptica Erredos, óptica en Calle Talca 118, Puerto Montt: nuestra forma de trabajar, nuestro local, horarios y cómo llegar."
+>
+  <!-- A. Hero: foto de fondo tipo banner, como el carrusel de Inicio -->
+  <section class="hero" aria-labelledby="hero-title">
+    <Image
+      class="hero__bg"
+      src={heroNosotros}
+      alt=""
+      widths={[640, 1024, 1600]}
+      sizes="100vw"
+      loading="eager"
+      fetchpriority="high"
+    />
+    <div class="container hero__inner">
+      <div class="hero__content">
+        <p class="hero__kicker">Quiénes somos</p>
+        <h1 id="hero-title" class="hero__title">Conoce Óptica Erredos</h1>
+        <p class="hero__text">
+          Una óptica en Puerto Montt que acerca soluciones visuales con productos y atención cercana.
+        </p>
+        <div class="hero__actions">
+          <a class="btn btn--primary" href="/servicios">Conoce nuestros servicios</a>
+          <a class="btn btn--outline" href="#ubicacion">Visítanos</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- B. Nuestra historia -->
+  <section class="container section story" aria-labelledby="story-title">
+    <Image
+      class="story__photo"
+      src={historiaLocal}
+      alt="Interior de Óptica Erredos: vitrinas con anteojos a ambos lados de un pasillo luminoso"
+      widths={[400, 640, 800]}
+      sizes="(min-width: 48em) 40vw, 100vw"
+      loading="lazy"
+    />
+    <div class="story__text">
+      <p class="eyebrow">Nuestra historia</p>
+      <h2 id="story-title">Una óptica cercana a nuestra comunidad</h2>
+      <ProvisionalBadge label="Texto provisional" />
+      <p>
+        Aquí contaremos la historia de Óptica Erredos: su origen, su recorrido en Puerto Montt y lo que
+        busca aportar a quienes la visitan. Este texto se escribirá con la información que entregue el
+        negocio.
+      </p>
+      <div class="story__pending" role="note">
+        <p><strong>Información necesaria para completar esta sección</strong></p>
+        <ul>
+          {historyPending.map((item) => <li>{item}</li>)}
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- C. Nuestra forma de trabajar -->
+  <section class="work section" aria-labelledby="work-title">
+    <div class="container">
+      <p class="eyebrow">Nuestra forma de trabajar</p>
+      <h2 id="work-title">Una atención pensada en las personas</h2>
+      <ProvisionalBadge label="Propuesta por validar con el negocio" />
+      <ul role="list" class="principles">
+        {
+          principles.map((item) => (
+            <li>
+              <Icon name={item.icon} />
+              <h3>{item.title}</h3>
+              <p>{item.text}</p>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <!-- D. Nuestro espacio -->
+  <section class="container section" aria-labelledby="space-title">
+    <div class="space__head">
+      <div>
+        <p class="eyebrow">Nuestro espacio</p>
+        <h2 id="space-title">Te esperamos en nuestro local</h2>
+        <p class="space__text">
+          Estamos en {site.address}.
+        </p>
+      </div>
+      <a class="btn btn--outline" href={site.mapsUrl} target="_blank" rel="noopener">
+        <Icon name="directions" />
+        <span>Cómo llegar<span class="visually-hidden"> a Óptica Erredos en Google Maps{newTab}</span></span>
+      </a>
+    </div>
+    <div class="space__gallery">
+      <Image class="space__photo" src={espacioExterior} alt="Fachada de una óptica en una esquina, con letrero sobre la puerta" widths={[480, 800]} sizes="(min-width: 37.5em) 66vw, 100vw" style="object-position: center 40%" loading="lazy" />
+      <Image class="space__photo" src={espacioEquipo} alt="Cuatro personas del equipo de una óptica frente a la puerta del local" widths={[400, 640]} sizes="(min-width: 37.5em) 33vw, 100vw" style="object-position: center 47%" loading="lazy" />
+      <Image class="space__photo" src={espacioInterior} alt="Interior de una óptica: mostrador y vitrinas con anteojos" widths={[400, 640]} sizes="(min-width: 37.5em) 33vw, 100vw" style="object-position: center 55%" loading="lazy" />
+    </div>
+  </section>
+
+  <!-- E. Dónde estamos -->
+  <section class="container section where" id="ubicacion" aria-labelledby="where-title">
+    <div>
+      <p class="eyebrow">Ubicación</p>
+      <h2 id="where-title">Conoce dónde estamos</h2>
+      <ul role="list" class="where__list">
+        <li>
+          <Icon name="location_on" />
+          <div>
+            <strong>Dirección</strong>
+            <span>{site.address}</span>
+          </div>
+        </li>
+        <li>
+          <Icon name="schedule" />
+          <div>
+            <strong>Horarios de atención</strong>
+            {
+              site.hours.length > 0 ? (
+                site.hours.map((slot) => (
+                  <span>
+                    {slot.days}: {slot.time}
+                  </span>
+                ))
+              ) : (
+                <span>
+                  <ProvisionalBadge />
+                </span>
+              )
+            }
+          </div>
+        </li>
+      </ul>
+      <div class="where__actions">
+        <a class="btn btn--primary" href={site.mapsUrl} target="_blank" rel="noopener">
+          <Icon name="map" />
+          <span>Ver ubicación<span class="visually-hidden"> en Google Maps{newTab}</span></span>
+        </a>
+        <a class="btn btn--outline" href={whatsappUrl(contextMessage(Astro.url.pathname))} target="_blank" rel="noopener">
+          <Icon name="chat" />
+          <span>Contactar por WhatsApp<span class="visually-hidden">{newTab}</span></span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Mapa de Google Maps visible de inmediato (carga diferida: no frena la apertura de la página). -->
+    <div class="where__map where__map--loaded">
+      <iframe
+        src={site.mapsEmbedUrl}
+        title="Mapa de Google Maps con la ubicación de Óptica Erredos"
+        loading="lazy"
+        referrerpolicy="no-referrer-when-downgrade"
+        allowfullscreen
+      ></iframe>
+    </div>
+  </section>
+
+  <!-- F. Conecta con Óptica Erredos -->
+  <section class="container section" aria-labelledby="connect-title">
+    <h2 id="connect-title">Estamos aquí para ayudarte</h2>
+    <p class="connect__text">
+      Conoce nuestros productos y servicios, o escríbenos si necesitas orientación.
+    </p>
+    <ul role="list" class="connect">
+      {
+        links.map((link) => (
+          <li>
+            <a href={link.href} target={link.external ? '_blank' : undefined} rel={link.external ? 'noopener' : undefined}>
+              <span class="connect__icon">
+                <Icon name={link.icon} />
+              </span>
+              <span class="connect__body">
+                <strong>
+                  {link.title}
+                  {link.external && <span class="visually-hidden">{newTab}</span>}
+                </strong>
+                <span>{link.text}</span>
+              </span>
+              <Icon name="arrow_forward" class="connect__arrow" />
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+</BaseLayout>
+
+<style>
+  .section {
+    padding-top: var(--space-7);
+    scroll-margin-top: var(--header-h);
+  }
+
+  @media (min-width: 64em) {
+    .section {
+      padding-top: var(--space-8);
+    }
+  }
+
+  .eyebrow {
+    margin-bottom: var(--space-2);
+    color: var(--color-primary);
+    font-size: var(--text-sm);
+    font-weight: var(--font-semibold);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  h2 {
+    max-width: 22ch;
+  }
+
+  h2 + :global(.provisional-badge) {
+    margin-top: var(--space-3);
+    color: var(--color-text-muted);
+  }
+
+  /* --- Hero (banner con foto de fondo, igual que el de Inicio) ---------- */
+
+  .hero {
+    /* Alto de la foto en móvil. Fijo en px: no se achica cuando se amplía el texto. */
+    --hero-img-h: clamp(210px, 66vw, 320px);
+
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    background: var(--color-bg);
+  }
+
+  .hero :global(.hero__bg) {
+    display: block;
+    width: 100%;
+    height: var(--hero-img-h);
+    object-fit: cover;
+    object-position: center 35%;
+  }
+
+  /* Móvil: el borde inferior de la foto se funde a blanco. */
+  .hero::after {
+    content: '';
+    position: absolute;
+    top: calc(var(--hero-img-h) - 6rem);
+    right: 0;
+    left: 0;
+    height: 6rem;
+    background: linear-gradient(to bottom, rgb(255 255 255 / 0), rgb(255 255 255 / 0.9) 70%, #fff);
+    pointer-events: none;
+  }
+
+  .hero__inner {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    margin-top: -1.75rem;
+    padding-bottom: var(--space-5);
+  }
+
+  .hero__kicker {
+    margin-bottom: var(--space-2);
+    color: var(--color-primary);
+    font-weight: var(--font-semibold);
+  }
+
+  .hero__title {
+    font-size: min(var(--text-3xl), 9.5vw);
+    font-weight: var(--font-bold);
+  }
+
+  .hero__text {
+    max-width: 45ch;
+    margin-top: var(--space-3);
+    font-size: var(--text-lg);
+  }
+
+  /* Botones uno al lado del otro; en pantallas angostas se reparten el ancho. */
+  .hero__actions {
+    display: flex;
+    gap: var(--space-2);
+    margin-top: var(--space-5);
+  }
+
+  .hero__actions .btn {
+    flex: 0 1 auto;
+    padding-inline: var(--space-3);
+    font-size: var(--text-sm);
+  }
+
+  @media (min-width: 48em) {
+    .hero {
+      /* Hasta dónde llega el texto: margen izquierdo del contenedor + ancho del bloque. */
+      --hero-text-end: calc(max(var(--gutter), (100% - var(--container-max)) / 2) + 32rem);
+    }
+
+    .hero :global(.hero__bg) {
+      position: absolute;
+      inset: 0;
+      height: 100%;
+    }
+
+    /* Degradado lineal blanco a la izquierda bajo el texto; deja ver la foto a la derecha. */
+    .hero::after {
+      inset: 0;
+      height: auto;
+      background: linear-gradient(
+        to right,
+        rgb(255 255 255 / 0.88) 0,
+        rgb(255 255 255 / 0.88) calc(var(--hero-text-end) - 6rem),
+        rgb(255 255 255 / 0.55) calc(var(--hero-text-end) + 4rem),
+        rgb(255 255 255 / 0) calc(var(--hero-text-end) + 18rem)
+      );
+    }
+
+    .hero__inner {
+      align-content: center;
+      min-height: 30rem;
+      margin-top: 0;
+      padding-block: var(--space-7);
+    }
+
+    .hero__content {
+      max-width: 32rem;
+    }
+
+    .hero__actions {
+      gap: var(--space-3);
+    }
+
+    .hero__actions .btn {
+      flex: none;
+      padding-inline: var(--space-5);
+      font-size: var(--text-base);
+    }
+  }
+
+  /* --- Historia (composición editorial) --------------------------------- */
+
+  .story {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-5);
+  }
+
+  .story :global(.story__photo) {
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    border-radius: var(--radius-lg);
+    object-fit: cover;
+  }
+
+  .story__text > p:not(.eyebrow) {
+    max-width: 60ch;
+    margin-top: var(--space-4);
+    font-size: var(--text-lg);
+  }
+
+  .story__pending {
+    max-width: 34rem;
+    margin-top: var(--space-5);
+    padding: var(--space-4);
+    border: 1px dashed var(--color-border-strong);
+    border-radius: var(--radius-md);
+    font-size: var(--text-sm);
+  }
+
+  .story__pending ul {
+    display: grid;
+    gap: var(--space-1);
+    margin-top: var(--space-2);
+    padding-left: 1.25rem;
+  }
+
+  @media (min-width: 48em) {
+    .story {
+      grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+      gap: var(--space-7);
+      align-items: center;
+    }
+
+
+  }
+
+  /* --- Forma de trabajar -------------------------------------------------- */
+
+  .work {
+    margin-top: var(--space-7);
+    padding-block: var(--space-7);
+    background: var(--color-accent-tint);
+  }
+
+  .principles {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
+    gap: var(--space-5) var(--space-6);
+    margin-top: var(--space-6);
+  }
+
+  /* Sin tarjetas: una línea de acento sobre cada principio. */
+  .principles li {
+    padding-top: var(--space-4);
+    border-top: 3px solid var(--color-primary);
+  }
+
+  .principles :global(.icon) {
+    width: 2rem;
+    height: 2rem;
+    color: var(--color-primary);
+  }
+
+  .principles h3 {
+    margin-top: var(--space-3);
+    font-size: var(--text-lg);
+  }
+
+  .principles p {
+    margin-top: var(--space-1);
+  }
+
+  /* --- Nuestro espacio ---------------------------------------------------- */
+
+  .space__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--space-4);
+  }
+
+  .space__text {
+    max-width: 55ch;
+    margin-top: var(--space-3);
+    color: var(--color-text-muted);
+  }
+
+  .space__gallery {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-3);
+    margin-top: var(--space-5);
+  }
+
+  .space__gallery :global(.space__photo) {
+    width: 100%;
+    height: 100%;
+    aspect-ratio: 4 / 3;
+    border-radius: var(--radius-lg);
+    object-fit: cover;
+  }
+
+  @media (min-width: 37.5em) {
+    /* Composición asimétrica: una foto grande y dos de apoyo. */
+    .space__gallery {
+      grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+      grid-template-rows: repeat(2, minmax(0, 13rem));
+      gap: var(--space-4);
+    }
+
+    .space__gallery > :global(:first-child) {
+      grid-row: 1 / -1;
+      height: 100%;
+      aspect-ratio: auto !important;
+    }
+  }
+
+  /* --- Dónde estamos ------------------------------------------------------ */
+
+  .where {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-5);
+  }
+
+  .where__list {
+    display: grid;
+    gap: var(--space-4);
+    margin-top: var(--space-5);
+  }
+
+  .where__list li {
+    display: flex;
+    gap: var(--space-3);
+    align-items: flex-start;
+  }
+
+  .where__list :global(.icon) {
+    margin-top: 0.125rem;
+    color: var(--color-primary);
+  }
+
+  .where__list div {
+    display: grid;
+    gap: 0.125rem;
+  }
+
+  .where__list strong {
+    font-weight: var(--font-semibold);
+  }
+
+  .where__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    margin-top: var(--space-5);
+  }
+
+  @media (max-width: 29.99em) {
+    .where__actions .btn,
+    .space__head .btn {
+      flex: 1 1 100%;
+    }
+  }
+
+  .where__map {
+    display: grid;
+    gap: var(--space-3);
+    place-content: center;
+    justify-items: center;
+    min-height: 16rem;
+    padding: var(--space-5);
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-primary-tint);
+    text-align: center;
+  }
+
+  .where__map > :global(.icon) {
+    width: 3rem;
+    height: 3rem;
+    color: var(--color-primary);
+  }
+
+  .where__map p {
+    font-weight: var(--font-medium);
+  }
+
+  .where__map--loaded {
+    display: block;
+    padding: 0;
+  }
+
+  .where__map :global(iframe) {
+    display: block;
+    width: 100%;
+    height: 100%;
+    min-height: 20rem;
+    border: 0;
+  }
+
+  @media (min-width: 48em) {
+    .where {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+      gap: var(--space-7);
+      align-items: stretch;
+    }
+
+    .where__map {
+      min-height: 22rem;
+    }
+  }
+
+  /* --- Conecta ------------------------------------------------------------ */
+
+  .connect__text {
+    max-width: 60ch;
+    margin-top: var(--space-3);
+    color: var(--color-text-muted);
+  }
+
+  .connect {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+    gap: var(--space-3);
+    margin-top: var(--space-5);
+  }
+
+  .connect a {
+    display: flex;
+    gap: var(--space-3);
+    align-items: center;
+    height: 100%;
+    padding: var(--space-4);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    color: var(--color-text);
+    text-decoration: none;
+    transition:
+      border-color var(--duration-fast) var(--easing),
+      background-color var(--duration-fast) var(--easing);
+  }
+
+  .connect a:hover {
+    border-color: var(--color-primary);
+    background: var(--color-primary-tint);
+  }
+
+  .connect__icon {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 3rem;
+    height: 3rem;
+    border-radius: var(--radius-md);
+    background: var(--color-accent);
+    color: var(--color-primary);
+  }
+
+  .connect__body {
+    display: grid;
+    flex: 1;
+    gap: 0.125rem;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .connect__body strong {
+    font-size: var(--text-lg);
+    font-weight: var(--font-semibold);
+  }
+
+  .connect__body span {
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+  }
+
+  .connect a :global(.connect__arrow) {
+    color: var(--color-primary);
+  }
+</style>

@@ -1,0 +1,511 @@
+---
+/**
+ * CONVENIOS Y OPERATIVOS — página B2B (ruta /empresas).
+ * No se mencionan descuentos, condiciones, prestaciones ni convenios existentes:
+ * todo eso debe confirmarlo el negocio antes de publicarse.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Icon from '../components/ui/Icon.astro';
+import PageBanner from '../components/ui/PageBanner.astro';
+import heroConvenios from '../assets/hero-convenios.jpg';
+import { Image } from 'astro:assets';
+import photoConvenio from '../assets/convenios-alianza.jpg';
+import photoOperativo from '../assets/convenios-operativo.jpg';
+import LocationBlock from '../components/ui/LocationBlock.astro';
+import OrganizationForm from '../components/forms/OrganizationForm.astro';
+import { whatsappUrl, whatsappMessages } from '../lib/whatsapp';
+import type { IconName } from '../components/ui/icons';
+
+// Públicos a los que se dirige la propuesta (no son clientes ni convenios vigentes).
+const audiences: { title: string; text: string; icon: IconName }[] = [
+  { title: 'Empresas', text: 'Para sus trabajadores y equipos.', icon: 'apartment' },
+  { title: 'Sindicatos', text: 'Para sus socias y socios.', icon: 'groups' },
+  { title: 'Instituciones', text: 'Para sus funcionarios e integrantes.', icon: 'account_balance' },
+  { title: 'Establecimientos educacionales', text: 'Para sus comunidades educativas.', icon: 'school' },
+  { title: 'Agrupaciones y organizaciones', text: 'Para sus integrantes y comunidades.', icon: 'diversity_3' },
+];
+
+const alternatives: {
+  id: string;
+  type: string;
+  title: string;
+  kicker: string;
+  text: string;
+  cta: string;
+  icon: IconName;
+}[] = [
+  {
+    id: 'convenios',
+    type: 'convenio',
+    title: 'Convenios para organizaciones',
+    kicker: 'Una alianza con la óptica',
+    text: 'Una alianza con Óptica Erredos para acercar nuestros productos y servicios a tus integrantes.',
+    cta: 'Consultar por convenios',
+    icon: 'handshake',
+  },
+  {
+    id: 'operativos',
+    type: 'operativo',
+    title: 'Operativos ópticos',
+    kicker: 'Una instancia de atención',
+    text: 'Coordinamos una instancia de atención óptica para tu organización. Consulta las condiciones con nuestro equipo.',
+    cta: 'Consultar por operativos',
+    icon: 'event_available',
+  },
+];
+
+const steps: { title: string; text: string; icon: IconName }[] = [
+  {
+    title: 'Cuéntanos sobre tu organización',
+    text: 'La organización comparte sus datos y nos explica qué necesita.',
+    icon: 'edit_note',
+  },
+  {
+    title: 'Revisamos tu solicitud',
+    text: 'El equipo de Óptica Erredos analiza la consulta y las alternativas disponibles.',
+    icon: 'fact_check',
+  },
+  {
+    title: 'Nos ponemos en contacto',
+    text: 'Coordinamos una conversación para entregar información y evaluar los próximos pasos.',
+    icon: 'forum',
+  },
+];
+---
+
+<BaseLayout
+  title="Convenios y operativos ópticos para empresas y organizaciones"
+  description="Convenios y operativos ópticos para empresas, sindicatos, instituciones y organizaciones en Puerto Montt. Solicita información a Óptica Erredos."
+>
+  <!-- A. Hero (banner con foto, mismo estilo que el carrusel de Inicio) -->
+  <PageBanner
+    kicker="Convenios y operativos"
+    title="Soluciones ópticas para empresas y organizaciones"
+    text="Acercamos soluciones ópticas a empresas, instituciones y organizaciones que buscan facilitar el acceso a productos y servicios visuales para sus trabajadores e integrantes."
+    image={heroConvenios}
+  >
+    <div class="banner-actions">
+      <a class="btn btn--primary" href="#solicitar-informacion">Solicitar información</a>
+      <a class="btn btn--outline" href="#alternativas">Conocer nuestras alternativas</a>
+    </div>
+  </PageBanner>
+
+  <!-- B. A quiénes está dirigido -->
+  <section class="container section" aria-labelledby="audiences-title">
+    <h2 id="audiences-title">Trabajemos juntos para acercar soluciones ópticas a más personas</h2>
+    <p class="section__lead">Esta propuesta está pensada para organizaciones como la tuya.</p>
+    <ul role="list" class="audiences">
+      {
+        audiences.map((audience) => (
+          <li>
+            <Icon name={audience.icon} />
+            <div>
+              <h3>{audience.title}</h3>
+              <p>{audience.text}</p>
+            </div>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <!-- C. Alternativas de colaboración -->
+  <section class="container section" id="alternativas" aria-labelledby="alternatives-title">
+    <h2 id="alternatives-title">Nuestras alternativas de colaboración</h2>
+    <p class="section__lead">Elige la que mejor se adapte a tu organización.</p>
+    <ul role="list" class="alternatives">
+      {
+        alternatives.map((item, index) => (
+          <li>
+            <article class:list={['alternative', { 'alternative--alt': index === 1 }]} id={item.id}>
+              <div class="alternative__media">
+                <Image
+                  class="alternative__photo"
+                  src={index === 1 ? photoOperativo : photoConvenio}
+                  alt={index === 1 ? 'Operativo óptico: una profesional evalúa la visión de una persona con lentes de prueba' : 'Profesional realizando un examen visual a una persona'}
+                  widths={[480, 640, 960]}
+                  sizes="(min-width: 48em) 50vw, 100vw"
+                  style={index === 1 ? 'object-position: center 30%' : 'object-position: center 40%'}
+                />
+              </div>
+              <header>
+                <span class="alternative__icon">
+                  <Icon name={item.icon} />
+                </span>
+                <div>
+                  <p class="alternative__kicker">{item.kicker}</p>
+                  <h3>{item.title}</h3>
+                </div>
+              </header>
+              <p>{item.text}</p>
+              <a class="btn btn--primary" href="#solicitar-informacion" data-request-type={item.type}>
+                {item.cta}
+              </a>
+            </article>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <!-- D. Cómo funciona -->
+  <section class="how section" aria-labelledby="how-title">
+    <div class="container">
+      <h2 id="how-title">¿Cómo funciona?</h2>
+      <ol role="list" class="steps">
+        {
+          steps.map((step, index) => (
+            <li>
+              <span class="steps__icon">
+                <Icon name={step.icon} />
+              </span>
+              <div>
+                <h3>
+                  <span class="steps__number">Paso {index + 1}</span>
+                  {step.title}
+                </h3>
+                <p>{step.text}</p>
+              </div>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+  </section>
+
+  <!-- E. Formulario -->
+  <section class="container section contact" id="solicitar-informacion" aria-labelledby="form-title">
+    <div class="contact__intro">
+      <h2 id="form-title">Conversemos sobre tu organización</h2>
+      <p class="section__lead">Cuéntanos qué alternativa te interesa y te contactaremos.</p>
+
+      <!-- F. Contacto directo -->
+      <aside class="direct" aria-labelledby="direct-title">
+        <h3 id="direct-title">¿Prefieres conversar directamente con nosotros?</h3>
+        <p>Escríbenos por WhatsApp y te orientamos.</p>
+        <a class="btn btn--accent" href={whatsappUrl(whatsappMessages.business)} target="_blank" rel="noopener">
+          <Icon name="chat" />
+          <span>Hablar por WhatsApp<span class="visually-hidden"> (se abre en una pestaña nueva)</span></span>
+        </a>
+      </aside>
+    </div>
+
+    <div class="contact__form">
+      <OrganizationForm />
+    </div>
+  </section>
+
+  <!-- G. Ubicación y cierre -->
+  <section class="container section" aria-labelledby="ubicacion-title">
+    <LocationBlock headingId="ubicacion-title" title="Estamos en Puerto Montt" />
+  </section>
+</BaseLayout>
+
+<script>
+  // "Consultar por convenios / operativos" lleva al formulario con esa opción ya elegida.
+  document.addEventListener('click', (event) => {
+    const link = (event.target as HTMLElement).closest<HTMLElement>('[data-request-type]');
+    if (!link) return;
+    const select = document.querySelector<HTMLSelectElement>('[data-org-form] select[name="tipo"]');
+    if (select) {
+      select.value = link.dataset.requestType ?? '';
+      select.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+  });
+</script>
+
+<style>
+  .section {
+    padding-top: var(--space-7);
+    scroll-margin-top: var(--header-h);
+  }
+
+  @media (min-width: 64em) {
+    .section {
+      padding-top: var(--space-8);
+    }
+  }
+
+  .section__lead {
+    max-width: 65ch;
+    margin-top: var(--space-3);
+    color: var(--color-text-muted);
+  }
+
+  h2 {
+    max-width: 28ch;
+  }
+
+  /* --- Hero (botones dentro del banner) ---------------------------------- */
+
+  .banner-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-top: var(--space-5);
+  }
+
+  .banner-actions .btn {
+    flex: 0 1 auto;
+    padding-inline: var(--space-3);
+    font-size: var(--text-sm);
+  }
+
+  @media (min-width: 48em) {
+    .banner-actions {
+      gap: var(--space-3);
+    }
+
+    .banner-actions .btn {
+      flex: none;
+      padding-inline: var(--space-4);
+      font-size: var(--text-base);
+    }
+  }
+
+  /* --- Públicos ---------------------------------------------------------- */
+
+  .audiences {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
+    gap: var(--space-3);
+    margin-top: var(--space-5);
+  }
+
+  .audiences li {
+    display: flex;
+    gap: var(--space-3);
+    align-items: flex-start;
+    padding: var(--space-4);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+  }
+
+  .audiences :global(.icon) {
+    width: 1.75rem;
+    height: 1.75rem;
+    color: var(--color-primary);
+  }
+
+  .audiences h3 {
+    font-size: var(--text-base);
+  }
+
+  .audiences p {
+    margin-top: 0.125rem;
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+  }
+
+  @media (min-width: 64em) {
+    .audiences li {
+      flex-direction: column;
+    }
+  }
+
+  /* --- Alternativas ------------------------------------------------------ */
+
+  .alternatives {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-4);
+    margin-top: var(--space-5);
+  }
+
+  @media (min-width: 48em) {
+    .alternatives {
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
+      gap: var(--space-5);
+    }
+  }
+
+  .alternative {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    align-items: flex-start;
+    height: 100%;
+    padding: var(--space-5);
+    border: 1px solid var(--color-border);
+    border-top: 6px solid var(--color-primary);
+    border-radius: var(--radius-lg);
+    scroll-margin-top: calc(var(--header-h) + var(--space-4));
+  }
+
+  /* Cada alternativa tiene su propio acento para distinguirlas de un vistazo. */
+  .alternative--alt {
+    border-top-color: var(--color-accent);
+  }
+
+  /* Espacio para la fotografía de cada alternativa (a sangre dentro de la tarjeta). */
+  .alternative__media {
+    align-self: stretch;
+    margin: calc(var(--space-5) * -1) calc(var(--space-5) * -1) var(--space-1);
+    overflow: hidden;
+    border-radius: calc(var(--radius-lg) - 1px) calc(var(--radius-lg) - 1px) 0 0;
+  }
+
+  .alternative__photo {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+  }
+
+  .alternative header {
+    display: flex;
+    gap: var(--space-3);
+    align-items: center;
+  }
+
+  .alternative__icon {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 3rem;
+    height: 3rem;
+    border-radius: var(--radius-md);
+    background: var(--color-primary);
+    color: var(--color-on-primary);
+  }
+
+  .alternative--alt .alternative__icon {
+    background: var(--color-accent);
+    color: var(--color-primary);
+  }
+
+  .alternative__kicker {
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+  }
+
+  .alternative h3 {
+    font-size: var(--text-xl);
+  }
+
+  .alternative .btn {
+    margin-top: auto;
+  }
+
+  @media (max-width: 29.99em) {
+    .alternative .btn {
+      width: 100%;
+    }
+  }
+
+  /* --- Cómo funciona ----------------------------------------------------- */
+
+  .how {
+    margin-top: var(--space-7);
+    padding-block: var(--space-7);
+    background: var(--color-primary-tint);
+  }
+
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+    gap: var(--space-5);
+    margin-top: var(--space-5);
+  }
+
+  .steps li {
+    display: flex;
+    gap: var(--space-3);
+    align-items: flex-start;
+  }
+
+  .steps__icon {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 3rem;
+    height: 3rem;
+    border-radius: var(--radius-pill);
+    background: var(--color-primary);
+    color: var(--color-on-primary);
+  }
+
+  .steps__number {
+    display: block;
+    color: var(--color-primary);
+    font-size: var(--text-sm);
+    font-weight: var(--font-semibold);
+  }
+
+  .steps h3 {
+    font-size: var(--text-lg);
+  }
+
+  .steps p {
+    margin-top: var(--space-1);
+  }
+
+  /* --- Formulario y contacto directo ------------------------------------- */
+
+  .contact {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-5);
+  }
+
+  .contact__form {
+    padding: var(--space-4);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+  }
+
+  .direct {
+    display: grid;
+    gap: var(--space-3);
+    justify-items: start;
+    margin-top: var(--space-5);
+    padding: var(--space-5);
+    border-radius: var(--radius-lg);
+    background: var(--color-primary);
+    color: var(--color-on-primary);
+  }
+
+  .direct h3 {
+    font-size: var(--text-lg);
+  }
+
+  @media (max-width: 63.99em) {
+    /* Móvil y tablet: primero el formulario, después la alternativa por WhatsApp. */
+    .contact__intro {
+      display: contents;
+    }
+
+    .contact h2 {
+      order: 1;
+    }
+
+    .contact .section__lead {
+      order: 2;
+      margin-top: calc(var(--space-3) * -1);
+    }
+
+    .contact__form {
+      order: 3;
+    }
+
+    .direct {
+      order: 4;
+      margin-top: 0;
+    }
+  }
+
+  @media (min-width: 48em) {
+    .contact__form {
+      padding: var(--space-6);
+    }
+  }
+
+  @media (min-width: 64em) {
+    .contact {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr);
+      gap: var(--space-7);
+      align-items: start;
+    }
+  }
+</style>

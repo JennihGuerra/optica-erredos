@@ -1,0 +1,170 @@
+---
+import { Image } from 'astro:assets';
+import logo from '../../assets/logo.png';
+import Icon from '../ui/Icon.astro';
+import ProvisionalBadge from '../ui/ProvisionalBadge.astro';
+import { mainNav } from '../../config/navigation';
+import { site } from '../../config/site';
+
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer on-primary">
+  <div class="container site-footer__grid">
+    <div class="site-footer__brand">
+      <a class="site-footer__logo" href="/" aria-label={`${site.name}, ir al inicio`}>
+        <Image src={logo} alt="" width={132} densities={[1, 2]} />
+      </a>
+      <p>Anteojos ópticos, anteojos de sol y atención óptica en {site.city}.</p>
+    </div>
+
+    <nav aria-label="Navegación del pie de página">
+      <h2>Secciones</h2>
+      <ul role="list">
+        {
+          mainNav.map((item) => (
+            <li>
+              <a href={item.href}>{item.label}</a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <div>
+      <h2>Contacto</h2>
+      <ul role="list" class="site-footer__contact">
+        <li>
+          <Icon name="location_on" />
+          <span>
+            <span class="visually-hidden">Dirección: </span>{site.address}
+          </span>
+        </li>
+        <li>
+          <Icon name="schedule" />
+          <span class="site-footer__hours">
+            <span class="visually-hidden">Horarios de atención: </span>
+            {site.hours.length > 0 ? (
+              site.hours.map((slot) => (
+                <span>
+                  {slot.days}: {slot.time}
+                </span>
+              ))
+            ) : (
+              <span>
+                Horarios: <ProvisionalBadge />
+              </span>
+            )}
+          </span>
+        </li>
+        <li>
+          <Icon name="directions" />
+          <a href={site.mapsUrl} target="_blank" rel="noopener">
+            Cómo llegar<span class="visually-hidden"> (Google Maps, se abre en una pestaña nueva)</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="container site-footer__legal">
+    <p>© {year} {site.name}</p>
+    <a href="/politica-de-privacidad">Política de privacidad</a>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    margin-top: var(--space-8);
+    padding-block: var(--space-7) var(--space-5);
+    background: var(--color-primary);
+    color: var(--color-on-primary);
+  }
+
+  /* Móvil: deja libre la franja donde flota el control de texto,
+     para que no tape la última línea del footer. */
+  @media (max-width: 47.99em) {
+    .site-footer {
+      padding-bottom: calc(var(--space-5) + 60px);
+    }
+  }
+
+  .site-footer__grid {
+    display: grid;
+    gap: var(--space-6);
+  }
+
+  @media (min-width: 48em) {
+    .site-footer__grid {
+      grid-template-columns: 1.4fr 1fr 1.4fr;
+      gap: var(--space-7);
+    }
+  }
+
+  /* El logotipo disponible es oscuro sobre blanco: se muestra en una placa blanca
+     hasta contar con una versión en negativo. */
+  .site-footer__logo {
+    display: inline-block;
+    padding: var(--space-3);
+    border-radius: var(--radius-md);
+    background: var(--color-bg);
+  }
+
+  .site-footer__logo img {
+    width: 6.5rem;
+  }
+
+  .site-footer__brand p {
+    max-width: 28ch;
+    margin-top: var(--space-4);
+  }
+
+  h2 {
+    margin-bottom: var(--space-3);
+    font-size: var(--text-base);
+    font-weight: var(--font-semibold);
+  }
+
+  a:not(.btn, .site-footer__logo) {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--touch-target);
+    color: inherit;
+  }
+
+  nav a {
+    text-decoration: none;
+  }
+
+  nav a:hover {
+    text-decoration: underline;
+  }
+
+  .site-footer__contact li {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    min-height: var(--touch-target);
+  }
+
+  .site-footer__hours {
+    display: grid;
+    padding-block: var(--space-2);
+  }
+
+  .site-footer__contact :global(.icon) {
+    color: var(--color-accent);
+  }
+
+  .site-footer__legal {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2) var(--space-5);
+    margin-top: var(--space-6);
+    padding-top: var(--space-4);
+    border-top: 1px solid rgb(255 255 255 / 0.25);
+    font-size: var(--text-sm);
+  }
+</style>

@@ -1,0 +1,137 @@
+---
+/** Ubicación y contacto con mapa de Google Maps incrustado. Se reutiliza en Inicio, Servicios y Convenios. */
+import Icon from './Icon.astro';
+import ProvisionalBadge from './ProvisionalBadge.astro';
+import { site } from '../../config/site';
+import { whatsappUrl } from '../../lib/whatsapp';
+import { contextMessage } from '../../lib/whatsappContext';
+
+interface Props {
+  headingId: string;
+  title?: string;
+}
+
+const { headingId, title = `Visítanos en ${site.city}` } = Astro.props;
+---
+
+<div class="location">
+  <div class="location__info">
+    <h2 id={headingId}>{title}</h2>
+    <ul role="list">
+      <li>
+        <Icon name="location_on" />
+        <div>
+          <strong>Dirección</strong>
+          <span>{site.address}</span>
+        </div>
+      </li>
+      <li>
+        <Icon name="schedule" />
+        <div>
+          <strong>Horarios</strong>
+          {site.hours.length > 0 ? (
+            site.hours.map((slot) => (
+              <span>
+                {slot.days}: {slot.time}
+              </span>
+            ))
+          ) : (
+            <span>
+              <ProvisionalBadge />
+            </span>
+          )}
+        </div>
+      </li>
+    </ul>
+    <div class="location__actions">
+      <a class="btn btn--primary" href={site.mapsUrl} target="_blank" rel="noopener">
+        <Icon name="directions" />
+        <span>Cómo llegar<span class="visually-hidden"> (Google Maps, se abre en una pestaña nueva)</span></span>
+      </a>
+      <a class="btn btn--outline" href={whatsappUrl(contextMessage(Astro.url.pathname))} target="_blank" rel="noopener">
+        <Icon name="chat" />
+        <span>Escribir por WhatsApp<span class="visually-hidden"> (se abre en una pestaña nueva)</span></span>
+      </a>
+    </div>
+  </div>
+  <div class="location__map">
+    <iframe
+      src={site.mapsEmbedUrl}
+      title="Mapa de Google Maps con la ubicación de Óptica Erredos"
+      loading="lazy"
+      referrerpolicy="no-referrer-when-downgrade"
+      allowfullscreen
+    ></iframe>
+  </div>
+</div>
+
+<style>
+  .location {
+    display: grid;
+    gap: var(--space-5);
+    align-items: center;
+  }
+
+  @media (min-width: 48em) {
+    .location {
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-7);
+    }
+  }
+
+  .location__map {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    min-height: 16rem;
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-primary-tint);
+  }
+
+  .location__map iframe {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+
+  ul {
+    display: grid;
+    gap: var(--space-4);
+    margin-top: var(--space-5);
+  }
+
+  li {
+    display: flex;
+    gap: var(--space-3);
+    align-items: flex-start;
+  }
+
+  li :global(.icon) {
+    margin-top: 0.125rem;
+    color: var(--color-primary);
+  }
+
+  li div {
+    display: grid;
+    gap: 0.125rem;
+  }
+
+  strong {
+    font-weight: var(--font-semibold);
+  }
+
+  .location__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    margin-top: var(--space-5);
+  }
+
+  @media (max-width: 29.99em) {
+    .location__actions .btn {
+      flex: 1 1 100%;
+    }
+  }
+</style>

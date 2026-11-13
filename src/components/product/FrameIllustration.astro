@@ -1,0 +1,56 @@
+---
+/**
+ * Ilustración genérica y PROVISIONAL de un anteojo, según la forma del marco.
+ * Se usa cuando una variante todavía no tiene fotografía propia.
+ * El color del marco se toma de la variable CSS --frame-color del contenedor.
+ */
+import type { FrameShape, ProductType } from '../../data/products';
+
+interface Props {
+  shape: FrameShape;
+  type: ProductType;
+}
+
+const { shape, type } = Astro.props;
+
+// Contorno de un lente centrado en (0,0). El lente derecho es el mismo, reflejado.
+const lenses: Record<FrameShape, string> = {
+  Redondo: 'M0-28a28 28 0 1 0 0 56a28 28 0 1 0 0-56Z',
+  Cuadrado: 'M-20-27h40a8 8 0 0 1 8 8v36a8 8 0 0 1-8 8h-40a8 8 0 0 1-8-8v-36a8 8 0 0 1 8-8Z',
+  Rectangular: 'M-25-20h50a7 7 0 0 1 7 7v26a7 7 0 0 1-7 7h-50a7 7 0 0 1-7-7v-26a7 7 0 0 1 7-7Z',
+  Aviador: 'M-30-22Q0-30 30-22Q35 6 14 26Q-6 36-26 16Q-35-2-30-22Z',
+  'Cat Eye': 'M-34-26Q-2-22 28-18Q33 0 22 16Q4 28-16 22Q-30 14-30-2Q-29-14-34-26Z',
+  Geométrico: 'M-15-27h30l15 27l-15 27h-30l-15-27Z',
+};
+const thin = shape === 'Aviador';
+---
+
+<svg
+  class="frame-illustration"
+  viewBox="0 0 200 120"
+  aria-hidden="true"
+  focusable="false"
+  fill="none"
+  stroke="var(--frame-color, #212121)"
+  stroke-width={thin ? 3.5 : 6}
+  stroke-linejoin="round"
+  stroke-linecap="round"
+>
+  <g fill={type === 'sol' ? '#3b3b3b' : '#ffffff'} fill-opacity={type === 'sol' ? 0.8 : 0.7}>
+    <path d={lenses[shape]} transform="translate(60 62)"></path>
+    <path d={lenses[shape]} transform="translate(140 62) scale(-1 1)"></path>
+  </g>
+  <path d="M90 56q10-9 20 0"></path>
+  {thin && <path d="M88 44h24"></path>}
+  <path d="M28 52l-14-8M172 52l14-8"></path>
+</svg>
+
+<style>
+  .frame-illustration {
+    width: 100%;
+    height: 100%;
+    padding: 12%;
+    background: #f4f4f4;
+    transition: stroke var(--duration-base) var(--easing);
+  }
+</style>

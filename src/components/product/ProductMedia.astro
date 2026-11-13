@@ -1,0 +1,105 @@
+---
+/**
+ * Imagen de un producto con soporte para variantes de color.
+ * - Si la variante tiene fotografía propia, se muestra esa fotografía.
+ * - Si no, se muestra una ilustración genérica (provisional) con la forma y el color del marco.
+ * Al cambiar de color (ver ProductCard) se intercambia la fotografía o se recolorea la ilustración.
+ */
+import { getImage } from 'astro:assets';
+import FrameIllustration from './FrameIllustration.astro';
+import type { Product } from '../../data/products';
+
+interface Props {
+  product: Product;
+  /** Ancho máximo en px al que se mostrará la fotografía. */
+  width?: number;
+}
+
+const { product, width = 480 } = Astro.props;
+const first = product.variants[0];
+
+// Una fotografía optimizada por variante (cuando exista).
+const photos = await Promise.all(
+  product.variants.map(async (variant) =>
+    !variant.image
+      ? null
+      : typeof variant.image === 'string'
+        ? variant.image
+        : (await getImage({ src: variant.image, width, format: 'webp' })).src,
+  ),
+);
+const hasProvisional = photos.some((photo) => photo === null);
+// Foto de stock enlazada (no propia): se rotula como referencial.
+const hasStock = product.variants.some((variant) => typeof variant.image === 'string');
+---
+
+<div
+  class="product-media"
+  data-card-media
+  data-photos={JSON.stringify(Object.fromEntries(product.variants.map((v, i) => [v.color, photos[i]])))}
+  style={`--frame-color: ${first.hex}`}
+>
+  <img
+    src={photos[0] ?? undefined}
+    alt={`${product.name} en color ${first.color.toLowerCase()}`}
+    data-card-image
+    data-name={product.name}
+    hidden={photos[0] === null}
+    loading="lazy"
+    decoding="async"
+  />
+  {
+    hasStock && <span class="product-media__tag" aria-hidden="true">Imagen referencial</span>
+  }
+  {
+    hasProvisional && (
+      <div
+        class="product-media__provisional"
+        data-card-illustration
+        hidden={photos[0] !== null}
+        role="img"
+        aria-label={`Imagen provisional de ${product.name}`}
+      >
+        <FrameIllustration shape={product.shape ?? 'Redondo'} type={product.type} />
+        <span class="product-media__tag" aria-hidden="true">Imagen provisional</span>
+      </div>
+    )
+  }
+</div>
+
+<style>
+  .product-media {
+    position: relative;
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+    background: #f4f4f4;
+  }
+
+  @media (min-width: 48em) {
+    .product-media {
+      aspect-ratio: 4 / 3;
+    }
+  }
+
+  img,
+  .product-media__provisional {
+    width: 100%;
+    height: 100%;
+  }
+
+  img {
+    object-fit: cover;
+  }
+
+  .product-media__tag {
+    position: absolute;
+    left: var(--space-2);
+    bottom: var(--space-2);
+    max-width: calc(100% - var(--space-4));
+    padding: 0.125rem var(--space-2);
+    border-radius: var(--radius-sm);
+    background: rgb(255 255 255 / 0.9);
+    font-size: min(var(--text-xs), 14px);
+    font-weight: var(--font-medium);
+  }
+</style>
