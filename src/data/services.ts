@@ -46,7 +46,7 @@ export const services: Service[] = [
     description:
       '¿Tus anteojos necesitan un ajuste o reparación? Contáctanos y cuéntanos qué les sucede para orientarte.',
     icon: 'build',
-    cta: 'Consultar por WhatsApp',
+    cta: 'Consulta por tu reparación',
     whatsappMessage: whatsappMessages.repair,
     imageLabel: 'persona ajustando o reparando unos anteojos',
     examples: {
@@ -79,13 +79,12 @@ export const servicesFaq: { title: string; items: FaqItem[] }[] = [
       {
         question: '¿Cómo puedo reservar una atención?',
         answer:
-          'En "Agenda tu atención visual", en esta misma página, elige el día y la hora que prefieras, completa tus datos y revisa tu solicitud antes de enviarla.',
+          'En "Agenda tu atención visual", en esta misma página, elige el día y la hora que prefieras, completa tus datos y solicita tu hora.',
       },
-      { question: '¿Qué debo llevar a mi atención visual?', answer: null },
       {
-        question: '¿Cómo sabré si mi solicitud fue confirmada?',
+        question: '¿Qué debo llevar a mi atención visual?',
         answer:
-          'Al enviar tu solicitud, esta queda pendiente. El equipo de Óptica Erredos se comunicará contigo para confirmar tu hora.',
+          'Trae tus anteojos actuales o tu receta anterior, si los tienes. De todos modos, nuestra tecnóloga evaluará tu visión durante la atención.',
       },
       {
         question: '¿Cómo puedo consultar por una reparación?',

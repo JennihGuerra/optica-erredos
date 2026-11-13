@@ -2,7 +2,7 @@
 
 > **Para qué sirve este archivo.** Es el contexto teórico, estratégico y de contenido del proyecto. Está escrito para que cualquier persona o IA que tome el proyecto sin haber estado en las conversaciones anteriores pueda continuar sin perder criterio. Su archivo hermano es `design.md` (sistema visual, componentes y comportamiento de interfaz).
 >
-> **Última actualización:** 13-11-2026 (rediseño de Servicios y publicación en Vercel).
+> **Última actualización:** 13-11-2026.
 >
 > **Regla de mantenimiento (obligatoria).** Cada vez que Jennih pida un cambio (contenido, estructura, alcance, decisión, pendiente resuelto), se actualiza este archivo en la misma entrega: se corrige la sección afectada y se agrega una línea al "Registro de cambios" del final. Lo mismo se hace con `design.md` cuando el cambio es visual o de interacción. Si un dato queda sin confirmar, se deja marcado como **PROVISIONAL** o **PENDIENTE**; nunca se rellena con información inventada.
 
@@ -102,7 +102,7 @@ Comportamiento: cambia solo cada 7 s; se pausa con el puntero/foco encima, con c
 
 **Banner de convenios:** "Acercamos soluciones ópticas a empresas y organizaciones" / "Consulta por convenios y operativos ópticos para tu organización." / botón "Conoce nuestros convenios".
 
-**Ubicación:** "Visítanos en Puerto Montt", dirección, horarios, "Cómo llegar" (Google Maps), "Escribir por WhatsApp" y el **mapa de Google Maps incrustado** (reemplaza la foto del local; se repite en Servicios y Convenios, bloque `LocationBlock`).
+**Ubicación:** "Visítanos en Puerto Montt", dirección, horarios, "Cómo llegar" (Google Maps; sin botón de WhatsApp desde el 13-11-2026, ya existe el flotante) y el **mapa de Google Maps incrustado** (reemplaza la foto del local; se repite en Servicios y Convenios, bloque `LocationBlock`).
 
 > Observación UX abierta: accesos rápidos y categorías repiten "Anteojos ópticos / de sol" a pocos pantallazos de distancia en móvil. Propuesta pendiente de decisión: quitar la sección de categorías o reemplazar esos accesos.
 
@@ -138,10 +138,10 @@ Rediseño del 13-11-2026 (brief de Jennih): la página prioriza la **atención v
 
 - **Encabezado** (banner `PageBanner`, foto de banco provisional `hero-atencion-visual.jpg`): "Tu salud visual merece atención." / "Conoce nuestra atención visual y agenda tu hora de manera fácil y online." Un solo CTA: **"Agenda tu hora"** (`#agendar-hora`, desplazamiento suave; se anula con "reducir movimiento").
 - **Atención visual** (sección protagonista, id `solicitar-atencion` para el enlace de Inicio): foto a la izquierda (arriba en móvil) con etiqueta "Imagen referencial" y contenido a la derecha (sin antetítulo; el protagonismo lo da el tamaño y la posición): "Atención visual", "Nuestra tecnóloga médica evaluará tu visión y te guiará paso a paso para encontrar los lentes ideales para ti." (texto entregado por Jennih el 13-11-2026; ya no menciona la receta; **por confirmar con el negocio** el título "tecnóloga médica" y mantener la aclaración de que no es una consulta oftalmológica), aclaración discreta "Esta atención no corresponde a una consulta oftalmológica." y CTA **"Agenda tu hora"**.
-- **Agenda online** (§6): título "Agenda tu atención visual", "Elige el día y horario que más te acomode y solicita tu atención online." Tres notas: edad mínima (destacada), duración y horarios, y "Tu solicitud queda pendiente: el equipo te contactará para confirmar".
-- **Reparación y ajuste de anteojos** (bloque horizontal compacto, foto provisional de reparación con etiqueta "Imagen referencial"): "¿Tus anteojos necesitan un ajuste o reparación? Contáctanos y cuéntanos qué les sucede para orientarte." + "Revisamos cada caso: no todo tiene reparación." + botón secundario **"Consultar por WhatsApp"** (mensaje de reparación). No hay formulario de reparación.
+- **Agenda online** (§6): título "Agenda tu atención visual", "Elige el día y horario que más te acomode y solicita tu atención online." Una nota (la edad mínima) y, debajo, un paso a paso de 3 pasos: "Elige la fecha y la hora" → "Completa tus datos" → "¡Listo! Tu hora queda agendada" (13-11-2026, pedido de Jennih). Se quitaron la nota "Cada atención dura 30 minutos + horarios" (duplicaba el calendario) y "Tu solicitud queda pendiente" (13-11-2026, pedido de Jennih: la confirmación es un trámite interno del negocio, no una condición para que la hora exista).
+- **Reparación y ajuste de anteojos** (bloque horizontal compacto, foto provisional de reparación con etiqueta "Imagen referencial"): "¿Tus anteojos necesitan un ajuste o reparación? Contáctanos y cuéntanos qué les sucede para orientarte." + "Revisamos cada caso: no todo tiene reparación." + botón secundario **"Consulta por tu reparación"** (abre WhatsApp con el mensaje de reparación). No hay formulario de reparación.
 - **Se quitó** la sección "¿Cómo solicitar atención?" (3 pasos con botones de WhatsApp) para no competir con la agenda ni alargar la página, y la lista de motivos de reparación (los datos siguen en `services.ts`, sin uso).
-- **Preguntas frecuentes** (acordeón, 4 preguntas): ¿Cómo puedo reservar una atención? (con respuesta), ¿Qué debo llevar a mi atención visual? (**por confirmar**), ¿Cómo sabré si mi solicitud fue confirmada? (el equipo se comunicará; respuesta basada en el brief, **canal y plazo por confirmar**), ¿Cómo puedo consultar por una reparación? (con respuesta, por WhatsApp).
+- **Preguntas frecuentes** (acordeón, 3 preguntas): ¿Cómo puedo reservar una atención? (con respuesta), ¿Qué debo llevar a mi atención visual? (13-11-2026, texto de Jennih: llevar los anteojos actuales o la receta anterior; igual se evalúa la visión; redacción de Claude, por validar con el negocio), ¿Cómo puedo consultar por una reparación? (con respuesta, por WhatsApp). Se quitó "¿Cómo sabré si mi solicitud fue confirmada?" (13-11-2026) porque la agenda ya no habla de confirmación.
 - **Ayuda junto a las preguntas (13-11-2026):** al costado del título, "¿Tienes otra duda? Escríbenos y te orientamos." + botón "Escribir por WhatsApp" (mensaje general). Texto de interfaz, sin datos comerciales.
 - **Ubicación y contacto:** sin cambios.
 
@@ -149,7 +149,7 @@ Rediseño del 13-11-2026 (brief de Jennih): la página prioriza la **atención v
 
 **Regla clínica importante:** nunca presentar la atención óptica como equivalente a una consulta oftalmológica.
 
-**FAQ de Servicios:** 4 preguntas en un solo grupo (ver arriba); 1 queda por confirmar.
+**FAQ de Servicios:** 3 preguntas en un solo grupo (ver arriba), todas con respuesta.
 
 ### 4.5 Convenios y operativos (`/empresas`)
 Hero con foto de fondo (banner `PageBanner`, la misma foto de banco `hero-convenios.jpg` del carrusel de Inicio; ⚠️ se lee el pendón de otra óptica, reemplazar) "Soluciones ópticas para empresas y organizaciones"; a quiénes está dirigido (Empresas, Sindicatos, Instituciones, Establecimientos educacionales, Agrupaciones y organizaciones — son públicos objetivo, **no clientes ni convenios vigentes**); alternativas de colaboración (cada tarjeta lleva una foto a sangre arriba: `convenios-alianza.jpg` —examen con lámpara de hendidura, 678×452— y `convenios-operativo.jpg` —operativo con lentes de prueba—; ⚠️ son fotos de otras instituciones, con sus logos visibles (Alemania/Esalud y CIS Universidad) y personas reales, entregadas por Jennih como referencia: **reemplazar por fotos propias o con permiso antes de mostrar al cliente o publicar**) (**Convenios**: "Una alianza con Óptica Erredos para acercar nuestros productos y servicios a tus integrantes."; **Operativos ópticos**: "Coordinamos una instancia de atención óptica para tu organización. Consulta las condiciones con nuestro equipo."; se quitó el recuadro "Pensado para" y la bajada de la sección pasó a "Elige la que mejor se adapte a tu organización."; se quitó la etiqueta visible "Condiciones por confirmar", pero las condiciones siguen sin definirse); ¿Cómo funciona? (Cuéntanos → Revisamos → Nos ponemos en contacto); formulario; contacto directo por WhatsApp; ubicación.
@@ -191,11 +191,11 @@ El informe de benchmarking sugería este formato para producto: "Hola, vi los an
 
 ## 6. Agenda de atención visual (`/servicios#agendar-hora`)
 
-Pedida por Jennih para reemplazar un formulario simple; rediseñada el 13-11-2026 en **tres pasos** con indicador de progreso (círculos numerados, check en los pasos completados, paso actual con `aria-current`):
+Pedida por Jennih para reemplazar un formulario simple; rediseñada el 13-11-2026; desde el mismo día tiene **dos pasos** más la pantalla final (se eliminó el paso de revisión por pedido de Jennih: sumaba un paso innecesario), con indicador de progreso (círculos numerados, check en el paso completado, paso actual con `aria-current`):
 1. **Selecciona fecha y hora:** vista semanal con mes y año, rango de la semana, siete días (domingo y días pasados bloqueados), flechas de semana, **leyenda** (con horas / elegido / sin horas, distinguidos por forma y texto), horas del día elegido en "Mañana" y "Tarde"; la elección queda visible.
-2. **Completa tus datos:** resumen de la fecha y hora (con "Cambiar"), nombre y apellido, correo electrónico, teléfono de contacto y **rango de edad del paciente**; etiquetas visibles, ejemplos de formato (placeholder) y mensajes de error. **Se quitó** la confirmación del correo (el paso 3 permite revisarlo). Se conservó el rango de edad por la regla de menores de 10 años; **decisión por confirmar con Jennih/negocio** (el brief pedía solo nombre, correo y teléfono).
-3. **Revisa tu solicitud:** resumen de fecha, hora y datos; "Corregir datos" vuelve al paso 2 sin perder lo escrito; "Enviar solicitud".
-- **Estados:** hora seleccionada; enviando (botón inactivo con indicador y "Enviando…"); error de validación (cuenta de campos y mensaje junto a cada uno); error al enviar (mensaje + envío por WhatsApp); **"Solicitud recibida"** con aviso "Tu hora aún no está confirmada. El equipo de Óptica Erredos se comunicará contigo para confirmarla." (ya no dice "agendada con éxito" ni promete confirmar 24 h antes: compromiso no validado).
+2. **Completa tus datos:** resumen de la fecha y hora (con "Cambiar"), nombre y apellido, correo electrónico, **confirmación del correo** (campo "Confirma tu correo", debe ser igual al anterior; decisión de Jennih 13-11-2026 para asegurar datos correctos del usuario), teléfono de contacto y **rango de edad del paciente**; etiquetas visibles, ejemplos de formato (placeholder) y mensajes de error. El botón final es **"Solicitar hora"** (en lugar de "Continuar"): valida y envía la solicitud de inmediato. Se conservó el rango de edad por la regla de menores de 10 años; **decisión por confirmar con Jennih/negocio** (el brief pedía solo nombre, correo y teléfono).
+3. *(Eliminado 13-11-2026)* El paso "Revisa tu solicitud" ya no existe: tras "Solicitar hora" se muestra directamente la reserva (pantalla final).
+- **Estados:** hora seleccionada; enviando (botón inactivo con indicador y "Enviando…"); error de validación (cuenta de campos y mensaje junto a cada uno); error al enviar (mensaje + envío por WhatsApp); **"¡Tu hora quedó agendada con éxito!"** (única acción: "Solicitar otra hora"; sin botón de WhatsApp) con un mensaje tipo correo de confirmación que se entrega al instante: "Te enviamos la confirmación a [correo]" + asunto "Tu hora en Óptica Erredos está agendada", saludo con el nombre, día y hora, dirección y aviso de avisar por WhatsApp si no puede asistir (texto redactado por Claude, por validar). Sin aviso de confirmación posterior (decisión de Jennih 13-11-2026: la confirmación previa es un trámite interno del negocio; no se promete "24 horas antes"). **En la maqueta no se envía ningún correo real**; requiere un servicio de envío antes de publicar.
 - En la maqueta (`prototypeMode`) no se envía ni se guarda nada.
 
 **Reglas** (en `site.appointments`):
@@ -218,10 +218,25 @@ Con `formEndpoint` configurado se envía un POST con JSON y se muestra confirmac
 
 **Validaciones** (`FormBehavior.astro`): obligatorios con mensaje junto al campo, resumen de errores con foco al primero, correo válido, teléfono con al menos 8 dígitos, participantes > 0 o vacío, confirmación de correo igual al correo, un tipo de solicitud elegido.
 
-**Formulario de convenios — campos:** nombre y apellido*, empresa u organización*, cargo (opcional), correo*, teléfono*, cantidad de participantes (etiqueta "Cantidad de participantes (aprox.)", en una sola línea; campo opcional), tipo de solicitud* (lista desplegable con una sola selección: Convenio óptico / Operativo óptico / Ambos / Necesito más información), mensaje (opcional). Nota de privacidad: "Usaremos estos datos solo para responder tu solicitud. No pedimos información de los participantes."
+**Formulario de convenios — campos:** nombre y apellido*, empresa u organización*, cargo (opcional), correo*, **confirmación del correo*** (campo "Confirma tu correo electrónico", debe ser igual al correo; pedido de Jennih 13-11-2026 porque el correo es la única vía para contactar a la organización; se revisa al salir del campo, al corregir el correo original y al enviar; mensaje "Los correos no coinciden. Escríbelo igual que el de arriba."), teléfono*, cantidad de participantes (etiqueta "Cantidad de participantes (aprox.)", en una sola línea; campo opcional), tipo de solicitud* (lista desplegable con una sola selección: Convenio óptico / Operativo óptico / Ambos / Necesito más información), mensaje (opcional). Nota de privacidad: "Usaremos estos datos solo para responder tu solicitud. No pedimos información de los participantes." **Ejemplos (13-11-2026):** los campos de texto llevan un placeholder "Ej.: …" genérico (no son datos reales), también en la agenda.
+**Confirmación del envío (13-11-2026, pedido de Jennih):** al enviar la solicitud con éxito se abre una **ventana emergente** (pop-up) con el título "¡Tu solicitud ha sido recibida exitosamente!", el texto "El equipo de Óptica Erredos se pondrá en contacto contigo a la brevedad posible." y un botón **"Salir"** que lleva a la página principal (`/`). Ya no se muestra el mensaje en línea bajo el botón. En la maqueta no se envía nada (ver arriba).
 (La opción "Necesito más información" se agregó respecto del brief original, que solo pedía convenio, operativo o ambos.)
 
 ---
+
+**Mensajes de error de envío (13-11-2026, pedido de Jennih).** Existen para cuando el formulario se conecte a un servicio real; en la maqueta no ocurren solos. Valen para la agenda y para Convenios. Todos conservan lo escrito, explican qué pasó y ofrecen una salida. Textos provisionales, por validar con el negocio:
+
+| Caso | Título | Texto | Acciones |
+|---|---|---|---|
+| Sin conexión | Parece que no tienes conexión. | Tus datos siguen aquí. Revisa tu internet e inténtalo de nuevo. | Reintentar · WhatsApp |
+| Demora (15 s) | El envío está tardando más de lo normal. | No sabemos si tu solicitud llegó. Inténtalo de nuevo; si ya la recibimos, te lo confirmaremos. | Reintentar · WhatsApp |
+| Falla del servidor (5xx) | Tuvimos un problema de nuestro lado. | No es culpa tuya y tus datos siguen aquí. Inténtalo en unos minutos o escríbenos por WhatsApp. | Reintentar · WhatsApp |
+| Datos rechazados (400/422) | Revisa algunos datos. | Hay información que no pudimos aceptar. Corrígela y vuelve a enviar. | Mensaje junto al campo señalado |
+| Demasiados envíos (429) | Hiciste varios envíos seguidos. | Espera un minuto y vuelve a intentarlo. También puedes escribirnos por WhatsApp. | Reintentar · WhatsApp |
+| Hora ocupada (409, solo agenda) | Esa hora ya no está disponible. | La hora del [día, hora] fue tomada por otra persona mientras completabas tus datos. Elige otra; tus datos siguen guardados. | Vuelve al paso 1 con esa hora tachada |
+| Otro error | No pudimos enviar tu solicitud. | Tus datos siguen aquí. Inténtalo nuevamente o escríbenos por WhatsApp. | Reintentar · WhatsApp |
+
+Contrato esperado del servicio: 409 = hora tomada; 400/422 con `{ "errors": { "campo": "mensaje" } }`; 429 = límite; 5xx = servidor. **Cómo verlos en la maqueta:** agregar `?simular-error=red|tiempo|servidor|validacion|limite|conflicto|generico` a la dirección (p. ej. `/servicios?simular-error=conflicto`; en la vista previa, tras el `#`). Falla una sola vez; "Reintentar" ya funciona. Solo actúa con `prototypeMode` activo.
 
 ## 8. SEO y contenido local
 
@@ -351,7 +366,7 @@ Modalidades de promoción a evaluar con el negocio: descuento directo, segunda u
 | 13-11-2026 | Convenios: se elimina la etiqueta visible "Condiciones por confirmar" de las dos tarjetas de alternativas (4.5). |
 | 13-11-2026 | Servicios: la agenda "Agenda tu hora de atención visual" pasa a una banda azul a ancho completo, con el formulario en tarjeta blanca elevada, para destacarla (4.4). |
 | 13-11-2026 | Servicios: se elimina la franja blanca entre la banda azul de la agenda y "¿Cómo solicitar atención?"; las dos secciones quedan pegadas (4.4). |
-| 13-11-2026 | Servicios: pantalla de confirmación indica que la hora se agendó con éxito y que se confirmará por correo o teléfono 24 horas antes (§6, paso 3). Compromiso pendiente de validar con el negocio. |
+| 13-11-2026 | Servicios: pantalla de confirmación de la agenda (luego simplificada; ver filas siguientes) (§6). |
 | 13-11-2026 | Convenios: "Tipo de solicitud" pasa de 4 botones de opción a un campo desplegable con las mismas 4 opciones; los botones "Consultar por convenios/operativos" siguen preseleccionándolo (§7). |
 | 13-11-2026 | Inicio: nuevo carrusel de marcas de anteojos entre "Productos destacados" y "Promociones" (4.1). Marcas provisionales como texto; datos en `src/data/brands.ts`. |
 | 13-11-2026 | Inicio: se elimina el carrusel de marcas (no gustó). `src/data/brands.ts` queda en el proyecto sin uso (no se eliminó) (4.1). |
@@ -370,9 +385,24 @@ Modalidades de promoción a evaluar con el negocio: descuento directo, segunda u
 | 13-11-2026 | Consulta por WhatsApp de un producto: mensaje con modelo, marca, color y código + enlace a la ficha para que se vea la foto (necesita `site.url`, pendiente) (§5). |
 | 13-11-2026 | WhatsApp: "Solicitar promoción" identifica la promoción y adjunta el enlace a su imagen (necesita `site.url`); mensajes de producto dicen "este producto"; regla general: con imagen se envía, sin imagen la consulta se refiere al tema de la sección (§4.2, §5). |
 | 13-11-2026 | WhatsApp de productos: el mensaje incluye el precio (`priceText`); la ficha de cada producto publica su foto como `og:image` para la vista previa (revisado en el build; requiere `site.url`) (§4.2, §5). |
-| 13-11-2026 | Servicios rediseñada (4.4, §6): encabezado "Tu salud visual merece atención.", Atención visual como sección protagonista con foto, agenda "Agenda tu atención visual" en tres pasos con progreso y revisión, reparación como bloque compacto con "Consultar por WhatsApp", FAQ de 4 preguntas. Se quitó "¿Cómo solicitar atención?" y la confirmación del correo. El final pasa a "Solicitud recibida" (pendiente de confirmación). |
+| 13-11-2026 | Servicios rediseñada (4.4, §6): atención visual protagonista, agenda en pasos con progreso, reparación compacta, FAQ; se quitó "¿Cómo solicitar atención?". (Luego ajustada: ver filas siguientes.) |
 | 13-11-2026 | Publicación en Vercel: https://optica-erredos.vercel.app (repositorio `JennihGuerra/optica-erredos`). Se corrigió `astro.config.mjs`, que quedó con `base: '/-ptica-erredos'` de un intento con GitHub Pages y dejaba el sitio sin estilos. `.github/workflows/deploy.yml` (Pages) sigue en el repositorio; no se eliminó. `site.url` sigue vacío hasta confirmar el dominio definitivo (§5). |
 | 13-11-2026 | Servicios → Reparación: texto centrado verticalmente junto a la foto (ajuste visual, sin cambio de contenido) (4.4). |
-| 13-11-2026 | Servicios → Atención visual: se quita el antetítulo "Nuestro servicio principal" y el texto pasa a destacar el trabajo de la tecnóloga (evalúa la visión y puede emitir la receta óptica; por confirmar) (4.4). |
+| 13-11-2026 | Servicios → Atención visual: se quita el antetítulo "Nuestro servicio principal" (4.4). |
 | 13-11-2026 | Servicios → Preguntas frecuentes: en escritorio el título va a la izquierda con una línea de ayuda y botón de WhatsApp, y las preguntas a la derecha (sin vacío a un lado); tablet y móvil sin cambios (4.4). |
 | 13-11-2026 | Servicios → Atención visual: nuevo texto entregado por Jennih ("Nuestra tecnóloga médica evaluará tu visión y te guiará paso a paso…"); se quita la mención a emitir receta (4.4). |
+| 13-11-2026 | Servicios → Agenda: se elimina la nota de duración y horarios (información duplicada con el calendario) (6). |
+| 13-11-2026 | Servicios → Agenda: la pantalla final vuelve a "¡Tu hora quedó agendada con éxito!" y se eliminan los avisos de confirmación (paso 3, pantalla final, nota de la intro y pregunta de la FAQ "¿Cómo sabré si mi solicitud fue confirmada?"); la confirmación es un trámite interno del negocio (4.4, 6). |
+| 13-11-2026 | Servicios → Agenda: la pantalla final muestra un mensaje tipo correo de confirmación inmediato (día, hora, dirección) en lugar del resumen de datos; en maqueta no se envía correo real (6). |
+| 13-11-2026 | Servicios → Agenda: bajo el aviso de edad se agrega un paso a paso de 3 pasos en palabras simples (fecha y hora → datos → hora agendada) (4.4). |
+| 13-11-2026 | Servicios → Agenda: se restituye el campo "Confirma tu correo" en el paso 2 (debe coincidir con el correo; teléfono a ancho completo) (4.4, §6). |
+| 13-11-2026 | Servicios → Agenda: la pantalla final pierde el botón "Escribir por WhatsApp"; queda solo "Solicitar otra hora" (6). |
+| 13-11-2026 | Servicios → Agenda: se elimina el paso de revisión; el botón del paso 2 pasa de "Continuar" a "Solicitar hora" y envía de inmediato; el progreso queda en 2 pasos y luego se muestra la reserva (6). |
+| 13-11-2026 | Servicios → FAQ: la pregunta "¿Qué debo llevar a mi atención visual?" deja de estar por confirmar y responde: llevar anteojos actuales o receta anterior; la tecnóloga evalúa la visión igual. En "¿Cómo puedo reservar?" se quita la mención al paso de revisión (4.4). |
+| 13-11-2026 | Bloque "Visítanos en Puerto Montt" (Inicio, Servicios y Convenios): se elimina el botón "Escribir por WhatsApp" por redundante con el botón flotante; queda solo "Cómo llegar". En Quiénes somos el bloque de ubicación es propio y conserva su botón (4.1). |
+| 13-11-2026 | Servicios → Reparación: el botón pasa de "Consultar por WhatsApp" a "Consulta por tu reparación" (4.4). |
+| 13-11-2026 | Convenios → formulario: la confirmación pasa de un mensaje en línea a una ventana emergente "¡Tu solicitud ha sido recibida exitosamente!" con "El equipo de Óptica Erredos se pondrá en contacto contigo a la brevedad posible." y botón "Salir" a la página principal (§7). |
+| 13-11-2026 | Convenios → ventana de confirmación: el texto pasa a "…se pondrá en contacto contigo a la brevedad posible." (§7). |
+| 13-11-2026 | Formularios (agenda y Convenios): se documentan y construyen los mensajes de error de envío (red, demora, servidor, datos rechazados, límite, hora ocupada, genérico) y la simulación `?simular-error=` solo en maqueta (§7). |
+| 13-11-2026 | Convenios → formulario: nuevo campo obligatorio "Confirma tu correo electrónico" (debe coincidir con el correo; el correo es la única vía de contacto). Se reordenan los campos en 2 columnas (§7). |
+| 13-11-2026 | Formularios (agenda y Convenios): cada campo lleva un ejemplo de lo que hay que escribir (placeholder "Ej.: …"), incluida la confirmación del correo (§7). |

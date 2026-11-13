@@ -90,26 +90,12 @@ const photos: Record<string, { src: ImageMetadata; alt: string; position: string
             <Icon name="info" />
             <span><strong>{site.appointments.ageNotice}</strong></span>
           </li>
-          <li>
-            <Icon name="schedule" />
-            <span>
-              <strong>Cada atención dura {site.appointments.slotMinutes} minutos</strong>
-              <span class="booking__slot">
-                Lunes a viernes: {site.appointments.weekdays.map((b) => `${b[0]} a ${b[1]}`).join(' y ')} hrs
-              </span>
-              <span class="booking__slot">
-                Sábados: {site.appointments.saturday.map((b) => `${b[0]} a ${b[1]}`).join(' y ')} hrs
-              </span>
-            </span>
-          </li>
-          <li>
-            <Icon name="event_available" />
-            <span>
-              <strong>Tu solicitud queda pendiente</strong>
-              El equipo de Óptica Erredos te contactará para confirmar tu hora.
-            </span>
-          </li>
         </ul>
+        <ol role="list" class="booking__steps" aria-label="Cómo pedir tu hora">
+          <li><span class="booking__step-n" aria-hidden="true">1</span><span>Elige la fecha y la hora.</span></li>
+          <li><span class="booking__step-n" aria-hidden="true">2</span><span>Completa tus datos.</span></li>
+          <li><span class="booking__step-n" aria-hidden="true">3</span><span>¡Listo! Tu hora queda agendada.</span></li>
+        </ol>
       </div>
       <div class="booking__form">
         <AppointmentForm />
@@ -137,7 +123,7 @@ const photos: Record<string, { src: ImageMetadata; alt: string; position: string
         <p class="repair__note">{repair.examples?.note}</p>
         <a class="btn btn--outline" href={whatsappUrl(repair.whatsappMessage)} target="_blank" rel="noopener">
           <Icon name="chat" />
-          <span>{repair.cta}<span class="visually-hidden"> sobre reparación{newTab}</span></span>
+          <span>{repair.cta}<span class="visually-hidden"> por WhatsApp{newTab}</span></span>
         </a>
       </div>
     </article>
@@ -355,8 +341,32 @@ const photos: Record<string, { src: ImageMetadata; alt: string; position: string
     display: block;
   }
 
-  .booking__slot {
-    display: block;
+  .booking__steps {
+    display: grid;
+    gap: var(--space-3);
+    margin-top: var(--space-5);
+    counter-reset: none;
+  }
+
+  .booking__steps li {
+    display: flex;
+    gap: var(--space-3);
+    align-items: center;
+    color: var(--color-on-primary);
+    font-size: var(--text-lg);
+    font-weight: 500;
+  }
+
+  .booking__step-n {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: var(--radius-pill);
+    background: var(--color-accent);
+    color: var(--color-on-accent);
+    font-weight: 700;
   }
 
   .booking__form {

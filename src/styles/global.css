@@ -345,8 +345,19 @@ textarea.field__control {
 
   /* Los campos de una misma fila alinean sus controles aunque una etiqueta ocupe dos líneas. */
   .form__grid > .field:not(.form__wide) {
-    grid-template-rows: 1fr auto;
+    grid-template-rows: 1fr auto auto;
     align-content: end;
+  }
+  /* El mensaje de error va entre la etiqueta y el control: así los controles de la fila
+     siguen alineados abajo aunque solo un campo tenga error. */
+  .form__grid > .field:not(.form__wide) > .field__label {
+    grid-row: 1;
+  }
+  .form__grid > .field:not(.form__wide) > .field__error {
+    grid-row: 2;
+  }
+  .form__grid > .field:not(.form__wide) > .field__control {
+    grid-row: 3;
   }
   .form__grid > .field:not(.form__wide) > .field__label {
     align-self: end;
@@ -424,6 +435,18 @@ textarea.field__control {
   padding: var(--space-4);
   border: 2px solid var(--color-text);
   border-radius: var(--radius-md);
+}
+
+.form__status--error {
+  border-color: var(--color-text);
+  border-left-width: 0.5rem;
+}
+
+.form__status-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-block-start: var(--space-2);
 }
 
 .form__status--demo {

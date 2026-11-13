@@ -3,8 +3,6 @@
 import Icon from './Icon.astro';
 import ProvisionalBadge from './ProvisionalBadge.astro';
 import { site } from '../../config/site';
-import { whatsappUrl } from '../../lib/whatsapp';
-import { contextMessage } from '../../lib/whatsappContext';
 
 interface Props {
   headingId: string;
@@ -47,10 +45,6 @@ const { headingId, title = `Visítanos en ${site.city}` } = Astro.props;
       <a class="btn btn--primary" href={site.mapsUrl} target="_blank" rel="noopener">
         <Icon name="directions" />
         <span>Cómo llegar<span class="visually-hidden"> (Google Maps, se abre en una pestaña nueva)</span></span>
-      </a>
-      <a class="btn btn--outline" href={whatsappUrl(contextMessage(Astro.url.pathname))} target="_blank" rel="noopener">
-        <Icon name="chat" />
-        <span>Escribir por WhatsApp<span class="visually-hidden"> (se abre en una pestaña nueva)</span></span>
       </a>
     </div>
   </div>

@@ -16,7 +16,14 @@
  *   reglas:   data-rule="workday" (fecha de lunes a sábado, desde mañana)
  *             data-rule="slot" + data-date-field="#id" (los sábados solo en la mañana)
  *             data-rule="match" + data-match="#id" (debe repetir el valor de otro campo)
- *   eventos:  `form:valid` (cancelable; datos válidos, antes de enviar) y `form:success` (cancelable)
+ *   eventos:  `form:valid` (cancelable; datos válidos, antes de enviar), `form:success` (cancelable)
+ *             y `form:conflict` (cancelable; la hora pedida ya fue tomada, error 409)
+ *
+ * ERRORES DE ENVÍO (catálogo `ERRORS`): red, tiempo, servidor, validacion, limite, conflicto, generico.
+ * Cada uno conserva lo escrito, explica qué pasó y ofrece "Reintentar" y WhatsApp.
+ * Respuesta esperada del servicio al validar: 400/422 con `{ "errors": { "campo": "mensaje" } }`.
+ * SIMULACIÓN (solo maqueta): `?simular-error=red|tiempo|servidor|validacion|limite|conflicto|generico`
+ * (también tras el # en la vista previa). Falla una vez; "Reintentar" ya funciona.
  */
 import Icon from '../ui/Icon.astro';
 ---
@@ -119,11 +126,21 @@ import Icon from '../ui/Icon.astro';
     // cuando va a tocar el siguiente control).
     let attempted = false;
     fields.forEach((field) => {
-      const clearIfFixed = () => attempted && !problem(field) && showError(field, null);
+      const control = controlOf(field);
+      const isMatch = control?.dataset.rule === 'match';
+      const clearIfFixed = () => (attempted || isMatch) && !problem(field) && showError(field, null);
+      // La confirmación de correo se revisa al salir del campo aunque aún no se haya enviado.
       const flagIfWrong = () => {
-        const message = attempted ? problem(field) : null;
+        const message = attempted || (isMatch && control?.value.trim()) ? problem(field) : null;
         if (message) showError(field, message);
       };
+      // Si cambia el campo original, la confirmación se vuelve a comparar.
+      if (isMatch) {
+        form.querySelector(control!.dataset.match ?? '')?.addEventListener('input', () => {
+          if (!control!.value.trim()) return;
+          showError(field, problem(field));
+        });
+      }
       field.addEventListener('input', clearIfFixed);
       field.addEventListener('change', clearIfFixed);
       field.addEventListener('focusout', flagIfWrong);
@@ -155,6 +172,99 @@ import Icon from '../ui/Icon.astro';
       });
       return form.dataset.waBase + encodeURIComponent(lines.filter(Boolean).join('\n'));
     }
+
+    type Kind = 'red' | 'tiempo' | 'servidor' | 'validacion' | 'limite' | 'conflicto' | 'generico';
+    class SubmitError extends Error {
+      constructor(
+        public kind: Kind,
+        public fieldErrors: Record<string, string> = {},
+      ) {
+        super(kind);
+      }
+    }
+    const ERRORS: Record<Kind, { title: string; text: string; retry: boolean }> = {
+      red: {
+        title: 'Parece que no tienes conexión.',
+        text: 'Tus datos siguen aquí. Revisa tu internet e inténtalo de nuevo.',
+        retry: true,
+      },
+      tiempo: {
+        title: 'El envío está tardando más de lo normal.',
+        text: 'No sabemos si tu solicitud llegó. Inténtalo de nuevo; si ya la recibimos, te lo confirmaremos.',
+        retry: true,
+      },
+      servidor: {
+        title: 'Tuvimos un problema de nuestro lado.',
+        text: 'No es culpa tuya y tus datos siguen aquí. Inténtalo en unos minutos o escríbenos por WhatsApp.',
+        retry: true,
+      },
+      validacion: {
+        title: 'Revisa algunos datos.',
+        text: 'Hay información que no pudimos aceptar. Corrígela y vuelve a enviar.',
+        retry: false,
+      },
+      limite: {
+        title: 'Hiciste varios envíos seguidos.',
+        text: 'Espera un minuto y vuelve a intentarlo. También puedes escribirnos por WhatsApp.',
+        retry: true,
+      },
+      conflicto: {
+        title: 'Esa hora ya no está disponible.',
+        text: 'Otra persona la tomó mientras completabas tus datos. Elige otra hora.',
+        retry: false,
+      },
+      generico: {
+        title: 'No pudimos enviar tu solicitud.',
+        text: 'Tus datos siguen aquí. Inténtalo nuevamente o escríbenos por WhatsApp.',
+        retry: true,
+      },
+    };
+    const KINDS = Object.keys(ERRORS);
+
+    // Simulación solo en maqueta: falla una vez para poder revisar cada mensaje.
+    let simulated = false;
+    const simulatedKind = (): Kind | null => {
+      if (form.dataset.prototype !== 'true' || simulated) return null;
+      const raw = `${location.search}&${location.hash.split('?')[1] ?? ''}`;
+      const value = new URLSearchParams(raw).get('simular-error');
+      return value && KINDS.includes(value) ? (value as Kind) : null;
+    };
+
+    function classify(error: unknown): SubmitError {
+      if (error instanceof SubmitError) return error;
+      if (error instanceof DOMException && error.name === 'AbortError') return new SubmitError('tiempo');
+      if (!navigator.onLine || error instanceof TypeError) return new SubmitError('red');
+      return new SubmitError('generico');
+    }
+
+    function showSubmitError(error: SubmitError, link: string) {
+      const info = ERRORS[error.kind];
+      const entries = Object.entries(error.fieldErrors);
+      let first: HTMLElement | null = null;
+      entries.forEach(([name, message]) => {
+        const field = fields.find((item) => (controlOf(item) as Control | null)?.name === name);
+        if (field) {
+          showError(field, message);
+          first ??= controlOf(field);
+        }
+      });
+      const retry = info.retry
+        ? '<button type="button" class="btn btn--primary" data-retry>Reintentar</button>'
+        : '';
+      const whatsapp =
+        error.kind === 'conflicto' || error.kind === 'validacion'
+          ? ''
+          : `<a class="btn btn--accent" href="${link}" target="_blank" rel="noopener">Enviar por WhatsApp${newTab}</a>`;
+      setStatus(
+        'error',
+        `<strong>${info.title}</strong> <span>${info.text}</span><span class="form__status-actions">${retry}${whatsapp}</span>`,
+      );
+      return first as HTMLElement | null;
+    }
+
+    status.addEventListener('click', (event) => {
+      if ((event.target as HTMLElement).closest('[data-retry]')) form.requestSubmit();
+    });
 
     const newTab = '<span class="visually-hidden"> (se abre en una pestaña nueva)</span>';
 
@@ -212,6 +322,12 @@ import Icon from '../ui/Icon.astro';
         if (!endpoint && form.dataset.prototype === 'true') {
           // MAQUETA FUNCIONAL: muestra el flujo completo sin enviar ni guardar nada.
           await new Promise((resolve) => setTimeout(resolve, 700));
+          const fake = simulatedKind();
+          if (fake) {
+            simulated = true;
+            const field = form.querySelector<Control>('input[type="email"], input[type="tel"]');
+            throw new SubmitError(fake, fake === 'validacion' && field?.name ? { [field.name]: 'El servidor no aceptó este dato. Revisa que esté bien escrito.' } : {});
+          }
           succeed();
         } else if (!endpoint) {
           // MODO DEMOSTRACIÓN: no hay servicio de recepción, así que no se envía nada.
@@ -223,24 +339,40 @@ import Icon from '../ui/Icon.astro';
              <a class="btn btn--accent" href="${link}" target="_blank" rel="noopener">Enviar estos datos por WhatsApp${newTab}</a>`,
           );
         } else {
-          const response = await fetch(endpoint, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-            body: JSON.stringify(data),
-          });
-          if (!response.ok) throw new Error(String(response.status));
+          const controller = new AbortController();
+          const timer = setTimeout(() => controller.abort(), 15000);
+          let response: Response;
+          try {
+            response = await fetch(endpoint, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+              body: JSON.stringify(data),
+              signal: controller.signal,
+            });
+          } finally {
+            clearTimeout(timer);
+          }
+          if (!response.ok) {
+            const body = (await response.json().catch(() => ({}))) as { errors?: Record<string, string> };
+            if (response.status === 409) throw new SubmitError('conflicto');
+            if (response.status === 400 || response.status === 422) throw new SubmitError('validacion', body.errors);
+            if (response.status === 429) throw new SubmitError('limite');
+            throw new SubmitError(response.status >= 500 ? 'servidor' : 'generico');
+          }
           succeed();
         }
-      } catch {
-        setStatus(
-          'error',
-          `<strong>No pudimos enviar tu solicitud.</strong> <span>Inténtalo nuevamente o escríbenos por WhatsApp.</span>
-           <a class="btn btn--accent" href="${link}" target="_blank" rel="noopener">Enviar por WhatsApp${newTab}</a>`,
-        );
+      } catch (raw) {
+        const error = classify(raw);
+        if (error.kind === 'conflicto' && !form.dispatchEvent(new CustomEvent('form:conflict', { detail: Object.fromEntries(new FormData(form)), cancelable: true, bubbles: true }))) {
+          status.hidden = true;
+        } else {
+          const field = showSubmitError(error, link);
+          if (field) field.focus();
+        }
       } finally {
         submit.disabled = false;
         submitLabel.textContent = idleLabel;
-        if (!status.hidden) status.focus();
+        if (!status.hidden && !form.querySelector('[aria-invalid]')) status.focus();
       }
     });
   }

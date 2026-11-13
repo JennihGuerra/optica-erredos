@@ -139,6 +139,9 @@ Base `.btn`: mín. alto táctil, padding `--space-2 × --space-5`, borde 2 px tr
 - `.field`: etiqueta (500) + control + error. Control: alto táctil, borde 1 px `--color-border-strong`, radio md. `(opcional)` en `--text-sm` gris.
 - Error: borde 2 px negro + icono + texto (no solo color); resumen de errores arriba con `role="status"`/foco; campos con `aria-invalid`.
 - Opciones de radio como tarjetas (`.form__option`): seleccionado = borde azul + fondo tinte + `inset` 1 px. (Ya no se usan en Convenios: "Tipo de solicitud" es un `select.field__control` con opción inicial "Elige una opción", igual que el rango de edad de la agenda; el estilo queda disponible.)
+- **Confirmación de correo (Convenios y agenda):** campo `data-rule="match"` con `autocomplete="off"` y placeholder "Escríbelo de nuevo". Se compara al salir del campo (aunque aún no se envíe), se re-compara si cambia el correo original y el error se limpia al coincidir. En Convenios el orden en 2 columnas es: nombre | organización · correo | confirmación · teléfono | cargo · participantes | tipo de solicitud.
+- **Ejemplos en los campos:** placeholder con prefijo "Ej.: " en gris `--color-text-muted` (nombre, organización, correo, confirmación, teléfono, cargo, participantes y mensaje en Convenios; nombre, correo, confirmación y teléfono en la agenda). El placeholder no reemplaza la etiqueta visible. Las listas usan la opción inicial "Elige una opción".
+- **Error en filas de 2 columnas (≥768 px):** el mensaje se muestra **entre la etiqueta y el control** (no debajo) para que los controles de la fila sigan alineados abajo cuando solo un campo tiene error.
 - Grillas de formulario: 1 columna en móvil; `auto-fit minmax(min(100%, 16rem), 1fr)` desde 768, con `.form__wide` a ancho completo.
 - Botón de enviar: `min-width: min(12rem, 100%)`; a ancho completo bajo 30 em; deshabilitado muestra "Enviando…" con cursor de progreso.
 - Estado final (`.form__status`): caja con borde 2 px, `aria-live="polite"`.
@@ -171,21 +174,27 @@ Enlace "Volver a productos" (móvil) y migas de pan (≥768); **dos columnas** d
 - Referencia visual usada: ficha de otra óptica; se adaptó a la paleta, tipografía y componentes de Erredos y se eliminaron elementos de compra online.
 
 ### 7.7 Agenda de atención visual (`AppointmentForm`)
-- **Tres pasos** + pantalla final. Indicador de progreso (`ol.progress`): círculo numerado de 2,25 rem; paso actual relleno azul con anillo tinte y etiqueta en negrita (`aria-current="step"`), pasos completados con **check** y borde azul, pendientes en gris; línea de unión entre pasos. El estado se anuncia en texto oculto ("paso actual/completado/pendiente"). Se oculta en la pantalla final.
+- **Dos pasos** + pantalla final (el paso de revisión se eliminó el 13-11-2026). Indicador de progreso (`ol.progress`): círculo numerado de 2,25 rem; paso actual relleno azul con anillo tinte y etiqueta en negrita (`aria-current="step"`), pasos completados con **check** y borde azul, pendientes en gris; línea de unión entre pasos. El estado se anuncia en texto oculto ("paso actual/completado/pendiente"). Se oculta en la pantalla final.
 - Paso 1 "Selecciona fecha y hora": encabezado de semana con flechas (`icon-btn`), **siete botones de día** (seleccionado: relleno azul + barra coral; sin horas: borde discontinuo y raya), **leyenda** de tres estados (forma + texto), "Horas para el {día}" con grupos Mañana y Tarde (`aria-pressed`), pie con "Elegiste: …" y **Continuar** (`aria-disabled` hasta elegir hora).
-- Paso 2 "Completa tus datos": resumen azul con **Cambiar**, campos con etiqueta visible y ejemplo en placeholder (color `--color-text-muted`), aviso de edad con borde azul; pie con **Volver** (outline) y **Continuar**.
-- Paso 3 "Revisa tu solicitud": lista de datos (`dl`), callout coral "Tu hora quedará pendiente de confirmación", pie con **Corregir datos** y **Enviar solicitud**. Al enviar: botón inactivo con indicador giratorio ("Enviando…"; el giro se anula con "reducir movimiento").
-- Final "Solicitud recibida": icono check, callout coral "Tu hora aún no está confirmada…", resumen y acciones **Solicitar otra hora** / **Escribir por WhatsApp**.
-- Foco programático al encabezado de cada paso (`tabindex="-1"`). Mecánica: el paso 2 envía el `<form>`, `FormBehavior` valida y emite `form:valid` (cancelable) para pasar al paso 3; el paso 3 hace el envío real.
-- La introducción usa tres notas en tarjetas con tinte azul; **la de la edad es la más destacada (fondo blanco)**.
+- Paso 2 "Completa tus datos": resumen azul con **Cambiar**, campos con etiqueta visible (correo y "Confirma tu correo" lado a lado desde 768 px, regla `data-rule="match"`; teléfono a ancho completo) y ejemplo en placeholder (color `--color-text-muted`), aviso de edad con borde azul; pie con **Volver** (outline) y **Solicitar hora** (primario; envía la solicitud). Al enviar: botón inactivo con indicador giratorio ("Enviando…"; el giro se anula con "reducir movimiento"). No hay paso de revisión: tras enviar se muestra la reserva.
+- Final "¡Tu hora quedó agendada con éxito!": icono check, línea "Te enviamos la confirmación a [correo]" y una **tarjeta tipo correo** (`.booking-ui__mail`: blanca, borde gris con borde izquierdo azul de 4 px, asunto en azul 600, saludo, día y hora destacados con icono `event_available`, dirección y aviso por WhatsApp) en lugar del resumen de datos; única acción **Solicitar otra hora** (se quitó el botón de WhatsApp el 13-11-2026).
+- Foco programático al encabezado de cada paso (`tabindex="-1"`). Mecánica: el paso 2 envía el `<form>` y `FormBehavior` valida y hace el envío; al terminar emite `form:success` y se muestra la pantalla final (`form:valid` sigue disponible pero la agenda ya no lo usa).
+- La introducción usa una sola nota (la edad mínima), en tarjeta blanca destacada.
 
 ### 7.8 FAQ (`Faq`)
 Acordeones agrupados por tema (`details/summary`), operables con teclado. Respuestas pendientes muestran texto neutro + "Por confirmar".
 
 ### 7.9 Ubicación (`LocationBlock`)
-Título, dirección, horarios (de `site.hours`), botones "Cómo llegar" (primario) y "Escribir por WhatsApp" (outline) + **mapa de Google Maps incrustado** (`iframe` en `.location__map`, ratio 4/3, mín. 16 rem de alto, borde gris y radio lg, `loading="lazy"`). La foto del local `local-erredos.jpg` ya no se usa en este bloque (archivo conservado). En Quiénes somos el mapa de Google se muestra **de inmediato** (iframe con `loading="lazy"`, mín. 20 rem de alto; antes era bajo demanda por rendimiento y privacidad).
+Título, dirección, horarios (de `site.hours`), un solo botón "Cómo llegar" (primario; se quitó "Escribir por WhatsApp" el 13-11-2026 por redundar con el botón flotante) + **mapa de Google Maps incrustado** (`iframe` en `.location__map`, ratio 4/3, mín. 16 rem de alto, borde gris y radio lg, `loading="lazy"`). La foto del local `local-erredos.jpg` ya no se usa en este bloque (archivo conservado). En Quiénes somos el mapa de Google se muestra **de inmediato** (iframe con `loading="lazy"`, mín. 20 rem de alto; antes era bajo demanda por rendimiento y privacidad).
+
+### 7.10 Ventana de confirmación del formulario de Convenios (`OrganizationForm`)
+`<dialog class="success-modal">` nativo abierto con `showModal()` (foco atrapado, Escape y clic fuera la cierran, fondo `rgb(33 33 33 / .55)`). Tarjeta blanca centrada (ancho `min(26rem, 100% − 2rem)`, borde 2 px azul, radio lg, `--shadow-md`), icono `check_circle` azul de 3,5 rem, título en `--text-xl`/700 ("¡Tu solicitud ha sido recibida exitosamente!"), texto gris ("El equipo de Óptica Erredos se pondrá en contacto contigo a la brevedad posible.") y botón primario **"Salir"** (enlace a `/`). Al abrirse, el foco va al título. Se activa con el evento cancelable `form:success` de `FormBehavior` (`preventDefault` evita el mensaje en línea). Verificado a 390 y 1440 px sin desborde.
 
 ---
+
+### 7.11 Estados de error de envío (`FormBehavior`, `AppointmentForm`)
+
+Bloque `.form__status--error`: borde 2 px de texto con **barra izquierda gruesa** (no depende solo del color), título en negrita, texto y fila de acciones (`.form__status-actions`, envuelve en móvil). Botón primario **"Reintentar"** (reenvía con `requestSubmit`, conserva lo escrito) y botón coral de WhatsApp. `role="status"` con foco al aparecer; en "datos rechazados" el foco va al campo con `aria-invalid` y su mensaje `.field__error`. Siete casos: red, tiempo, servidor, validación, límite, conflicto, genérico (textos en content.md §7). El **conflicto 409** de la agenda (`form:conflict`) devuelve al paso 1, tacha la hora tomada, limpia la elección y muestra un aviso `role="alert"` sobre "Todavía no eliges una hora". Simulación solo en maqueta con `?simular-error=`. Verificado a 390 px.
 
 ## 8. App Shell
 
@@ -255,8 +264,8 @@ Tres tarjetas (borde gris, radio lg, alto mín. 5,5 rem): icono en cuadro coral 
 ### 10.5 Servicios
 Jerarquía (rediseño 13-11-2026): **1)** banner con un solo CTA "Agenda tu hora"; **2)** *Atención visual* protagonista; **3)** *Agenda* en banda azul; **4)** *Reparación* compacta y secundaria; **5)** FAQ; **6)** ubicación.
 - **Atención visual:** tarjeta de dos columnas desde 1024 px (foto `servicio-atencion-visual.jpg` 1.05fr + contenido 1fr, `min-height` 26 rem), fondo `--color-primary-tint`, radio lg; en móvil, foto primero (4/3) y contenido debajo. Sin eyebrow (se quitó el 13-11-2026; el protagonismo lo da el tamaño), título, texto `--text-lg`, aclaración discreta con icono info, botón primario "Agenda tu hora" (ancho completo en <480 px). Etiqueta "Imagen referencial" sobre la foto provisional.
-- **Agenda (`#agendar-hora`):** banda azul (`--color-primary`) a ancho completo, `padding-block` `--space-7` (`--space-8` desde 1024); eyebrow coral, título y texto blancos, notas en tarjetas translúcidas, la de edad en tarjeta blanca; formulario en tarjeta blanca con `--shadow-md`. Dos columnas desde 1024 (0.8fr intro | 1.4fr agenda). Es el bloque más destacado. La pestaña del control de texto lleva un anillo blanco para verse sobre el azul.
-- **Reparación:** bloque horizontal de borde gris (radio lg), foto `servicio-reparacion.jpg` (16/7 en móvil, columna 0.8fr desde 768), título `--text-xl`, texto, nota pequeña y botón **outline** "Consultar por WhatsApp". El contenido va centrado verticalmente junto a la foto. Sin icono grande ni color de acento: no compite con la agenda.
+- **Agenda (`#agendar-hora`):** banda azul (`--color-primary`) a ancho completo, `padding-block` `--space-7` (`--space-8` desde 1024); eyebrow coral, título y texto blancos, nota de edad en tarjeta blanca y, debajo, lista `.booking__steps` de 3 pasos (círculo coral con número + texto blanco 500); formulario en tarjeta blanca con `--shadow-md`. Dos columnas desde 1024 (0.8fr intro | 1.4fr agenda). Es el bloque más destacado. La pestaña del control de texto lleva un anillo blanco para verse sobre el azul.
+- **Reparación:** bloque horizontal de borde gris (radio lg), foto `servicio-reparacion.jpg` (16/7 en móvil, columna 0.8fr desde 768), título `--text-xl`, texto, nota pequeña y botón **outline** "Consulta por tu reparación". El contenido va centrado verticalmente junto a la foto. Sin icono grande ni color de acento: no compite con la agenda.
 - **FAQ:** desde 1024 px dos columnas (`.faq-layout`, 0.8fr | 1.6fr): título, línea de ayuda y botón outline de WhatsApp a la izquierda (sticky bajo el header) y acordeón a la derecha en una sola columna; bajo 1024 px todo apilado, ancho completo. El desplazamiento suave a la agenda se activa solo con `prefers-reduced-motion: no-preference`.
 
 ### 10.6 Convenios
@@ -387,3 +396,17 @@ Observaciones de diseño aún abiertas:
 | 13-11-2026 | Servicios → Atención visual: se elimina el eyebrow "Nuestro servicio principal" (§10.5). |
 | 13-11-2026 | Servicios → FAQ: recomposición en escritorio (título + ayuda a la izquierda, acordeón a la derecha) para eliminar el vacío lateral (§10.5). |
 | 13-11-2026 | Servicios → Atención visual: cambio de texto, sin cambios visuales (§10.5). |
+| 13-11-2026 | Servicios → Agenda: se elimina la nota "Cada atención dura 30 minutos" con horarios, por duplicar el calendario; quedan dos notas (§7.7, §10.5). |
+| 13-11-2026 | Servicios → Agenda: se eliminan los avisos de confirmación (callouts del paso 3 y de la pantalla final, nota "solicitud pendiente" de la intro) y la pantalla final pasa a "¡Tu hora quedó agendada con éxito!"; la FAQ pierde una pregunta (§7.7, §10.5). La clase `.booking-ui__notice` queda sin uso. |
+| 13-11-2026 | Agenda → pantalla final: tarjeta blanca estilo correo (asunto en azul, borde izquierdo azul, día y hora con icono event_available) bajo "Te enviamos la confirmación a [correo]"; reemplaza la lista de datos. |
+| 13-11-2026 | Servicios → Agenda: lista de 3 pasos (círculos coral numerados + texto blanco) bajo el aviso de edad en la banda azul (§10.5). |
+| 13-11-2026 | Agenda → paso 2: se restituye el campo "Confirma tu correo" junto al correo; el teléfono pasa a ancho completo (§7.7). |
+| 13-11-2026 | Agenda → pantalla final: se elimina el botón "Escribir por WhatsApp"; queda solo "Solicitar otra hora" (§7.7). |
+| 13-11-2026 | Agenda: se elimina el paso "Revisa tu solicitud"; el botón del paso 2 pasa de "Continuar" a "Solicitar hora" y el indicador queda en 2 pasos (§7.7). |
+| 13-11-2026 | Ubicación (`LocationBlock`): se elimina el botón "Escribir por WhatsApp"; queda solo "Cómo llegar" (§7.9). |
+| 13-11-2026 | Servicios → Reparación: el texto del botón outline pasa a "Consulta por tu reparación" (§10.5). |
+| 13-11-2026 | Convenios → formulario: la confirmación pasa a ventana emergente (`dialog`) con icono, título, texto y botón "Salir" a `/` (§7.10). |
+| 13-11-2026 | Ventana de confirmación de Convenios: texto "…a la brevedad posible." (§7.10). |
+| 13-11-2026 | Nuevo §7.11: estados de error de envío, aviso de hora ocupada en la agenda y simulación `?simular-error=` (maqueta). |
+| 13-11-2026 | Convenios: campo "Confirma tu correo electrónico" y nuevo orden de campos en 2 columnas; el error de campo en filas de 2 columnas pasa entre etiqueta y control para no desalinear (§7.2). |
+| 13-11-2026 | Formularios: ejemplos "Ej.: …" como placeholder en todos los campos de texto de la agenda y de Convenios (§7.2). |

@@ -52,6 +52,7 @@ const isDemo = !site.formEndpoint && !site.prototypeMode;
       <input
         class="field__control"
         id="org-nombre"
+        placeholder="Ej.: María González"
         name="nombre"
         type="text"
         autocomplete="name"
@@ -66,6 +67,7 @@ const isDemo = !site.formEndpoint && !site.prototypeMode;
       <input
         class="field__control"
         id="org-organizacion"
+        placeholder="Ej.: Sindicato de Trabajadores"
         name="organizacion"
         type="text"
         autocomplete="organization"
@@ -76,24 +78,11 @@ const isDemo = !site.formEndpoint && !site.prototypeMode;
     </div>
 
     <div class="field">
-      <label class="field__label" for="org-cargo">
-        Cargo o función <span class="field__optional">(opcional)</span>
-      </label>
-      <input
-        class="field__control"
-        id="org-cargo"
-        name="cargo"
-        type="text"
-        autocomplete="organization-title"
-        data-wa-label="Cargo"
-      />
-    </div>
-
-    <div class="field">
       <label class="field__label" for="org-correo">Correo electrónico</label>
       <input
         class="field__control"
         id="org-correo"
+        placeholder="Ej.: maria.gonzalez@empresa.cl"
         name="correo"
         type="email"
         autocomplete="email"
@@ -105,10 +94,28 @@ const isDemo = !site.formEndpoint && !site.prototypeMode;
     </div>
 
     <div class="field">
+      <label class="field__label" for="org-correo2">Confirma tu correo electrónico</label>
+      <input
+        class="field__control"
+        id="org-correo2"
+        name="correo_confirmacion"
+        type="email"
+        autocomplete="off"
+        inputmode="email"
+        placeholder="Ej.: maria.gonzalez@empresa.cl"
+        required
+        data-rule="match"
+        data-match="#org-correo"
+        data-error="Los correos no coinciden. Escríbelo igual que el de arriba."
+      />
+    </div>
+
+    <div class="field">
       <label class="field__label" for="org-telefono">Número de teléfono</label>
       <input
         class="field__control"
         id="org-telefono"
+        placeholder="Ej.: 9 1234 5678"
         name="telefono"
         type="tel"
         autocomplete="tel"
@@ -120,12 +127,28 @@ const isDemo = !site.formEndpoint && !site.prototypeMode;
     </div>
 
     <div class="field">
+      <label class="field__label" for="org-cargo">
+        Cargo o función <span class="field__optional">(opcional)</span>
+      </label>
+      <input
+        class="field__control"
+        id="org-cargo"
+        placeholder="Ej.: Encargada de bienestar"
+        name="cargo"
+        type="text"
+        autocomplete="organization-title"
+        data-wa-label="Cargo"
+      />
+    </div>
+
+    <div class="field">
       <label class="field__label" for="org-participantes">
         Cantidad de participantes <span class="field__optional">(aprox.)</span>
       </label>
       <input
         class="field__control"
         id="org-participantes"
+        placeholder="Ej.: 40"
         name="participantes"
         type="number"
         inputmode="numeric"
@@ -135,7 +158,7 @@ const isDemo = !site.formEndpoint && !site.prototypeMode;
       />
     </div>
 
-    <div class="field form__wide">
+    <div class="field">
       <label class="field__label" for="org-tipo">Tipo de solicitud</label>
       <select
         class="field__control"
@@ -154,7 +177,7 @@ const isDemo = !site.formEndpoint && !site.prototypeMode;
       <label class="field__label" for="org-mensaje">
         Mensaje o información adicional <span class="field__optional">(opcional)</span>
       </label>
-      <textarea class="field__control" id="org-mensaje" name="mensaje" rows="4" data-wa-label="Mensaje"></textarea>
+      <textarea class="field__control" id="org-mensaje" name="mensaje" rows="4" placeholder="Ej.: Queremos coordinar un operativo óptico para nuestros trabajadores." data-wa-label="Mensaje"></textarea>
     </div>
   </div>
 
@@ -171,4 +194,83 @@ const isDemo = !site.formEndpoint && !site.prototypeMode;
   <div class="form__status" data-status role="status" aria-live="polite" tabindex="-1" hidden></div>
 </form>
 
+<!-- Confirmación en ventana emergente: se abre al enviar la solicitud con éxito. -->
+<dialog class="success-modal" id="org-success" aria-labelledby="org-success-title" aria-describedby="org-success-text">
+  <div class="success-modal__icon" aria-hidden="true"><Icon name="check_circle" /></div>
+  <h2 class="success-modal__title" id="org-success-title" tabindex="-1">¡Tu solicitud ha sido recibida exitosamente!</h2>
+  <p class="success-modal__text" id="org-success-text">
+    El equipo de Óptica Erredos se pondrá en contacto contigo.
+  </p>
+  <a class="btn btn--primary success-modal__exit" href="/">Salir</a>
+</dialog>
+
 <FormBehavior />
+
+<script>
+  function initSuccessModal() {
+    const form = document.querySelector<HTMLFormElement>('#form-organizaciones');
+    const modal = document.querySelector<HTMLDialogElement>('#org-success');
+    if (!form || !modal || form.dataset.modalReady) return;
+    form.dataset.modalReady = 'true';
+    form.addEventListener('form:success', (event) => {
+      event.preventDefault(); // evita el mensaje en línea: la confirmación va en la ventana
+      if (!modal.open) modal.showModal();
+      modal.querySelector<HTMLElement>('.success-modal__title')?.focus();
+    });
+    // Un clic fuera de la ventana también la cierra y deja al usuario en el formulario.
+    modal.addEventListener('click', (event) => {
+      if (event.target === modal) modal.close();
+    });
+  }
+  initSuccessModal();
+  document.addEventListener('astro:page-load', initSuccessModal);
+</script>
+
+<style is:global>
+  .success-modal {
+    width: min(26rem, calc(100% - 2rem));
+    max-height: calc(100% - 2rem);
+    margin: auto;
+    padding: var(--space-6) var(--space-5);
+    border: 2px solid var(--color-primary);
+    border-radius: var(--radius-lg);
+    background: var(--color-bg);
+    color: var(--color-text);
+    box-shadow: var(--shadow-md);
+    text-align: center;
+    overflow: auto;
+  }
+  .success-modal[open] {
+    display: grid;
+    justify-items: center;
+    gap: var(--space-3);
+  }
+  .success-modal::backdrop {
+    background: rgb(33 33 33 / 0.55);
+  }
+  .success-modal__icon {
+    color: var(--color-primary);
+  }
+  .success-modal__icon .icon {
+    width: 3.5rem;
+    height: 3.5rem;
+  }
+  .success-modal__title {
+    margin: 0;
+    font-size: var(--text-xl);
+    line-height: var(--leading-tight);
+    overflow-wrap: anywhere;
+    text-wrap: balance;
+  }
+  .success-modal__title:focus {
+    outline: none;
+  }
+  .success-modal__text {
+    margin: 0;
+    color: var(--color-text-muted);
+  }
+  .success-modal__exit {
+    margin-top: var(--space-3);
+    min-width: min(10rem, 100%);
+  }
+</style>
