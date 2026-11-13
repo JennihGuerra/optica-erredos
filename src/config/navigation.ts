@@ -10,13 +10,15 @@ export interface NavItem {
 }
 
 /** Fuente única de la navegación principal: header, barra inferior y footer. */
+const base = import.meta.env.BASE_URL;
+
 export const mainNav: NavItem[] = [
-  { href: '/', label: 'Inicio', shortLabel: 'Inicio', icon: 'home' },
-  { href: '/nosotros', label: 'Quiénes somos', shortLabel: 'Quiénes somos', icon: 'storefront' },
-  { href: '/productos', label: 'Productos', shortLabel: 'Productos', icon: 'eyeglasses' },
-  { href: '/servicios', label: 'Servicios', shortLabel: 'Servicios', icon: 'visibility' },
+  { href: `${base}`, label: 'Inicio', shortLabel: 'Inicio', icon: 'home' },
+  { href: `${base}nosotros`, label: 'Quiénes somos', shortLabel: 'Quiénes somos', icon: 'storefront' },
+  { href: `${base}productos`, label: 'Productos', shortLabel: 'Productos', icon: 'eyeglasses' },
+  { href: `${base}servicios`, label: 'Servicios', shortLabel: 'Servicios', icon: 'visibility' },
   // Página "Convenios y operativos". La ruta se mantiene en /empresas hasta acordar un cambio.
-  { href: '/empresas', label: 'Convenios', shortLabel: 'Convenios', icon: 'handshake' },
+  { href: `${base}empresas`, label: 'Convenios', shortLabel: 'Convenios', icon: 'handshake' },
 ];
 
 /** Una sección está activa en su ruta y en todas sus subrutas. */
