@@ -308,7 +308,7 @@ Modalidades de promoción a evaluar con el negocio: descuento directo, segunda u
 
 ### Técnicos
 - Fase 8 (QA): lectores de pantalla reales, dispositivos físicos, Safari y Firefox **no verificados**; envío real de formularios no probado; mapa incrustado no comprobado contra el punto exacto del local.
-- README del repo está desactualizado (dice "Fases 1 y 2").
+- README del repo reescrito el 13-11-2026 (estado real, rutas, estructura, cómo reemplazar catálogo, pendientes antes de publicar).
 
 ---
 
@@ -339,7 +339,7 @@ Modalidades de promoción a evaluar con el negocio: descuento directo, segunda u
 | 12-11-2026 | Inicio: bloque de promociones con foto y botón "Solicitar promoción" → WhatsApp (en lugar de "Ver productos"); texto ya no dice que no hay promociones (4.1). |
 | 12-11-2026 | Inicio: promociones sin texto; el afiche completo ocupa la sección con el botón "Solicitar promoción" encima (4.1). |
 | 12-11-2026 | Inicio: afiche de promociones reemplazado por la versión 2x1 sin logo (franja inferior vacía para el botón) (4.1). |
-| 12-11-2026 | Bloque "Visítanos en Puerto Montt" (Inicio, Servicios y Convenios): el marcador se reemplazó por una foto del local (anteojos sobre el mostrador, vitrinas al fondo). Es una foto real del negocio, recortada de una publicación (se quitaron logo y texto). Siguen provisionales las imágenes de los heros y de Quiénes somos. |
+| 12-11-2026 | Bloque "Visítanos en Puerto Montt": el marcador se reemplazó por una foto del local (recortada de una publicación, sin logo ni texto); luego se cambió por el mapa (§4.1). |
 | 12-11-2026 | Inicio, "Por qué elegir Erredos": 1.ª tarjeta pasa a "Atención y asesoría personalizada"; las tres llevan descripción de 2–3 líneas (4.1). |
 | 12-11-2026 | Detalle de producto rediseñado: galería con miniaturas, código, garantía de 6 meses, nota de que no se compra por la web, guía de medidas y 3 productos relacionados (4.3). Se agregan al modelo de datos `measurements` y `gallery`. |
 | 12-11-2026 | Quiénes somos: el hero pasa a banner con foto de fondo (examen visual), igual que los del carrusel de Inicio (4.6). |
@@ -386,7 +386,7 @@ Modalidades de promoción a evaluar con el negocio: descuento directo, segunda u
 | 13-11-2026 | WhatsApp: "Solicitar promoción" identifica la promoción y adjunta el enlace a su imagen (necesita `site.url`); mensajes de producto dicen "este producto"; regla general: con imagen se envía, sin imagen la consulta se refiere al tema de la sección (§4.2, §5). |
 | 13-11-2026 | WhatsApp de productos: el mensaje incluye el precio (`priceText`); la ficha de cada producto publica su foto como `og:image` para la vista previa (revisado en el build; requiere `site.url`) (§4.2, §5). |
 | 13-11-2026 | Servicios rediseñada (4.4, §6): atención visual protagonista, agenda en pasos con progreso, reparación compacta, FAQ; se quitó "¿Cómo solicitar atención?". (Luego ajustada: ver filas siguientes.) |
-| 13-11-2026 | Publicación en Vercel: https://optica-erredos.vercel.app (repositorio `JennihGuerra/optica-erredos`). Se corrigió `astro.config.mjs`, que quedó con `base: '/-ptica-erredos'` de un intento con GitHub Pages y dejaba el sitio sin estilos. `.github/workflows/deploy.yml` (Pages) sigue en el repositorio; no se eliminó. `site.url` sigue vacío hasta confirmar el dominio definitivo (§5). |
+| 13-11-2026 | Publicación en Vercel: https://optica-erredos.vercel.app (repo `JennihGuerra/optica-erredos`). Se corrigió `base` en `astro.config.mjs` (sitio sin estilos). `.github/workflows/deploy.yml` sigue en el repo. `site.url` vacío hasta confirmar el dominio (§5). |
 | 13-11-2026 | Servicios → Reparación: texto centrado verticalmente junto a la foto (ajuste visual, sin cambio de contenido) (4.4). |
 | 13-11-2026 | Servicios → Atención visual: se quita el antetítulo "Nuestro servicio principal" (4.4). |
 | 13-11-2026 | Servicios → Preguntas frecuentes: en escritorio el título va a la izquierda con una línea de ayuda y botón de WhatsApp, y las preguntas a la derecha (sin vacío a un lado); tablet y móvil sin cambios (4.4). |
@@ -406,3 +406,4 @@ Modalidades de promoción a evaluar con el negocio: descuento directo, segunda u
 | 13-11-2026 | Formularios (agenda y Convenios): se documentan y construyen los mensajes de error de envío (red, demora, servidor, datos rechazados, límite, hora ocupada, genérico) y la simulación `?simular-error=` solo en maqueta (§7). |
 | 13-11-2026 | Convenios → formulario: nuevo campo obligatorio "Confirma tu correo electrónico" (debe coincidir con el correo; el correo es la única vía de contacto). Se reordenan los campos en 2 columnas (§7). |
 | 13-11-2026 | Formularios (agenda y Convenios): cada campo lleva un ejemplo de lo que hay que escribir (placeholder "Ej.: …"), incluida la confirmación del correo (§7). |
+| 13-11-2026 | Revisión de código para entrega a un desarrollador: README reescrito; se quitan estilos y variable sin uso de la agenda; `shots/` pasa a `.gitignore`; comentario de `catalogIsDemo` corregido. Sin cambios visibles. Se conservan `brands.ts`, `local-erredos.jpg` y `FrameIllustration` (sin uso, a decidir). |

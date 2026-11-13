@@ -139,7 +139,7 @@ Base `.btn`: mín. alto táctil, padding `--space-2 × --space-5`, borde 2 px tr
 - `.field`: etiqueta (500) + control + error. Control: alto táctil, borde 1 px `--color-border-strong`, radio md. `(opcional)` en `--text-sm` gris.
 - Error: borde 2 px negro + icono + texto (no solo color); resumen de errores arriba con `role="status"`/foco; campos con `aria-invalid`.
 - Opciones de radio como tarjetas (`.form__option`): seleccionado = borde azul + fondo tinte + `inset` 1 px. (Ya no se usan en Convenios: "Tipo de solicitud" es un `select.field__control` con opción inicial "Elige una opción", igual que el rango de edad de la agenda; el estilo queda disponible.)
-- **Confirmación de correo (Convenios y agenda):** campo `data-rule="match"` con `autocomplete="off"` y placeholder "Escríbelo de nuevo". Se compara al salir del campo (aunque aún no se envíe), se re-compara si cambia el correo original y el error se limpia al coincidir. En Convenios el orden en 2 columnas es: nombre | organización · correo | confirmación · teléfono | cargo · participantes | tipo de solicitud.
+- **Confirmación de correo (Convenios y agenda):** campo `data-rule="match"` con `autocomplete="off"` y el mismo ejemplo de correo que el campo original. Se compara al salir del campo (aunque aún no se envíe), se re-compara si cambia el correo original y el error se limpia al coincidir. En Convenios el orden en 2 columnas es: nombre | organización · correo | confirmación · teléfono | cargo · participantes | tipo de solicitud.
 - **Ejemplos en los campos:** placeholder con prefijo "Ej.: " en gris `--color-text-muted` (nombre, organización, correo, confirmación, teléfono, cargo, participantes y mensaje en Convenios; nombre, correo, confirmación y teléfono en la agenda). El placeholder no reemplaza la etiqueta visible. Las listas usan la opción inicial "Elige una opción".
 - **Error en filas de 2 columnas (≥768 px):** el mensaje se muestra **entre la etiqueta y el control** (no debajo) para que los controles de la fila sigan alineados abajo cuando solo un campo tiene error.
 - Grillas de formulario: 1 columna en móvil; `auto-fit minmax(min(100%, 16rem), 1fr)` desde 768, con `.form__wide` a ancho completo.
@@ -397,7 +397,7 @@ Observaciones de diseño aún abiertas:
 | 13-11-2026 | Servicios → FAQ: recomposición en escritorio (título + ayuda a la izquierda, acordeón a la derecha) para eliminar el vacío lateral (§10.5). |
 | 13-11-2026 | Servicios → Atención visual: cambio de texto, sin cambios visuales (§10.5). |
 | 13-11-2026 | Servicios → Agenda: se elimina la nota "Cada atención dura 30 minutos" con horarios, por duplicar el calendario; quedan dos notas (§7.7, §10.5). |
-| 13-11-2026 | Servicios → Agenda: se eliminan los avisos de confirmación (callouts del paso 3 y de la pantalla final, nota "solicitud pendiente" de la intro) y la pantalla final pasa a "¡Tu hora quedó agendada con éxito!"; la FAQ pierde una pregunta (§7.7, §10.5). La clase `.booking-ui__notice` queda sin uso. |
+| 13-11-2026 | Servicios → Agenda: se eliminan los avisos de confirmación (callouts del paso 3 y de la pantalla final, nota "solicitud pendiente" de la intro) y la pantalla final pasa a "¡Tu hora quedó agendada con éxito!"; la FAQ pierde una pregunta (§7.7, §10.5). Esas clases se eliminaron del código el 13-11-2026. |
 | 13-11-2026 | Agenda → pantalla final: tarjeta blanca estilo correo (asunto en azul, borde izquierdo azul, día y hora con icono event_available) bajo "Te enviamos la confirmación a [correo]"; reemplaza la lista de datos. |
 | 13-11-2026 | Servicios → Agenda: lista de 3 pasos (círculos coral numerados + texto blanco) bajo el aviso de edad en la banda azul (§10.5). |
 | 13-11-2026 | Agenda → paso 2: se restituye el campo "Confirma tu correo" junto al correo; el teléfono pasa a ancho completo (§7.7). |
@@ -410,3 +410,4 @@ Observaciones de diseño aún abiertas:
 | 13-11-2026 | Nuevo §7.11: estados de error de envío, aviso de hora ocupada en la agenda y simulación `?simular-error=` (maqueta). |
 | 13-11-2026 | Convenios: campo "Confirma tu correo electrónico" y nuevo orden de campos en 2 columnas; el error de campo en filas de 2 columnas pasa entre etiqueta y control para no desalinear (§7.2). |
 | 13-11-2026 | Formularios: ejemplos "Ej.: …" como placeholder en todos los campos de texto de la agenda y de Convenios (§7.2). |
+| 13-11-2026 | Revisión de código para entrega a un desarrollador: limpieza de CSS sin uso en la agenda (`.booking-ui__notice` y `.booking-ui__details` ya no existen). Sin cambios visibles. |

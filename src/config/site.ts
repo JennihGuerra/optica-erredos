@@ -43,7 +43,7 @@ export const site = {
 
   /**
    * `true` mientras el catálogo use productos, marcas y precios ficticios.
-   * Muestra un aviso visible en el catálogo. Cambiar a `false` al cargar el catálogo real.
+   * Muestra un aviso en la ficha de cada producto. Cambiar a `false` al cargar el catálogo real.
    */
   catalogIsDemo: true,
 

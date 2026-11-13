@@ -1,4 +1,5 @@
 /**
+ * SIN USO por ahora (el carrusel de marcas de Inicio se eliminó el 13-11-2026).
  * Marcas del carrusel de Inicio. PROVISIONAL: son nombres de marcas de anteojos
  * de ejemplo, escritos como texto (no son logos oficiales) y NO confirman que
  * Óptica Erredos las distribuya. Reemplazar por las marcas reales (y sus logos
