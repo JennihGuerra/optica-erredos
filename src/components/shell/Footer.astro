@@ -1,8 +1,7 @@
 ---
 import { Image } from 'astro:assets';
-import logo from '../../assets/logo.png';
+import logo from '../../assets/logo-blanco.png';
 import Icon from '../ui/Icon.astro';
-import ProvisionalBadge from '../ui/ProvisionalBadge.astro';
 import { mainNav } from '../../config/navigation';
 import { site } from '../../config/site';
 
@@ -13,7 +12,7 @@ const year = new Date().getFullYear();
   <div class="container site-footer__grid">
     <div class="site-footer__brand">
       <a class="site-footer__logo" href="/" aria-label={`${site.name}, ir al inicio`}>
-        <Image src={logo} alt="" width={132} densities={[1, 2]} />
+        <Image src={logo} alt="" width={140} densities={[1, 2]} />
       </a>
       <p>Anteojos ópticos, anteojos de sol y atención óptica en {site.city}.</p>
     </div>
@@ -51,11 +50,15 @@ const year = new Date().getFullYear();
                 </span>
               ))
             ) : (
-              <span>
-                Horarios: <ProvisionalBadge />
-              </span>
+              <span>Horarios: consúltanos por WhatsApp</span>
             )}
           </span>
+        </li>
+        <li>
+          <Icon name="call" />
+          <a href={`tel:${site.phoneHref}`}>
+            <span class="visually-hidden">Teléfono: </span>{site.phone}
+          </a>
         </li>
         <li>
           <Icon name="directions" />
@@ -101,17 +104,14 @@ const year = new Date().getFullYear();
     }
   }
 
-  /* El logotipo disponible es oscuro sobre blanco: se muestra en una placa blanca
-     hasta contar con una versión en negativo. */
+  /* Logotipo en versión blanca (PNG transparente): se apoya directo sobre el azul del footer. */
   .site-footer__logo {
     display: inline-block;
-    padding: var(--space-3);
-    border-radius: var(--radius-md);
-    background: var(--color-bg);
   }
 
   .site-footer__logo img {
-    width: 6.5rem;
+    width: 8.75rem;
+    height: auto;
   }
 
   .site-footer__brand p {

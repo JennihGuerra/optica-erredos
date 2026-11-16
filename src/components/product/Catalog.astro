@@ -730,9 +730,9 @@ const countLabel = (n: number) => `${n} ${n === 1 ? 'producto' : 'productos'}`;
   /* Móvil: dos columnas. Si el texto ampliado ya no cabe, baja a una. */
   .catalog__grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 8.5rem), 1fr));
-    gap: var(--space-3);
-    margin-top: var(--space-3);
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 8rem), 1fr));
+    gap: var(--space-4) var(--space-3);
+    margin-top: var(--space-4);
   }
 
   @media (min-width: 48em) {
@@ -790,7 +790,7 @@ const countLabel = (n: number) => `${n} ${n === 1 ? 'producto' : 'productos'}`;
     align-items: center;
     justify-content: space-between;
     gap: var(--space-4);
-    margin-top: var(--space-7);
+    margin-top: var(--section-gap);
     padding: var(--space-5);
     border-radius: var(--radius-lg);
     background: var(--color-primary-tint);

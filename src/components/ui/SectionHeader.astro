@@ -6,11 +6,9 @@ interface Props {
   title: string;
   description?: string;
   link?: { href: string; label: string };
-  /** Muestra la etiqueta de contenido provisional junto al título. */
-  provisional?: boolean;
 }
 
-const { id, title, description, link, provisional = false } = Astro.props;
+const { id, title, description, link } = Astro.props;
 ---
 
 <div class="section-header">
@@ -35,17 +33,13 @@ const { id, title, description, link, provisional = false } = Astro.props;
     align-items: flex-end;
     justify-content: space-between;
     gap: var(--space-2) var(--space-5);
-    margin-bottom: var(--space-5);
+    margin-bottom: var(--space-6);
   }
 
   h2 {
     max-width: 24ch;
   }
 
-  h2 + :global(.provisional-badge) {
-    margin-top: var(--space-2);
-    color: var(--color-text-muted);
-  }
 
   p {
     max-width: 55ch;

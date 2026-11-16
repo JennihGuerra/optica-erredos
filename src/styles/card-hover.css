@@ -10,7 +10,6 @@
       .services li,
       .service,
       .connect a,
-      .quick a,
       .product-card
     ):not(#_) {
     transition:
@@ -28,7 +27,6 @@
       .services li,
       .service,
       .connect a,
-      .quick a,
       .product-card
     ):not(#_):hover {
     transform: translateY(-4px);
@@ -46,7 +44,6 @@
       .services li,
       .service,
       .connect a,
-      .quick a,
       .product-card
     ):not(#_):hover {
     transform: none;

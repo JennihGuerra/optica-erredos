@@ -4,7 +4,6 @@
  * Las respuestas pendientes muestran un texto neutro y la etiqueta "Por confirmar".
  */
 import Icon from './Icon.astro';
-import ProvisionalBadge from './ProvisionalBadge.astro';
 
 interface Props {
   groups: { title: string; items: { question: string; answer: string | null }[] }[];
@@ -31,7 +30,6 @@ const {
             </summary>
             <div class="faq__answer">
               <p>{item.answer ?? pendingText}</p>
-              {item.answer === null && <ProvisionalBadge />}
             </div>
           </details>
         ))}

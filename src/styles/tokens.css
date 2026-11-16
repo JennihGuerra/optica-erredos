@@ -64,7 +64,9 @@
 
   /* --- Layout ------------------------------------------------------------ */
   --container-max: 1200px;
-  --gutter: 1rem;
+  --gutter: 1.25rem;
+  /* Aire entre secciones (16-11-2026): crece con el ancho */
+  --section-gap: 4rem;
   --touch-target: max(2.75rem, 44px); /* área táctil mínima */
   --header-h: clamp(56px, 3.5rem, 72px);
   --bottom-nav-h: clamp(64px, 4.25rem, 84px);
@@ -90,12 +92,14 @@
 @media (min-width: 48em) {
   :root {
     --gutter: 1.5rem;
+    --section-gap: 4.5rem;
   }
 }
 
 @media (min-width: 64em) {
   :root {
     --gutter: 2rem;
+    --section-gap: 5.5rem;
     --header-h: clamp(72px, 4.5rem, 96px);
   }
 }

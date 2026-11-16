@@ -6,20 +6,20 @@
 import { Image } from 'astro:assets';
 import type { ImageMetadata } from 'astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
+import logoHorizontal from '../assets/logo-horizontal.png';
 import heroProductos from '../assets/hero-productos.jpg';
 import heroAtencionVisual from '../assets/hero-atencion-visual.jpg';
 import heroConvenios from '../assets/hero-convenios.jpg';
-import accesoOpticos from '../assets/acceso-opticos.jpg';
-import accesoSol from '../assets/acceso-sol.jpg';
-import accesoAtencion from '../assets/acceso-atencion.jpg';
 import categoriaOpticos from '../assets/categoria-opticos.jpg';
 import categoriaAccesorios from '../assets/categoria-accesorios.jpg';
 import promocion from '../assets/promocion.jpg';
 import categoriaSol from '../assets/categoria-sol.jpg';
+import fotoAtencionVisual from '../assets/servicio-atencion-visual.jpg';
+import fotoReparacion from '../assets/servicio-reparacion.jpg';
+import ServicePrice from '../components/ui/ServicePrice.astro';
 import Icon from '../components/ui/Icon.astro';
 import MediaPlaceholder from '../components/ui/MediaPlaceholder.astro';
 import SectionHeader from '../components/ui/SectionHeader.astro';
-import ProvisionalBadge from '../components/ui/ProvisionalBadge.astro';
 import LocationBlock from '../components/ui/LocationBlock.astro';
 import ProductCard from '../components/product/ProductCard.astro';
 import { featuredProducts, productTypeRoutes } from '../data/products';
@@ -27,11 +27,21 @@ import { services } from '../data/services';
 import { whatsappUrl, whatsappMessages, promotionImageLink } from '../lib/whatsapp';
 import type { IconName } from '../components/ui/icons';
 
+// Fotos PROVISIONALES de banco para las tarjetas de servicios (las mismas de /servicios).
+const servicePhotos: Record<string, { src: ImageMetadata; alt: string; position: string }> = {
+  'atencion-visual': { src: fotoAtencionVisual, alt: 'Persona probándose lentes de prueba durante una evaluación visual', position: 'center 30%' },
+  'reparacion-y-ajuste': { src: fotoReparacion, alt: 'Manos ajustando unos anteojos con un destornillador sobre un mesón con herramientas', position: 'center 55%' },
+};
+
 // Banner principal: carrusel de tres entradas.
 const slides: {
   kicker?: string;
   title: string;
+  titleLogo?: boolean;
+  titleLines?: string[];
   text: string;
+  /** Letra pequeña bajo los botones. */
+  fine?: string;
   actions: { label: string; href: string }[];
   icon: IconName;
   imageLabel: string;
@@ -41,7 +51,11 @@ const slides: {
   backgroundPosition?: string;
 }[] = [
   {
-    title: 'Encuentra tus próximos anteojos en Óptica Erredos',
+    title: 'Encuentra tus próximos anteojos en óptica',
+    /** Dos líneas fijas; el logo va en una tercera línea y mide lo mismo que la más ancha. */
+    titleLines: ['Encuentra tus próximos', 'anteojos en óptica'],
+    /** Cierra el título con el logo horizontal (su nombre accesible es «Óptica Erredos»). */
+    titleLogo: true,
     text: 'Descubre alternativas para tu día a día y conoce nuestros servicios de atención óptica.',
     actions: [
       { label: 'Ver productos', href: '/productos' },
@@ -56,6 +70,7 @@ const slides: {
     title: 'Tu salud visual es importante.',
     text: 'Conoce nuestra atención visual y recibe orientación de nuestra tecnóloga.',
     actions: [{ label: 'Agenda tu hora', href: '/servicios#agendar-hora' }],
+    fine: services.find((s) => s.slug === 'atencion-visual')?.pricing?.fine,
     icon: 'visibility',
     imageLabel: 'atención visual en la óptica',
     // PROVISIONAL: imagen genérica. Muestra equipos y un procedimiento que el negocio no ha confirmado.
@@ -72,40 +87,6 @@ const slides: {
     imageLabel: 'atención óptica a un grupo de personas',
     // PROVISIONAL: imagen genérica. Se ve publicidad de otra marca; reemplazar antes de publicar.
     background: heroConvenios,
-  },
-];
-
-const quickLinks: {
-  href: string;
-  label: string;
-  icon: IconName;
-  /** Fotografía de fondo opcional y su encuadre (CSS object-position). */
-  background?: ImageMetadata;
-  backgroundPosition?: string;
-}[] = [
-  {
-    href: productTypeRoutes.opticos,
-    label: 'Anteojos ópticos',
-    icon: 'eyeglasses',
-    // PROVISIONAL: imagen de banco con marca de agua. Encuadre bajo: se ven los anteojos, no las personas.
-    background: accesoOpticos,
-    backgroundPosition: 'center 80%',
-  },
-  {
-    href: productTypeRoutes.sol,
-    label: 'Anteojos de sol',
-    icon: 'sunny',
-    // PROVISIONAL: imagen de banco. Encuadre medio-bajo: se ven los anteojos rosados sobre la arena.
-    background: accesoSol,
-    backgroundPosition: 'center 62%',
-  },
-  {
-    href: '/servicios#solicitar-atencion',
-    label: 'Solicitar atención',
-    icon: 'event_available',
-    // PROVISIONAL: imagen de banco de un examen visual con equipo; el negocio no ha confirmado sus equipos.
-    background: accesoAtencion,
-    backgroundPosition: 'center 38%',
   },
 ];
 
@@ -192,8 +173,20 @@ const categories = [
               <div class="container hero__inner">
                 <div class="hero__content">
                   {slide.kicker && <p class="hero__kicker">{slide.kicker}</p>}
-                  <Heading class="hero__title">{slide.title}</Heading>
+                  <Heading class="hero__title">
+                    {slide.titleLines ? (
+                      slide.titleLines.map((line) => <span class="hero__line">{line}</span>)
+                    ) : (
+                      slide.title
+                    )}
+                    {slide.titleLogo && (
+                      <span class="hero__title-end">
+                        <Image class="hero__logo" src={logoHorizontal} alt="Erredos" widths={[320, 640, 1000]} sizes="14em" loading="eager" />
+                      </span>
+                    )}
+                  </Heading>
                   <p class="hero__text">{slide.text}</p>
+                  {slide.fine && <p class="hero__fine">{slide.fine}</p>}
                   <div class="hero__actions">
                     {slide.actions.map((action, i) => (
                       <a class:list={['btn', i === 0 ? 'btn--primary' : 'btn--outline']} href={action.href}>
@@ -260,38 +253,9 @@ const categories = [
     </div>
   </section>
 
-  <!-- 3. Accesos rápidos -->
-  <section class="container quick" aria-label="Accesos rápidos">
-    <ul role="list">
-      {
-        quickLinks.map((item) => (
-          <li>
-            <a href={item.href} class:list={{ 'quick__link--photo': item.background }}>
-              {item.background && (
-                <Image
-                  class="quick__bg"
-                  src={item.background}
-                  alt=""
-                  widths={[480, item.background.width]}
-                  sizes="(min-width: 48em) 33vw, 100vw"
-                  style={item.backgroundPosition ? `object-position: ${item.backgroundPosition}` : undefined}
-                />
-              )}
-              <span class="quick__icon">
-                <Icon name={item.icon} />
-              </span>
-              <span class="quick__label">{item.label}</span>
-              <Icon name="chevron_right" class="quick__arrow" />
-            </a>
-          </li>
-        ))
-      }
-    </ul>
-  </section>
-
   <!-- 4. Beneficios -->
   <section class="container section" aria-labelledby="beneficios-title">
-    <SectionHeader id="beneficios-title" title="Por qué elegir Erredos" provisional />
+    <SectionHeader id="beneficios-title" title="Por qué elegir Erredos" />
     <ul role="list" class="benefits">
       {
         benefits.map((benefit) => (
@@ -309,7 +273,11 @@ const categories = [
 
   <!-- 5. Categorías -->
   <section class="container section" aria-labelledby="categorias-title">
-    <SectionHeader id="categorias-title" title="Explora por categoría" />
+    <SectionHeader
+      id="categorias-title"
+      title="Explora nuestros productos"
+      description="Desde anteojos ópticos y de sol hasta accesorios: elige la categoría que necesitas y encuentra el estilo que va contigo."
+    />
     <ul role="list" class="categories">
       {
         categories.map((category) => (
@@ -354,7 +322,7 @@ const categories = [
       <SectionHeader
         id="destacados-title"
         title="Productos destacados"
-        description="Productos de demostración: el catálogo real se cargará más adelante."
+        description="Los favoritos de nuestros clientes: anteojos ópticos y de sol que combinan estilo y comodidad para tu día a día."
         link={{ href: '/productos', label: 'Ver todos' }}
       />
     </div>
@@ -373,7 +341,7 @@ const categories = [
   <section class="container section" aria-labelledby="promos-title">
     <h2 id="promos-title" class="visually-hidden">Promociones y ofertas</h2>
     <div class="promo">
-      <Image class="promo__photo" src={promocion} alt="Afiche promocional provisional" widths={[640, 1024]} sizes="(min-width: 75em) 1200px, 100vw" loading="lazy" />
+      <Image class="promo__photo" src={promocion} alt="Afiche promocional" widths={[640, 1024]} sizes="(min-width: 75em) 1200px, 100vw" loading="lazy" />
       <a
         class="btn promo__cta"
         href={whatsappUrl(whatsappMessages.promotion(promotionImageLink()))}
@@ -395,27 +363,62 @@ const categories = [
     />
     <ul role="list" class="services">
       {
-        services.map((service) => (
-          <li>
-            <Icon name={service.icon} />
-            <h3>{service.name}</h3>
-            <p>{service.description}</p>
-          </li>
-        ))
+        services.map((service) => {
+          const photo = servicePhotos[service.slug];
+          return (
+            <li>
+              <div class="services__media">
+                <Image
+                  src={photo.src}
+                  alt={photo.alt}
+                  widths={[360, 560, 800]}
+                  sizes="(min-width: 48em) 50vw, 100vw"
+                  style={`object-position: ${photo.position}`}
+                />
+              </div>
+              <div class="services__body">
+                <h3>{service.name}</h3>
+                <p>{service.description}</p>
+                {service.pricing && <ServicePrice {...service.pricing} />}
+                {service.slug === 'atencion-visual' ? (
+                  <a class="btn btn--primary services__action" href="/servicios#agendar-hora">
+                    <Icon name="event_available" />
+                    <span>Agenda tu hora</span>
+                  </a>
+                ) : (
+                  <a
+                    class="btn btn--outline services__action"
+                    href={whatsappUrl(service.whatsappMessage)}
+                    target="_blank"
+                    rel="noopener"
+                  >
+                    <Icon name="chat" />
+                    <span>
+                      {service.cta}
+                      <span class="visually-hidden"> por WhatsApp (se abre en una pestaña nueva)</span>
+                    </span>
+                  </a>
+                )}
+              </div>
+            </li>
+          );
+        })
       }
     </ul>
-    <a class="btn btn--outline services__cta" href="/servicios">Conocer servicios</a>
   </section>
 
   <!-- 9. Convenios y operativos -->
   <section class="b2b on-primary" aria-labelledby="empresas-title">
     <div class="container b2b__inner">
       <span class="b2b__icon"><Icon name="handshake" /></span>
-      <div>
+      <div class="b2b__text">
+        <p class="b2b__kicker">Convenios y operativos</p>
         <h2 id="empresas-title">Acercamos soluciones ópticas a empresas y organizaciones</h2>
-        <p>Consulta por convenios y operativos ópticos para tu organización.</p>
+        <p class="b2b__lead">
+          Si tu empresa, sindicato o institución busca facilitar el acceso a productos y servicios visuales para sus integrantes, podemos conversar sobre convenios y coordinar operativos ópticos. Cuéntanos qué necesitas y nos ponemos en contacto.
+        </p>
       </div>
-      <a class="btn btn--accent" href="/empresas">Conoce nuestros convenios</a>
+      <a class="btn btn--accent b2b__cta" href="/empresas">Conoce nuestros convenios</a>
     </div>
   </section>
 
@@ -525,14 +528,9 @@ const categories = [
 
 <style>
   .section {
-    padding-top: var(--space-7);
+    padding-top: var(--section-gap);
   }
 
-  @media (min-width: 64em) {
-    .section {
-      padding-top: var(--space-8);
-    }
-  }
 
   /* --- Hero: carrusel ---------------------------------------------------
      La fotografía se muestra a todo color. Solo la zona del texto lleva un degradado
@@ -618,6 +616,25 @@ const categories = [
     font-weight: var(--font-bold);
   }
 
+  /* Título en dos líneas fijas y logo en una tercera, del mismo ancho que la línea más larga. */
+  .hero__title:has(.hero__title-end) {
+    width: fit-content;
+    max-width: 100%;
+  }
+  .hero__line {
+    display: block;
+  }
+  .hero__title-end {
+    display: block;
+    width: 100%;
+    margin-top: 0.12em;
+  }
+  .hero__logo {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
   .hero__text {
     max-width: 45ch;
     margin-top: var(--space-3);
@@ -636,6 +653,18 @@ const categories = [
     flex: 0 1 auto;
     padding-inline: var(--space-3);
     font-size: var(--text-sm);
+  }
+
+  /* Letra pequeña (valor de la atención): legible, discreta y sin competir con los botones. */
+  .hero__fine {
+    max-width: 38ch;
+    margin-top: var(--space-3);
+    font-size: var(--text-xs);
+    line-height: 1.5;
+  }
+
+  .hero__fine + .hero__actions {
+    margin-top: var(--space-3);
   }
 
   /* --- Controles: una píldora azul sólida, legible sobre cualquier fotografía --- */
@@ -853,115 +882,6 @@ const categories = [
     }
   }
 
-  /* --- Accesos rápidos -------------------------------------------------- */
-
-  .quick {
-    padding-top: var(--space-5);
-  }
-
-  .quick ul {
-    display: grid;
-    /* Rejilla fluida: se reordena sola cuando el texto crece. */
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
-    gap: var(--space-2);
-  }
-
-  .quick a {
-    display: flex;
-    align-items: center;
-    gap: var(--space-3);
-    position: relative;
-    min-height: 5.5rem;
-    padding: var(--space-3) var(--space-4);
-    overflow: hidden;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    color: var(--color-text);
-    font-weight: var(--font-semibold);
-    text-decoration: none;
-    transition:
-      border-color var(--duration-fast) var(--easing),
-      background-color var(--duration-fast) var(--easing);
-  }
-
-  .quick a:hover {
-    border-color: var(--color-primary);
-    background: var(--color-primary-tint);
-  }
-
-  /* Acceso con fotografía de fondo: filtro azul petróleo oscuro para que el texto
-     blanco se lea (contraste mínimo 6,3:1 sobre las zonas más claras de la foto). */
-  .quick a :global(.quick__bg) {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-
-  .quick a.quick__link--photo {
-    border-color: transparent;
-    color: var(--color-on-primary);
-  }
-
-  .quick__link--photo::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: rgb(3 50 60 / 0.75);
-    transition: background-color var(--duration-fast) var(--easing);
-  }
-
-  .quick a.quick__link--photo:hover {
-    border-color: transparent;
-    background: none;
-  }
-
-  .quick__link--photo:hover::after {
-    background: rgb(3 50 60 / 0.85);
-  }
-
-  /* El contenido va sobre la foto y el filtro. */
-  .quick__icon,
-  .quick__label,
-  .quick a :global(.quick__arrow) {
-    position: relative;
-    z-index: 1;
-  }
-
-  .quick a.quick__link--photo :global(.quick__arrow) {
-    color: var(--color-on-primary);
-  }
-
-  .quick__link--photo:focus-visible {
-    outline-offset: 3px;
-  }
-
-  .quick__icon {
-    display: grid;
-    flex: none;
-    place-items: center;
-    width: 2.75rem;
-    height: 2.75rem;
-    border-radius: var(--radius-md);
-    background: var(--color-accent);
-    color: var(--color-primary);
-  }
-
-  .quick__label {
-    flex: 1;
-  }
-
-  .quick a :global(.quick__arrow) {
-    color: var(--color-text-muted);
-  }
-
-  @media (min-width: 48em) {
-    .quick ul {
-      gap: var(--space-4);
-    }
-  }
-
   /* --- Beneficios ------------------------------------------------------- */
 
   .benefits {
@@ -1097,7 +1017,7 @@ const categories = [
       grid-auto-flow: row;
       grid-auto-columns: auto;
       /* Tres columnas; baja a dos o una si el texto ampliado ya no cabe. */
-      grid-template-columns: repeat(auto-fill, minmax(min(100%, max(14rem, 30%)), 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, max(14rem, 30%)), 1fr));
       gap: var(--space-4);
       max-width: calc(var(--container-max) + var(--gutter) * 2);
       margin-inline: auto;
@@ -1166,32 +1086,45 @@ const categories = [
 
   .services li {
     display: grid;
-    gap: var(--space-2);
-    justify-items: start;
-    padding: var(--space-5);
+    grid-template-rows: auto 1fr;
+    overflow: hidden;
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
   }
 
-  .services li :global(.icon) {
-    color: var(--color-primary);
+  .services__media {
+    aspect-ratio: 16 / 9;
+    background: var(--color-primary-tint);
+  }
+
+  .services__media :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .services__body {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-3);
+    padding: var(--space-4) var(--space-5) var(--space-5);
   }
 
   .services h3 {
-    font-size: var(--text-lg);
+    font-size: var(--text-xl);
   }
 
-  .services p,
-  .services :global(.provisional-badge) {
+  .services p {
     color: var(--color-text-muted);
   }
 
-  .services__cta {
-    margin-top: var(--space-5);
+  .services__action {
+    margin-top: auto;
   }
 
   @media (max-width: 29.99em) {
-    .services__cta {
+    .services__action {
       width: 100%;
     }
   }
@@ -1205,7 +1138,7 @@ const categories = [
   /* --- Convenios y operativos ------------------------------------------- */
 
   .b2b {
-    margin-top: var(--space-7);
+    margin-top: var(--section-gap);
     background: var(--color-primary);
     color: var(--color-on-primary);
   }
@@ -1213,39 +1146,80 @@ const categories = [
   .b2b__inner {
     display: grid;
     gap: var(--space-4);
-    padding-block: var(--space-6);
+    padding-block: calc(var(--section-gap) - 0.5rem);
   }
 
   .b2b__icon {
     display: grid;
     place-items: center;
-    width: 3rem;
-    height: 3rem;
+    width: 3.5rem;
+    height: 3.5rem;
     border-radius: var(--radius-md);
     background: rgb(255 255 255 / 0.12);
     color: var(--color-accent);
   }
 
-  .b2b h2 {
-    max-width: 26ch;
+  .b2b__icon :global(.icon) {
+    width: 2rem;
+    height: 2rem;
   }
 
-  .b2b p {
-    margin-top: var(--space-2);
+  .b2b__kicker {
+    margin: 0 0 var(--space-2);
+    color: var(--color-accent);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .b2b h2 {
+    max-width: 24ch;
+    font-size: var(--text-3xl);
+  }
+
+  .b2b__lead {
+    max-width: 60ch;
+    margin-top: var(--space-3);
+    font-size: var(--text-lg);
+  }
+
+  .b2b__cta {
+    justify-self: start;
+    font-size: var(--text-lg);
   }
 
   @media (min-width: 48em) {
     .b2b__inner {
-      grid-template-columns: auto 1fr auto;
-      align-items: center;
-      gap: var(--space-5);
-      padding-block: var(--space-7);
+      grid-template-columns: auto 1fr;
+      align-items: start;
+      gap: var(--space-5) var(--space-6);
+      padding-block: calc(var(--section-gap) - 0.5rem);
+    }
+
+    .b2b__icon {
+      width: 4.5rem;
+      height: 4.5rem;
+    }
+
+    .b2b__icon :global(.icon) {
+      width: 2.5rem;
+      height: 2.5rem;
+    }
+
+    .b2b__cta {
+      grid-column: 2;
     }
   }
 
   @media (min-width: 64em) {
-    .b2b {
-      margin-top: var(--space-8);
+    .b2b__inner {
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+    }
+
+    .b2b__cta {
+      grid-column: auto;
     }
   }
 </style>

@@ -1,7 +1,6 @@
 ---
 /** Ubicación y contacto con mapa de Google Maps incrustado. Se reutiliza en Inicio, Servicios y Convenios. */
 import Icon from './Icon.astro';
-import ProvisionalBadge from './ProvisionalBadge.astro';
 import { site } from '../../config/site';
 
 interface Props {
@@ -34,9 +33,7 @@ const { headingId, title = `Visítanos en ${site.city}` } = Astro.props;
               </span>
             ))
           ) : (
-            <span>
-              <ProvisionalBadge />
-            </span>
+            <span>Consúltanos por WhatsApp</span>
           )}
         </div>
       </li>

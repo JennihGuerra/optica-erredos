@@ -216,15 +216,10 @@ const steps: { title: string; text: string; icon: IconName }[] = [
 
 <style>
   .section {
-    padding-top: var(--space-7);
+    padding-top: var(--section-gap);
     scroll-margin-top: var(--header-h);
   }
 
-  @media (min-width: 64em) {
-    .section {
-      padding-top: var(--space-8);
-    }
-  }
 
   .section__lead {
     max-width: 65ch;
@@ -268,7 +263,7 @@ const steps: { title: string; text: string; icon: IconName }[] = [
   .audiences {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
-    gap: var(--space-3);
+    gap: var(--space-4);
     margin-top: var(--space-5);
   }
 
@@ -308,7 +303,7 @@ const steps: { title: string; text: string; icon: IconName }[] = [
   .alternatives {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
-    gap: var(--space-4);
+    gap: var(--space-5);
     margin-top: var(--space-5);
   }
 
@@ -322,7 +317,7 @@ const steps: { title: string; text: string; icon: IconName }[] = [
   .alternative {
     display: flex;
     flex-direction: column;
-    gap: var(--space-3);
+    gap: var(--space-4);
     align-items: flex-start;
     height: 100%;
     padding: var(--space-5);
@@ -397,8 +392,8 @@ const steps: { title: string; text: string; icon: IconName }[] = [
   /* --- Cómo funciona ----------------------------------------------------- */
 
   .how {
-    margin-top: var(--space-7);
-    padding-block: var(--space-7);
+    margin-top: var(--section-gap);
+    padding-block: calc(var(--section-gap) - 0.5rem);
     background: var(--color-primary-tint);
   }
 

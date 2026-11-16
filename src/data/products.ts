@@ -131,6 +131,8 @@ function demoProduct(n: number): Product {
   const typeIndex = Array.from({ length: n }, (_, i) => i + 1).filter((k) => (k % 5 < 3 ? 'opticos' : 'sol') === type).length - 1;
   const photo = stockPhotos[type][typeIndex % stockPhotos[type].length];
   const name = `${demoNames[n - 1]} ${id}`;
+  const shape = frameShapes[(n * 5 + Math.floor(n / 2)) % frameShapes.length];
+  const style = demoStyles[(n * 2 + Math.floor(n / 5)) % demoStyles.length];
   const variantCount = 1 + (n % 4); // entre 1 y 4 colores
   const variants: ProductVariant[] = Array.from({ length: variantCount }, (_, i) => {
     const color = colorNames[(n * 3 + i * 3) % colorNames.length];
@@ -143,10 +145,10 @@ function demoProduct(n: number): Product {
     code: `DEMO-${id}`,
     brand: demoBrands[(n * 3) % demoBrands.length],
     type,
-    shape: frameShapes[(n * 5 + Math.floor(n / 2)) % frameShapes.length],
-    style: demoStyles[(n * 2 + Math.floor(n / 5)) % demoStyles.length],
+    shape: shape,
+    style: style,
     price: demoPrices[(n * 7) % demoPrices.length],
-    description: 'Descripción provisional del producto.',
+    description: `Anteojos ${type === 'opticos' ? 'ópticos' : 'de sol'} de forma ${shape.toLowerCase()}, de estilo ${style.toLowerCase()}. Consulta por disponibilidad de colores y medidas.`,
     promotion: null,
     variants,
     // PROVISIONAL: medidas y fotos adicionales de demostración.
@@ -157,7 +159,7 @@ function demoProduct(n: number): Product {
       templeLength: 135 + (n % 3) * 5,
     },
     gallery: [1, 2].map((k) => stockPhotos[type][(typeIndex + k) % stockPhotos[type].length]),
-    featured: n <= 6,
+    featured: n <= 3, // Inicio muestra 3 destacados: 2 ópticos + 1 de sol
     addedAt: `2026-${String(1 + ((n * 5) % 10)).padStart(2, '0')}-${String(1 + ((n * 7) % 27)).padStart(2, '0')}`,
   };
 }
@@ -183,7 +185,7 @@ function demoAccessory(n: number): Product {
     shape: null,
     style: null,
     price: [4990, 2990, 6990, 8990, 5990][n - 1],
-    description: 'Descripción provisional del producto.',
+    description: `${name}. Consulta por disponibilidad de colores.`,
     promotion: null,
     variants,
     measurements: null,

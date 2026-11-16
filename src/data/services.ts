@@ -25,6 +25,8 @@ export interface Service {
   notice?: string;
   /** Acción principal dentro del sitio (ej.: ir al formulario de hora). */
   primaryAction?: { label: string; href: string };
+  /** Valor del servicio, informado por el negocio (16-11-2026). */
+  pricing?: { label: string; amount: string; benefit: string; /** Versión corta para letra pequeña (banners). */ fine: string };
 }
 
 export const services: Service[] = [
@@ -39,6 +41,12 @@ export const services: Service[] = [
     imageLabel: 'atención visual en la óptica',
     primaryAction: { label: 'Agenda tu hora', href: '#agendar-hora' },
     notice: 'Esta atención no corresponde a una consulta oftalmológica.',
+    pricing: {
+      label: 'Valor de la atención',
+      amount: '$10.000',
+      benefit: '¡Atención gratis al comprar tus lentes ópticos en Erredos!',
+      fine: 'Valor de la atención: $10.000. Gratis al comprar tus lentes ópticos en Erredos.',
+    },
   },
   {
     slug: 'reparacion-y-ajuste',
@@ -80,6 +88,11 @@ export const servicesFaq: { title: string; items: FaqItem[] }[] = [
         question: '¿Cómo puedo reservar una atención?',
         answer:
           'En "Agenda tu atención visual", en esta misma página, elige el día y la hora que prefieras, completa tus datos y solicita tu hora.',
+      },
+      {
+        question: '¿Cuánto cuesta la atención visual?',
+        answer:
+          'La atención visual tiene un valor de $10.000. Si compras tus lentes ópticos en Óptica Erredos, la atención es gratis.',
       },
       {
         question: '¿Qué debo llevar a mi atención visual?',

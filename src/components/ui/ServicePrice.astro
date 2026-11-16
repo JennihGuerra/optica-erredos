@@ -1,0 +1,64 @@
+---
+/**
+ * Valor de un servicio + beneficio. Datos en `services.ts` (informados por el negocio).
+ * Texto en dos líneas: el precio destaca; el beneficio lleva icono para no depender del color.
+ */
+import Icon from './Icon.astro';
+
+interface Props {
+  label: string;
+  amount: string;
+  benefit: string;
+}
+const { label, amount, benefit } = Astro.props;
+---
+
+<div class="service-price">
+  <p class="service-price__main">
+    <Icon name="sell" />
+    <span>{label}: <strong>{amount}</strong></span>
+  </p>
+  <p class="service-price__benefit">
+    <Icon name="check_circle" />
+    <span>{benefit}</span>
+  </p>
+</div>
+
+<style>
+  .service-price {
+    display: grid;
+    gap: var(--space-2);
+    width: 100%;
+    padding: var(--space-3) var(--space-4);
+    background: var(--color-primary-tint);
+    border-left: 4px solid var(--color-primary);
+    border-radius: var(--radius-sm);
+    color: var(--color-text);
+  }
+
+  .service-price p {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-2);
+    margin: 0;
+  }
+
+  .service-price :global(.icon) {
+    flex: none;
+    color: var(--color-primary);
+  }
+
+  .service-price__main {
+    font-size: var(--text-lg);
+  }
+
+  .service-price__main strong {
+    color: var(--color-primary);
+    font-weight: 700;
+  }
+
+  .service-price__benefit {
+    font-size: var(--text-sm);
+    font-weight: 500;
+  }
+</style>

@@ -1,8 +1,8 @@
 ---
 /**
  * QUIÉNES SOMOS — identidad, forma de trabajar, local y ubicación (ruta /nosotros).
- * No se inventan historia, fechas, fundadores, equipo ni equipamiento:
- * lo que falta queda como contenido provisional claramente identificado.
+ * No se inventan fechas, equipo ni equipamiento. La historia (hermanos Rojas) viene de datos
+ * entregados por Jennih; el texto está por validar con el negocio (ver content.md §4.6 y §11).
  */
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { Image } from 'astro:assets';
@@ -11,9 +11,13 @@ import espacioExterior from '../assets/espacio-exterior.jpg';
 import espacioEquipo from '../assets/espacio-equipo.jpg';
 import espacioInterior from '../assets/espacio-interior.jpg';
 import heroNosotros from '../assets/hero-quienes-somos.jpg';
+import equipo1 from '../assets/equipo-1.jpg';
+import equipo2 from '../assets/equipo-2.jpg';
+import equipo3 from '../assets/equipo-3.jpg';
+import instalaciones1 from '../assets/instalaciones-1.jpg';
+import instalaciones2 from '../assets/instalaciones-2.jpg';
 import Icon from '../components/ui/Icon.astro';
 import MediaPlaceholder from '../components/ui/MediaPlaceholder.astro';
-import ProvisionalBadge from '../components/ui/ProvisionalBadge.astro';
 import { site } from '../config/site';
 import { whatsappUrl } from '../lib/whatsapp';
 import { contextMessage } from '../lib/whatsappContext';
@@ -31,36 +35,41 @@ const principles: { title: string; text: string; icon: IconName }[] = [
   },
 ];
 
-// Datos que debe entregar el negocio para escribir la historia definitiva.
-const historyPending = [
-  'Cómo y cuándo nació Óptica Erredos.',
-  'Cuál fue la motivación inicial.',
-  'Cómo ha evolucionado el negocio.',
-  'Qué busca aportar a sus clientes y a la comunidad.',
+// Equipo: nombres FICTICIOS y fotos de banco provisionales (pedido de Jennih, 16-11-2026). Los cargos los
+// definió ella. Reemplazar por los datos reales del negocio. Ver content.md §4.6 y §11.
+const team: { name: string; role: string; photo?: ImageMetadata }[] = [
+  { name: 'Camila Fuentes', role: 'Tecnóloga médica en Oftalmología', photo: equipo1 },
+  { name: 'Daniela Vargas', role: 'Encargada de convenios y operativos', photo: equipo2 },
+  { name: 'Ricardo Alvarado', role: 'Gerente General', photo: equipo3 },
+];
+
+// Tecnología: dato entregado por Jennih (tecnología de primera; lentes ópticos elaborados en el local y
+// enviados a laboratorios de alto renombre). Redacción por validar con el negocio (content.md §4.6 y §11).
+const tech: { title: string; text: string; icon: IconName }[] = [
+  {
+    title: 'Innovación y precisión',
+    text: 'Equipamiento de última generación para lograr graduaciones exactas y montajes milimétricos que maximizan tu confort visual.',
+    icon: 'precision_manufacturing',
+  },
+  {
+    title: 'Asesoría experta',
+    text: 'Profesionales apasionados por tu salud visual, listos para guiarte y cuidar cada detalle de tus nuevos lentes.',
+    icon: 'workspace_premium',
+  },
+  {
+    title: 'Alianzas de confianza',
+    text: 'La agilidad de nuestro taller local combinada con el respaldo de los laboratorios ópticos más prestigiosos del mundo.',
+    icon: 'handshake',
+  },
+];
+
+// Fotos de las instalaciones: NO hay fotos propias. Reemplazar `photo` (ImageMetadata importada desde src/assets).
+const facilities: { label: string; photo?: ImageMetadata }[] = [
+  { label: 'Examen visual con lámpara de hendidura', photo: instalaciones1 },
+  { label: 'Examen con autorrefractómetro', photo: instalaciones2 },
 ];
 
 const newTab = ' (se abre en una pestaña nueva)';
-const links: { title: string; text: string; href: string; icon: IconName; external?: boolean }[] = [
-  {
-    title: 'Productos',
-    text: 'Descubre nuestras alternativas de anteojos ópticos y de sol.',
-    href: '/productos',
-    icon: 'eyeglasses',
-  },
-  {
-    title: 'Servicios',
-    text: 'Conoce nuestra atención visual y reparación de anteojos.',
-    href: '/servicios',
-    icon: 'visibility',
-  },
-  {
-    title: 'Contacto',
-    text: 'Comunícate directamente con nuestro equipo por WhatsApp.',
-    href: whatsappUrl(contextMessage(Astro.url.pathname)),
-    icon: 'chat',
-    external: true,
-  },
-];
 ---
 
 <BaseLayout
@@ -81,7 +90,7 @@ const links: { title: string; text: string; href: string; icon: IconName; extern
     <div class="container hero__inner">
       <div class="hero__content">
         <p class="hero__kicker">Quiénes somos</p>
-        <h1 id="hero-title" class="hero__title">Conoce Óptica Erredos</h1>
+        <h1 id="hero-title" class="hero__title">Cuidamos tu visión y acompañamos tu bienestar</h1>
         <p class="hero__text">
           Una óptica en Puerto Montt que acerca soluciones visuales con productos y atención cercana.
         </p>
@@ -105,19 +114,12 @@ const links: { title: string; text: string; href: string; icon: IconName; extern
     />
     <div class="story__text">
       <p class="eyebrow">Nuestra historia</p>
-      <h2 id="story-title">Una óptica cercana a nuestra comunidad</h2>
-      <ProvisionalBadge label="Texto provisional" />
+      <h2 id="story-title">Una óptica familiar, hecha para tu estilo de vida</h2>
       <p>
-        Aquí contaremos la historia de Óptica Erredos: su origen, su recorrido en Puerto Montt y lo que
-        busca aportar a quienes la visitan. Este texto se escribirá con la información que entregue el
-        negocio.
+        Nacimos en Puerto Montt de la mano de dos hermanos (de ahí, Erre Dos). Combinamos atención
+        cercana y diseño para llevar soluciones ópticas a toda la Región de Los Lagos, porque unos buenos
+        lentes no solo te hacen ver mejor: expresan quién eres.
       </p>
-      <div class="story__pending" role="note">
-        <p><strong>Información necesaria para completar esta sección</strong></p>
-        <ul>
-          {historyPending.map((item) => <li>{item}</li>)}
-        </ul>
-      </div>
     </div>
   </section>
 
@@ -126,7 +128,6 @@ const links: { title: string; text: string; href: string; icon: IconName; extern
     <div class="container">
       <p class="eyebrow">Nuestra forma de trabajar</p>
       <h2 id="work-title">Una atención pensada en las personas</h2>
-      <ProvisionalBadge label="Propuesta por validar con el negocio" />
       <ul role="list" class="principles">
         {
           principles.map((item) => (
@@ -141,14 +142,101 @@ const links: { title: string; text: string; href: string; icon: IconName; extern
     </div>
   </section>
 
+  <!-- C2. Nuestro equipo de trabajo -->
+  <section class="container section team" aria-labelledby="team-title">
+    <div class="team__head">
+      <p class="eyebrow">Quiénes te atienden</p>
+      <h2 id="team-title">Nuestro equipo de trabajo</h2>
+      <p>
+        Somos un equipo profesional, capacitado y cercano. Te escuchamos, te orientamos y te
+        acompañamos en cada paso para que encuentres la solución visual que necesitas.
+      </p>
+    </div>
+    <ul role="list" class="team__grid">
+      {
+        team.map((member) => (
+          <li class="team__card">
+            {member.photo ? (
+              <Image
+                class="team__photo"
+                src={member.photo}
+                alt={`Foto de ${member.name}`}
+                widths={[320, 480, 640]}
+                sizes="(min-width: 48em) 30vw, 100vw"
+                loading="lazy"
+              />
+            ) : (
+              <MediaPlaceholder icon="person" ratio="1 / 1" tone="primary" label="foto de la persona del equipo" />
+            )}
+            <div class="team__info">
+              <h3>{member.name}</h3>
+              <p>{member.role}</p>
+            </div>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <!-- C3. Tecnología que utilizamos -->
+  <section class="container section tech" aria-labelledby="tech-title">
+    <div class="tech__head">
+      <p class="eyebrow">Cada lente, con respaldo</p>
+      <h2 id="tech-title">Tu visión no merece menos que tecnología de vanguardia</h2>
+      <p>
+        Cada lente que elaboramos para ti es el resultado de una meticulosa combinación: tecnología
+        óptica de precisión y el cuidado experto de nuestros profesionales.
+      </p>
+      <p>
+        Combinamos la inmediatez de nuestros talleres locales con la excelencia de laboratorios
+        globales de alto renombre para garantizarte dos cosas: una visión nítida y una tranquilidad
+        absoluta en cada mirada.
+      </p>
+    </div>
+    <ul role="list" class="tech__grid">
+      {
+        tech.map((item) => (
+          <li class="tech__card">
+            <span class="tech__icon" aria-hidden="true">
+              <Icon name={item.icon} />
+            </span>
+            <h3>{item.title}</h3>
+            <p>{item.text}</p>
+          </li>
+        ))
+      }
+    </ul>
+    <h3 class="tech__subtitle">Conoce nuestras instalaciones</h3>
+    <ul role="list" class="tech__photos">
+      {
+        facilities.map((item) => (
+          <li>
+            {item.photo ? (
+              <Image
+                class="tech__photo"
+                src={item.photo}
+                alt={item.label}
+                widths={[480, 800, 1200]}
+                sizes="(min-width: 48em) 50vw, 100vw"
+                loading="lazy"
+              />
+            ) : (
+              <MediaPlaceholder icon="image" ratio="16 / 10" tone="neutral" label={item.label} />
+            )}
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
   <!-- D. Nuestro espacio -->
   <section class="container section" aria-labelledby="space-title">
     <div class="space__head">
       <div>
-        <p class="eyebrow">Nuestro espacio</p>
+        <p class="eyebrow">Ven a conocernos</p>
         <h2 id="space-title">Te esperamos en nuestro local</h2>
         <p class="space__text">
-          Estamos en {site.address}.
+          Pásate por {site.address}, y encuentra tus próximos lentes con la mejor asesoría.
         </p>
       </div>
       <a class="btn btn--outline" href={site.mapsUrl} target="_blank" rel="noopener">
@@ -188,11 +276,16 @@ const links: { title: string; text: string; href: string; icon: IconName; extern
                   </span>
                 ))
               ) : (
-                <span>
-                  <ProvisionalBadge />
-                </span>
+                <span>Consúltanos por WhatsApp</span>
               )
             }
+          </div>
+        </li>
+        <li>
+          <Icon name="call" />
+          <div>
+            <strong>Teléfono</strong>
+            <a href={`tel:${site.phoneHref}`}>{site.phone}</a>
           </div>
         </li>
       </ul>
@@ -219,48 +312,14 @@ const links: { title: string; text: string; href: string; icon: IconName; extern
       ></iframe>
     </div>
   </section>
-
-  <!-- F. Conecta con Óptica Erredos -->
-  <section class="container section" aria-labelledby="connect-title">
-    <h2 id="connect-title">Estamos aquí para ayudarte</h2>
-    <p class="connect__text">
-      Conoce nuestros productos y servicios, o escríbenos si necesitas orientación.
-    </p>
-    <ul role="list" class="connect">
-      {
-        links.map((link) => (
-          <li>
-            <a href={link.href} target={link.external ? '_blank' : undefined} rel={link.external ? 'noopener' : undefined}>
-              <span class="connect__icon">
-                <Icon name={link.icon} />
-              </span>
-              <span class="connect__body">
-                <strong>
-                  {link.title}
-                  {link.external && <span class="visually-hidden">{newTab}</span>}
-                </strong>
-                <span>{link.text}</span>
-              </span>
-              <Icon name="arrow_forward" class="connect__arrow" />
-            </a>
-          </li>
-        ))
-      }
-    </ul>
-  </section>
 </BaseLayout>
 
 <style>
   .section {
-    padding-top: var(--space-7);
+    padding-top: var(--section-gap);
     scroll-margin-top: var(--header-h);
   }
 
-  @media (min-width: 64em) {
-    .section {
-      padding-top: var(--space-8);
-    }
-  }
 
   .eyebrow {
     margin-bottom: var(--space-2);
@@ -275,10 +334,6 @@ const links: { title: string; text: string; href: string; icon: IconName; extern
     max-width: 22ch;
   }
 
-  h2 + :global(.provisional-badge) {
-    margin-top: var(--space-3);
-    color: var(--color-text-muted);
-  }
 
   /* --- Hero (banner con foto de fondo, igual que el de Inicio) ---------- */
 
@@ -419,22 +474,6 @@ const links: { title: string; text: string; href: string; icon: IconName; extern
     font-size: var(--text-lg);
   }
 
-  .story__pending {
-    max-width: 34rem;
-    margin-top: var(--space-5);
-    padding: var(--space-4);
-    border: 1px dashed var(--color-border-strong);
-    border-radius: var(--radius-md);
-    font-size: var(--text-sm);
-  }
-
-  .story__pending ul {
-    display: grid;
-    gap: var(--space-1);
-    margin-top: var(--space-2);
-    padding-left: 1.25rem;
-  }
-
   @media (min-width: 48em) {
     .story {
       grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
@@ -448,8 +487,8 @@ const links: { title: string; text: string; href: string; icon: IconName; extern
   /* --- Forma de trabajar -------------------------------------------------- */
 
   .work {
-    margin-top: var(--space-7);
-    padding-block: var(--space-7);
+    margin-top: var(--section-gap);
+    padding-block: calc(var(--section-gap) - 0.5rem);
     background: var(--color-accent-tint);
   }
 
@@ -479,6 +518,126 @@ const links: { title: string; text: string; href: string; icon: IconName; extern
 
   .principles p {
     margin-top: var(--space-1);
+  }
+
+  /* --- Equipo ------------------------------------------------------------- */
+
+  .team__head {
+    max-width: 60ch;
+  }
+
+  .team__head > p:not(.eyebrow) {
+    margin-top: var(--space-3);
+    font-size: var(--text-lg);
+  }
+
+
+  .team__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+    gap: var(--space-5);
+    margin-top: var(--space-6);
+  }
+
+  .team__card {
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-bg);
+  }
+
+  .team__card :global(.media-placeholder),
+  .team :global(.team__photo) {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    border-radius: 0;
+    object-fit: cover;
+  }
+
+  .team__info {
+    padding: var(--space-4);
+    text-align: center;
+  }
+
+  .team__info h3 {
+    font-size: var(--text-lg);
+  }
+
+  .team__info p {
+    margin-top: var(--space-1);
+    color: var(--color-text-muted);
+  }
+
+  /* --- Tecnología --------------------------------------------------------- */
+
+  .tech__head {
+    max-width: 60ch;
+  }
+
+  .tech__head > p:not(.eyebrow) {
+    margin-top: var(--space-3);
+    font-size: var(--text-lg);
+  }
+
+
+  .tech__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+    gap: var(--space-4);
+    margin-top: var(--space-6);
+  }
+
+  .tech__card {
+    padding: var(--space-5);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-bg);
+  }
+
+  .tech__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 3rem;
+    height: 3rem;
+    border-radius: var(--radius-md);
+    background: var(--color-accent);
+    color: var(--color-text);
+  }
+
+  .tech__card h3 {
+    margin-top: var(--space-3);
+    font-size: var(--text-lg);
+  }
+
+  .tech__card p {
+    margin-top: var(--space-2);
+    color: var(--color-text-muted);
+  }
+
+  .tech__subtitle {
+    margin-top: var(--space-6);
+  }
+
+  .tech__photos {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-4);
+    margin-top: var(--space-4);
+  }
+
+  .tech__photos :global(.media-placeholder),
+  .tech :global(.tech__photo) {
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    border-radius: var(--radius-lg);
+    object-fit: cover;
+  }
+
+  @media (min-width: 37.5em) {
+    .tech__photos {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
   }
 
   /* --- Nuestro espacio ---------------------------------------------------- */
@@ -622,73 +781,5 @@ const links: { title: string; text: string; href: string; icon: IconName; extern
     .where__map {
       min-height: 22rem;
     }
-  }
-
-  /* --- Conecta ------------------------------------------------------------ */
-
-  .connect__text {
-    max-width: 60ch;
-    margin-top: var(--space-3);
-    color: var(--color-text-muted);
-  }
-
-  .connect {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
-    gap: var(--space-3);
-    margin-top: var(--space-5);
-  }
-
-  .connect a {
-    display: flex;
-    gap: var(--space-3);
-    align-items: center;
-    height: 100%;
-    padding: var(--space-4);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    color: var(--color-text);
-    text-decoration: none;
-    transition:
-      border-color var(--duration-fast) var(--easing),
-      background-color var(--duration-fast) var(--easing);
-  }
-
-  .connect a:hover {
-    border-color: var(--color-primary);
-    background: var(--color-primary-tint);
-  }
-
-  .connect__icon {
-    display: grid;
-    flex: none;
-    place-items: center;
-    width: 3rem;
-    height: 3rem;
-    border-radius: var(--radius-md);
-    background: var(--color-accent);
-    color: var(--color-primary);
-  }
-
-  .connect__body {
-    display: grid;
-    flex: 1;
-    gap: 0.125rem;
-    min-width: 0;
-    overflow-wrap: anywhere;
-  }
-
-  .connect__body strong {
-    font-size: var(--text-lg);
-    font-weight: var(--font-semibold);
-  }
-
-  .connect__body span {
-    color: var(--color-text-muted);
-    font-size: var(--text-sm);
-  }
-
-  .connect a :global(.connect__arrow) {
-    color: var(--color-primary);
   }
 </style>

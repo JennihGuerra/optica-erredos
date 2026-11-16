@@ -121,11 +121,6 @@ const related = products
         <p class="detail__code">Código: {product.code}</p>
         {product.promotion && <p class="detail__promo">{product.promotion}</p>}
         <p class="detail__price">{productPriceLabel(product)}</p>
-        {
-          site.catalogIsDemo && (
-            <p class="detail__demo">Producto de demostración: nombre, marca, precio y medidas son ficticios.</p>
-          )
-        }
 
         <p class="detail__warranty">
           <Icon name="verified_user" />
@@ -359,7 +354,7 @@ const related = products
     align-items: center;
     justify-content: center;
     gap: var(--space-3);
-    margin-top: var(--space-7);
+    margin-top: calc(var(--section-gap) - 0.5rem);
     padding: var(--space-4);
     border-top: 1px solid var(--color-border);
     border-bottom: 1px solid var(--color-border);
@@ -371,7 +366,7 @@ const related = products
   }
 
   .detail__measures {
-    margin-top: var(--space-7);
+    margin-top: calc(var(--section-gap) - 0.5rem);
     padding: var(--space-6) var(--space-4);
     border-radius: var(--radius-lg);
     background: var(--color-primary-tint);
@@ -426,7 +421,6 @@ const related = products
     font-weight: var(--font-bold);
   }
 
-  .detail__demo,
   .detail__cta-note {
     margin-top: var(--space-2);
     color: var(--color-text-muted);
@@ -493,12 +487,9 @@ const related = products
     margin-block: var(--space-2);
   }
 
-  .detail__description :global(.provisional-badge) {
-    color: var(--color-text-muted);
-  }
 
   .detail__related {
-    margin-top: var(--space-7);
+    margin-top: calc(var(--section-gap) - 0.5rem);
   }
 
   /* Móvil: carrusel horizontal con ajuste; tablet y escritorio: tres columnas. */

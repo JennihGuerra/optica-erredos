@@ -23,10 +23,9 @@ const { icon = 'image', ratio = '4 / 3', tone = 'primary', label, class: classNa
   class:list={['media-placeholder', `media-placeholder--${tone}`, className]}
   style={`aspect-ratio: ${ratio}`}
   role="img"
-  aria-label={`Imagen provisional${label ? ': ' + label : ''}`}
+  aria-label={label ? `Imagen: ${label}` : 'Imagen'}
 >
   <Icon name={icon} />
-  <span class="media-placeholder__tag" aria-hidden="true">Imagen provisional</span>
 </div>
 
 <style>
@@ -56,16 +55,4 @@ const { icon = 'image', ratio = '4 / 3', tone = 'primary', label, class: classNa
     opacity: 0.55;
   }
 
-  .media-placeholder__tag {
-    position: absolute;
-    left: var(--space-2);
-    bottom: var(--space-2);
-    max-width: calc(100% - var(--space-4));
-    padding: 0.125rem var(--space-2);
-    border-radius: var(--radius-sm);
-    background: rgb(255 255 255 / 0.9);
-    color: var(--color-text);
-    font-size: min(var(--text-xs), 14px);
-    font-weight: var(--font-medium);
-  }
 </style>

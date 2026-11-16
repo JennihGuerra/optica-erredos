@@ -33,6 +33,9 @@ import i_explore from '@material-symbols/svg-400/rounded/explore.svg?raw';
 import i_widgets from '@material-symbols/svg-400/rounded/widgets.svg?raw';
 import i_image from '@material-symbols/svg-400/rounded/image.svg?raw';
 import i_sell from '@material-symbols/svg-400/rounded/sell.svg?raw';
+import i_precision_manufacturing from '@material-symbols/svg-400/rounded/precision_manufacturing.svg?raw';
+import i_workspace_premium from '@material-symbols/svg-400/rounded/workspace_premium.svg?raw';
+import i_person from '@material-symbols/svg-400/rounded/person.svg?raw';
 import i_groups from '@material-symbols/svg-400/rounded/groups.svg?raw';
 import i_chevron_right from '@material-symbols/svg-400/rounded/chevron_right.svg?raw';
 import i_tune from '@material-symbols/svg-400/rounded/tune.svg?raw';
@@ -90,6 +93,9 @@ export const icons = {
   image: i_image,
   sell: i_sell,
   groups: i_groups,
+  person: i_person,
+  precision_manufacturing: i_precision_manufacturing,
+  workspace_premium: i_workspace_premium,
   chevron_right: i_chevron_right,
   tune: i_tune,
   check: i_check,
