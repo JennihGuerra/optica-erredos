@@ -37,6 +37,13 @@ const { headingId, title = `Visítanos en ${site.city}` } = Astro.props;
           )}
         </div>
       </li>
+      <li>
+        <Icon name="call" />
+        <div>
+          <strong>Teléfono</strong>
+          <a href={`tel:${site.phoneHref}`}>{site.phone}</a>
+        </div>
+      </li>
     </ul>
     <div class="location__actions">
       <a class="btn btn--primary" href={site.mapsUrl} target="_blank" rel="noopener">

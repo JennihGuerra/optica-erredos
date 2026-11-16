@@ -12,6 +12,10 @@ export const site = {
     'https://www.google.com/maps/search/?api=1&query=' +
     encodeURIComponent('Óptica Erredos, Calle Talca 118, Puerto Montt'),
 
+  /** Teléfono fijo del negocio. NÚMERO FICTICIO de maqueta: reemplazar por el real. `phoneHref` es el mismo número para el enlace tel:. */
+  phone: '65 2 123 456',
+  phoneHref: '+56652123456',
+
   /** Mapa incrustado de Google Maps para la dirección del local (no requiere clave). */
   mapsEmbedUrl:
     'https://www.google.com/maps?q=' +

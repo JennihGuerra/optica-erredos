@@ -57,6 +57,7 @@ import i_hearing from '@material-symbols/svg-400/rounded/hearing.svg?raw';
 import i_task_alt from '@material-symbols/svg-400/rounded/task_alt.svg?raw';
 import i_map from '@material-symbols/svg-400/rounded/map.svg?raw';
 import i_chevron_left from '@material-symbols/svg-400/rounded/chevron_left.svg?raw';
+import i_call from '@material-symbols/svg-400/rounded/call.svg?raw';
 import i_pause from '@material-symbols/svg-400/rounded/pause.svg?raw';
 import i_play_arrow from '@material-symbols/svg-400/rounded/play_arrow.svg?raw';
 
@@ -80,6 +81,7 @@ export const icons = {
   restart_alt: restartAlt,
   location_on: locationOn,
   schedule,
+  call: i_call,
   arrow_forward: arrowForward,
   cleaning_services,
   verified_user,
